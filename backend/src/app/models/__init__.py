@@ -27,6 +27,18 @@ from app.models.part_imports import (
     PartImportState,
 )
 from app.models.parts import Part, PartAlternative
+from app.models.quotes import (
+    MATCH_STATUS_ENUM,
+    QUOTE_SOURCE_ENUM,
+    QUOTE_STATUS_ENUM,
+    Quote,
+    QuoteLine,
+    QuoteLineMatchStatus,
+    QuotePriceBreak,
+    QuoteSource,
+    QuoteStatus,
+    QuoteTerms,
+)
 from app.models.rfqs import (
     ALLOWED_RFQ_TRANSITIONS,
     RFQ_STATUS_ENUM,
@@ -45,7 +57,10 @@ __all__ = [
     "DIMENSION_ENUM",
     "IMPORT_STATE_ENUM",
     "JOB_STATE_ENUM",
+    "MATCH_STATUS_ENUM",
     "PART_IMPORT_FORMAT_ENUM",
+    "QUOTE_SOURCE_ENUM",
+    "QUOTE_STATUS_ENUM",
     "RFQ_STATUS_ENUM",
     "ROLE_ENUM",
     "AuditEvent",
@@ -66,6 +81,13 @@ __all__ = [
     "PartImportRow",
     "PartImportRowDisposition",
     "PartImportState",
+    "Quote",
+    "QuoteLine",
+    "QuoteLineMatchStatus",
+    "QuotePriceBreak",
+    "QuoteSource",
+    "QuoteStatus",
+    "QuoteTerms",
     "Rfq",
     "RfqLine",
     "RfqStatus",

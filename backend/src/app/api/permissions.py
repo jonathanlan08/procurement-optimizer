@@ -59,6 +59,18 @@ PERMISSIONS: dict[tuple[str, str], PermissionLevel] = {
     ("GET", "/api/v1/part-imports/{batch_id}"): Role.VIEWER,
     ("POST", "/api/v1/part-imports/{batch_id}/commit"): Role.ANALYST,
     ("POST", "/api/v1/part-imports/{batch_id}/cancel"): Role.ANALYST,
+    # BOMs (03-api-contract.md §4.7 + this task's stated default "viewer
+    # reads, analyst mutates, admin archives"). `activate` has no contract-
+    # table entry of its own (see api/v1/boms.py module docstring for why
+    # this router still implements it); gated analyst+ like create/versions,
+    # since it is a routine publishing action, not a destructive one.
+    ("GET", "/api/v1/boms"): Role.VIEWER,
+    ("POST", "/api/v1/boms"): Role.ANALYST,
+    ("GET", "/api/v1/boms/{bom_id}"): Role.VIEWER,
+    ("GET", "/api/v1/boms/{bom_id}/versions"): Role.VIEWER,
+    ("POST", "/api/v1/boms/{bom_id}/versions"): Role.ANALYST,
+    ("POST", "/api/v1/boms/{bom_id}/activate"): Role.ANALYST,
+    ("POST", "/api/v1/boms/{bom_id}/archive"): Role.ADMINISTRATOR,
 }
 
 # Routes that are org-scoped resources (subject to the 404 cross-org matrix
@@ -70,4 +82,5 @@ ORG_SCOPED_RESOURCES: list[str] = [
     "parts",
     "part_alternatives",
     "part_imports",
+    "boms",
 ]

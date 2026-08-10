@@ -14,6 +14,7 @@ from app.api.middleware import (
     SecurityHeadersMiddleware,
 )
 from app.api.v1.auth import router as auth_router
+from app.api.v1.boms import router as boms_router
 from app.api.v1.part_imports import router as part_imports_router
 from app.api.v1.parts import router as parts_router
 from app.api.v1.supplier_contacts import router as supplier_contacts_router
@@ -114,5 +115,6 @@ def create_app(
     app.include_router(supplier_performance_router, prefix=API_PREFIX)
     app.include_router(parts_router, prefix=API_PREFIX)
     app.include_router(part_imports_router, prefix=API_PREFIX)
+    app.include_router(boms_router, prefix=API_PREFIX)
 
     return app

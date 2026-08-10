@@ -21,6 +21,7 @@ PERMISSIONS: dict[tuple[str, str], PermissionLevel] = {
     ("POST", "/api/v1/auth/login"): "public",
     ("POST", "/api/v1/auth/logout"): "authenticated",
     ("GET", "/api/v1/auth/me"): "authenticated",
+    ("GET", "/api/v1/units"): Role.VIEWER,
     ("GET", "/api/v1/suppliers"): Role.VIEWER,
     ("POST", "/api/v1/suppliers"): Role.ANALYST,
     ("GET", "/api/v1/suppliers/{supplier_id}"): Role.VIEWER,

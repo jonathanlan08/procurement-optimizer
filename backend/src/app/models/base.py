@@ -73,6 +73,16 @@ def org_identity_constraint(table_name: str) -> UniqueConstraint:
     return UniqueConstraint("organization_id", "id", name=f"uq_{table_name}_org_identity")
 
 
+class OrgOwnedBase(PkMixin, OrgOwnedMixin, Base):
+    """Abstract base for every org-owned table: typed UUID pk + organization_id.
+
+    OrgScopedRepository is generic over subclasses of this, which is what lets
+    mypy verify the org filter statically instead of trusting a runtime check.
+    """
+
+    __abstract__ = True
+
+
 class ArchivableMixin:
     """Soft delete. Business data is never hard-deleted."""
 

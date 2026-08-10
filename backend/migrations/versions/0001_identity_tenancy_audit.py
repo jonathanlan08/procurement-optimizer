@@ -184,6 +184,13 @@ def upgrade() -> None:
         FOR EACH ROW EXECUTE FUNCTION audit_events_append_only();
         """
     )
+    op.execute(
+        """
+        CREATE TRIGGER trg_audit_events_no_truncate
+        BEFORE TRUNCATE ON audit_events
+        FOR EACH STATEMENT EXECUTE FUNCTION audit_events_append_only();
+        """
+    )
 
     op.create_table(
         "jobs",
@@ -212,6 +219,7 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     op.drop_table("jobs")
+    op.execute("DROP TRIGGER trg_audit_events_no_truncate ON audit_events")
     op.execute("DROP TRIGGER trg_audit_events_append_only ON audit_events")
     op.execute("DROP FUNCTION audit_events_append_only()")
     op.drop_table("audit_events")

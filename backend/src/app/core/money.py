@@ -90,9 +90,12 @@ def parse_at_scale(raw: str | int | Decimal, scale: Decimal) -> Decimal:
     API rule: scale beyond the column is a validation error, never a silent round.
     """
     value = parse_decimal(raw)
-    exponent = -scale.as_tuple().exponent
-    value_exp = -value.as_tuple().exponent
-    if value_exp > exponent:
+    scale_exp = scale.as_tuple().exponent
+    value_exp = value.as_tuple().exponent
+    if not isinstance(scale_exp, int) or not isinstance(value_exp, int):
+        # 'n'/'N'/'F' exponents mean NaN/Infinity; parse_decimal already rejects
+        raise InvalidDecimalString(str(raw))
+    if -value_exp > -scale_exp:
         raise ScaleExceeded(str(raw), scale)
     return value
 

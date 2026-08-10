@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+import uuid
 from dataclasses import dataclass
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session as SaSession
@@ -13,6 +14,7 @@ from app.core.config import Settings
 from app.core.errors import UnauthenticatedError
 from app.core.ids import IdGenerator
 from app.core.security import (
+    hash_password,
     hash_session_token,
     new_csrf_token,
     new_session_token,
@@ -22,6 +24,12 @@ from app.models.identity import Organization, OrganizationMembership, Role, Sess
 
 MAX_FAILED_LOGINS = 8
 LOCKOUT = timedelta(minutes=15)
+IDLE_TIMEOUT = timedelta(hours=2)
+
+# Verified against when the account is absent/locked so that every login attempt
+# performs exactly one argon2 verification (timing-oracle defence). Generated at
+# import time so it is always a structurally valid hash.
+_DUMMY_HASH = hash_password("never-a-valid-password-9f3e")
 
 
 @dataclass(frozen=True, slots=True)
@@ -57,7 +65,11 @@ class AuthService:
         ip_address: str | None,
         user_agent: str | None,
     ) -> LoginResult:
-        """Constant-shape failure: every failure path raises the same error."""
+        """Constant-shape, constant-work failure: every failure path raises the
+        same error, and a password verification runs even when the user does not
+        exist (timing-oracle defence). Failed-login counters are written in
+        their OWN transaction because the request transaction is rolled back
+        when this method raises."""
         now = self._clock.now()
         user = self._db.execute(
             select(User).where(User.email == email.strip().lower())
@@ -65,15 +77,13 @@ class AuthService:
 
         failure = UnauthenticatedError("Invalid email or password.")
         if user is None or not user.is_active or user.archived_at is not None:
+            verify_password(_DUMMY_HASH, password)  # equalize timing
             raise failure
         if user.locked_until is not None and user.locked_until > now:
-            raise UnauthenticatedError("Account temporarily locked. Try again later.")
+            verify_password(_DUMMY_HASH, password)  # locked looks like wrong password
+            raise failure
         if not verify_password(user.password_hash, password):
-            user.failed_login_count += 1
-            if user.failed_login_count >= MAX_FAILED_LOGINS:
-                user.locked_until = now + LOCKOUT
-                user.failed_login_count = 0
-            user.updated_at = now
+            self._record_failed_login(user.id, now)
             raise failure
 
         membership = self._db.execute(
@@ -119,6 +129,24 @@ class AuthService:
             role=member.role,
         )
 
+    def _record_failed_login(self, user_id: uuid.UUID, now: datetime) -> None:
+        """Persist the failure counter in its OWN transaction: the request
+        transaction is rolled back when login raises, so writing there would
+        make lockout unreachable (Phase 1 review finding #1)."""
+        bind = self._db.get_bind()
+        with SaSession(bind) as side:
+            user = side.execute(
+                select(User).where(User.id == user_id).with_for_update()
+            ).scalar_one_or_none()
+            if user is None:
+                return
+            user.failed_login_count += 1
+            if user.failed_login_count >= MAX_FAILED_LOGINS:
+                user.locked_until = now + LOCKOUT
+                user.failed_login_count = 0
+            user.updated_at = now
+            side.commit()
+
     def resolve(self, raw_token: str | None) -> AuthenticatedSession:
         """Cookie token -> live session + user + role, or UnauthenticatedError."""
         if not raw_token:
@@ -127,7 +155,12 @@ class AuthService:
         sess = self._db.execute(
             select(Session).where(Session.token_sha256 == hash_session_token(raw_token))
         ).scalar_one_or_none()
-        if sess is None or sess.revoked_at is not None or sess.absolute_expires_at <= now:
+        if (
+            sess is None
+            or sess.revoked_at is not None
+            or sess.absolute_expires_at <= now
+            or sess.last_seen_at + IDLE_TIMEOUT <= now  # idle expiry
+        ):
             raise UnauthenticatedError()
 
         row = self._db.execute(

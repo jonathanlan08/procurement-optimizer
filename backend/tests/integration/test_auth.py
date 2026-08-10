@@ -172,3 +172,79 @@ class TestSessionUse:
         assert resp.headers["X-Frame-Options"] == "DENY"
         assert "default-src 'none'" in resp.headers["Content-Security-Policy"]
         assert resp.headers["X-Request-ID"]
+
+
+class TestReviewFindings:
+    """Regression tests for the Phase 1 independent-review HIGH findings."""
+
+    def test_failed_login_counter_survives_rollback(
+        self, client: TestClient, account, migrated_engine
+    ) -> None:
+        # finding #1: the counter is written in its own transaction, so it must
+        # persist even though the login request's transaction rolls back
+        from sqlalchemy import text as sqltext
+
+        for _ in range(3):
+            resp = client.post(
+                "/api/v1/auth/login",
+                json={"email": account["email"], "password": "wrong"},
+                headers={"Origin": ORIGIN},
+            )
+            assert resp.status_code == 401
+        with migrated_engine.connect() as conn:
+            count = conn.execute(
+                sqltext("SELECT failed_login_count FROM users WHERE email = :e"),
+                {"e": account["email"]},
+            ).scalar_one()
+        assert count == 3
+
+    def test_lockout_engages_and_blocks_correct_password(
+        self, client: TestClient, account
+    ) -> None:
+        from app.services.auth import MAX_FAILED_LOGINS
+
+        for _ in range(MAX_FAILED_LOGINS):
+            client.post(
+                "/api/v1/auth/login",
+                json={"email": account["email"], "password": "wrong"},
+                headers={"Origin": ORIGIN},
+            )
+        # correct password now fails with the SAME generic error (no oracle)
+        resp = client.post(
+            "/api/v1/auth/login",
+            json={"email": account["email"], "password": PASSWORD},
+            headers={"Origin": ORIGIN},
+        )
+        assert resp.status_code == 401
+        assert resp.json()["error"]["message"] == "Invalid email or password."
+
+    def test_me_returns_csrf_token_for_refresh_recovery(
+        self, client: TestClient, account
+    ) -> None:
+        # finding #4: after a page refresh the SPA restores the CSRF token
+        # from /me; simulate by discarding the login response's token
+        _login(client, account)
+        me = client.get("/api/v1/auth/me").json()
+        assert me["csrf_token"]
+        assert me["organization_name"]
+        resp = client.post(
+            "/api/v1/auth/logout",
+            headers={"Origin": ORIGIN, "X-CSRF-Token": me["csrf_token"]},
+        )
+        assert resp.status_code == 200
+
+    def test_login_success_writes_audit_event(
+        self, client: TestClient, account, migrated_engine
+    ) -> None:
+        from sqlalchemy import text as sqltext
+
+        _login(client, account)
+        with migrated_engine.connect() as conn:
+            n = conn.execute(
+                sqltext(
+                    "SELECT count(*) FROM audit_events WHERE organization_id = :org"
+                    " AND event_type = 'auth.login_succeeded'"
+                ),
+                {"org": account["org_id"]},
+            ).scalar_one()
+        assert n >= 1

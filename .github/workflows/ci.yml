@@ -33,6 +33,8 @@ jobs:
         run: uv sync --locked
       - name: Lint (ruff)
         run: uv run ruff check .
+      - name: Typecheck (mypy strict)
+        run: uv run mypy
       - name: Migration cycle on empty database (up -> down -> up)
         env:
           PO_DATABASE_URL: postgresql+psycopg://postgres:postgres@localhost:5432/procurement_test

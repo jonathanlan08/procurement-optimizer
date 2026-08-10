@@ -6,8 +6,9 @@ import time
 import uuid
 from collections import defaultdict, deque
 
-from fastapi import FastAPI, Request, Response
+from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
+from starlette.types import ASGIApp
 
 from app.core.config import Environment, Settings
 from app.core.errors import RateLimitedError
@@ -31,7 +32,7 @@ class RequestIdMiddleware(BaseHTTPMiddleware):
 
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
-    def __init__(self, app: FastAPI, *, environment: Environment) -> None:
+    def __init__(self, app: ASGIApp, *, environment: Environment) -> None:
         super().__init__(app)
         self._hsts = environment is Environment.PROD
 
@@ -57,7 +58,7 @@ class OriginCheckMiddleware(BaseHTTPMiddleware):
     which has no session yet and would otherwise be exposed to login-CSRF.
     The per-session CSRF token check in deps.py remains as the second factor."""
 
-    def __init__(self, app: FastAPI, *, settings: Settings) -> None:
+    def __init__(self, app: ASGIApp, *, settings: Settings) -> None:
         super().__init__(app)
         self._allowed = settings.allowed_origins
 
@@ -92,11 +93,12 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
     """Sliding-window in-memory limiter, per client IP. Single-node v0.1 scope;
     a multi-node deployment needs a shared store (documented limitation)."""
 
-    def __init__(self, app: FastAPI, *, settings: Settings) -> None:
+    def __init__(self, app: ASGIApp, *, settings: Settings) -> None:
         super().__init__(app)
         self._general = settings.rate_limit_per_minute
         self._auth = settings.rate_limit_auth_per_minute
         self._hits: dict[str, deque[float]] = defaultdict(deque)
+        self._max_keys = 10_000  # bound memory under address-spraying
 
     async def dispatch(
         self, request: Request, call_next: RequestResponseEndpoint
@@ -107,6 +109,12 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         key = f"{'auth' if is_auth else 'general'}:{ip}"
 
         now = time.monotonic()
+        if key not in self._hits and len(self._hits) >= self._max_keys:
+            # evict entries whose windows have fully expired; if none have,
+            # drop the oldest-inserted (dict preserves insertion order)
+            stale = [k for k, w in self._hits.items() if not w or now - w[-1] > 60.0]
+            for k in stale[:1000] or list(self._hits)[:100]:
+                self._hits.pop(k, None)
         window = self._hits[key]
         while window and now - window[0] > 60.0:
             window.popleft()

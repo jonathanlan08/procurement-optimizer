@@ -38,9 +38,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // csrf token is memory-only; a hard refresh requires re-login by design
+    // a hard refresh keeps the cookie but loses the in-memory CSRF token;
+    // /me returns it so the session survives refreshes
     get<SessionInfo>("/api/v1/auth/me")
-      .then((s) => setSession(s))
+      .then((s) => {
+        setCsrfToken(s.csrf_token ?? null);
+        setSession(s);
+      })
       .catch(() => setSession(null))
       .finally(() => setLoading(false));
   }, []);

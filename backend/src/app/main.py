@@ -15,9 +15,10 @@ from app.api.middleware import (
 )
 from app.api.v1.auth import router as auth_router
 from app.core.clock import Clock, SystemClock
-from app.core.config import Settings, load_settings
+from app.core.config import Environment, Settings, load_settings
 from app.core.errors import AppError, ErrorDetail, SafeInternalError, ValidationAppError
 from app.core.ids import IdGenerator, RandomIdGenerator
+from app.core.logging import configure_logging
 from app.db import build_engine, build_session_factory
 
 API_PREFIX = "/api/v1"
@@ -32,12 +33,14 @@ def create_app(
     settings = settings or load_settings()
     clock = clock or SystemClock()
     ids = ids or RandomIdGenerator()
+    configure_logging("INFO" if settings.environment is not Environment.TEST else "WARNING")
 
+    expose_docs = settings.environment is not Environment.PROD or settings.demo_mode
     app = FastAPI(
         title="Procurement Optimizer API",
         version="0.1.0",
-        docs_url="/api/docs",
-        openapi_url="/api/openapi.json",
+        docs_url="/api/docs" if expose_docs else None,
+        openapi_url="/api/openapi.json" if expose_docs else None,
     )
     app.state.settings = settings
     app.state.clock = clock
@@ -62,10 +65,10 @@ def create_app(
     )
 
     def _now_iso(request: Request) -> str:
-        return request.app.state.clock.now().isoformat()
+        return clock.now().isoformat()
 
     def _request_id(request: Request) -> str:
-        return getattr(request.state, "request_id", "")
+        return str(getattr(request.state, "request_id", ""))
 
     @app.exception_handler(AppError)
     def handle_app_error(request: Request, exc: AppError) -> JSONResponse:

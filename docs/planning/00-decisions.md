@@ -87,3 +87,42 @@ calculation correctness, solver honesty, and document security are never descope
 The map in `09-task-decomposition.md` §10 is **ratified**. In this build, "principal-owned" means
 written by me directly; "delegable" tasks go to sonnet-tier subagents with the task template from
 the operating model; **R**-marked paths require my diff review before commit.
+
+## 7. Phase 1 independent-review outcome (2026-08-10)
+
+Verdict: APPROVE-WITH-FIXES. All findings triaged; resolution status:
+
+- **#1 lockout rollback (HIGH)** — FIXED: failure counters write in their own
+  transaction (`AuthService._record_failed_login`, `SELECT ... FOR UPDATE`);
+  regression-tested against rollback.
+- **#2 timing oracle (HIGH)** — FIXED: dummy-hash verification on absent/locked
+  accounts; locked accounts return the generic failure message.
+- **#3 isolation unwired (HIGH)** — FIXED: `OrgOwnedBase` abstract base (typed
+  pk + organization_id) adopted by AuditEvent/Job; repository base gains
+  post-fetch check, `get_or_raise`, `list_page`; permission matrix + coverage
+  test land (tasks 1.12/1.13); composite `UNIQUE (organization_id, id)` will be
+  created by each Phase 2+ business-table migration (0001's tables have no
+  business children, so retrofitting was declined).
+- **#4 CSRF after refresh (MEDIUM)** — FIXED: `/me` returns `csrf_token`;
+  browser-verified (login → hard reload → mutation succeeds).
+- **#5 auth audit (MEDIUM)** — PARTIAL by ruling: `auth.login_succeeded` and
+  `auth.logout` are audit events; failed logins go to the structured security
+  log because the org-scoped audit table cannot represent org-less failures
+  (documented deviation for SECURITY.md).
+- **#6 dead logging (MEDIUM)** — FIXED: `configure_logging` wired in
+  `create_app`; security log used for failed logins.
+- **#7 idle expiry (MEDIUM)** — FIXED: 2h idle timeout in `resolve`. Session
+  purge job remains roadmap.
+- **#8 CI gaps (MEDIUM)** — PARTIAL: mypy --strict now clean (26 files) and in
+  CI. pip-audit / licence gate / OpenAPI drift jobs are scheduled for their
+  phases (drift job lands with the first generated client in Phase 2).
+- **#9 money (LOW)** — no defect found by review; `places=0` covered by tests.
+- **#10 misc (LOW)** — FIXED: InvalidHashError caught; docs gated off in prod
+  (unless demo_mode); TRUNCATE trigger added to 0001 (edited pre-release by
+  principal ruling — append-only applies from first release); rate-limiter key
+  eviction bound. REVOKE-based audit grants deferred: dev runs as table owner;
+  documented for production in SECURITY.md.
+
+Migration 0001 was modified pre-release (TRUNCATE trigger). The dev database
+was rebuilt from scratch to verify; append-only discipline for migrations
+begins at v0.1.0.

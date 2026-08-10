@@ -12,18 +12,15 @@ from sqlalchemy import ForeignKey, SmallInteger, Text
 from sqlalchemy.dialects.postgresql import INET, JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.models.base import Base, PkMixin
+from app.models.base import OrgOwnedBase
 
 
-class AuditEvent(PkMixin, Base):
+class AuditEvent(OrgOwnedBase):
     """Append-only. No updated_at, no archived_at. UPDATE/DELETE are blocked by a
     database trigger installed in migration 0001; the ORM must never mutate rows."""
 
     __tablename__ = "audit_events"
 
-    organization_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("organizations.id", ondelete="RESTRICT"), index=True
-    )
     actor_user_id: Mapped[uuid.UUID | None] = mapped_column(
         ForeignKey("users.id", ondelete="RESTRICT"), default=None
     )
@@ -52,12 +49,9 @@ JOB_STATE_ENUM = SaEnum(
 )
 
 
-class Job(PkMixin, Base):
+class Job(OrgOwnedBase):
     __tablename__ = "jobs"
 
-    organization_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("organizations.id", ondelete="RESTRICT"), index=True
-    )
     kind: Mapped[str] = mapped_column(Text())
     state: Mapped[JobState] = mapped_column(JOB_STATE_ENUM, default=JobState.PENDING)
     payload: Mapped[dict[str, Any] | None] = mapped_column(JSONB(), default=None)

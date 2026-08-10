@@ -14,7 +14,7 @@ import hmac
 import secrets
 
 from argon2 import PasswordHasher
-from argon2.exceptions import VerificationError, VerifyMismatchError
+from argon2.exceptions import InvalidHashError, VerificationError, VerifyMismatchError
 
 _hasher = PasswordHasher()  # argon2id defaults (time_cost=3, memory_cost=64MiB)
 
@@ -29,7 +29,8 @@ def hash_password(password: str) -> str:
 def verify_password(password_hash: str, candidate: str) -> bool:
     try:
         return _hasher.verify(password_hash, candidate)
-    except (VerifyMismatchError, VerificationError):
+    except (VerifyMismatchError, VerificationError, InvalidHashError):
+        # a corrupt stored hash is a failed login, never a 500
         return False
 
 

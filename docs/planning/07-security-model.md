@@ -160,6 +160,13 @@ The CSP has no `unsafe-inline`; Vite must be configured to avoid inline scripts/
 production build, or a nonce must be injected. This is a real build constraint and is called out as a
 Phase-1 task, because retrofitting a strict CSP late is painful.
 
+**Known conflict:** the approved design direction
+(`design-system/procurement-optimizer/MASTER.md`) loads Lexend and Source Sans 3 from the Google Fonts
+CDN. That requires `style-src`/`font-src https://fonts.googleapis.com https://fonts.gstatic.com`,
+breaks the no-network-egress guarantee of the demo and E2E suite, and leaks visitor IPs to a third
+party. Recommendation: self-host via `@fontsource` npm packages, keep the CSP strict, keep the
+typefaces. See `01-architecture.md` §9.1.
+
 **CORS**: explicit origin allowlist from settings, `allow_credentials=true`, methods and headers
 enumerated. Never `*` with credentials (which browsers reject anyway) and never a reflected origin.
 

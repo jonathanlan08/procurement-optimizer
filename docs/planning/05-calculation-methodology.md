@@ -366,9 +366,15 @@ FX: 1 USD = 0.92 EUR. RFQ base = USD.
 | import | `0.035 × (5706.521740 + 375.000000)` | `212.853261` |
 | quality risk | `0.02 × 5706.521740` | `114.130435` |
 | delay risk | `0 × …` | `0.000000` |
-| financing | `5706.521740 × 0.08 × (30 − 60)/365` | `−37.520000` (benefit) |
-| **total** | sum of the seven | **`7240.550653`** |
-| effective unit | `7240.550653 / 500` | `14.48110131` |
+| financing | `5706.521740 × 0.08 × (30 − 60)/365` | `−37.522335` (benefit) |
+| **total** | sum of the seven | **`7240.548318`** |
+| effective unit | `7240.548318 / 500` | `14.48109664` |
+
+> **Principal's correction (2026-08-10):** the original draft stated financing `−37.520000` and
+> total `7240.550653`. Hand verification: `0.08 × (30−60)/365 = −0.006575342465…`;
+> `5706.521740 × 0.006575342465… = 37.52233473…` → `−37.522335` at 6 dp. The implementation test
+> must assert the corrected strings (final exact Decimals to be pinned by the implementation's
+> quantization policy at each step).
 
 Every intermediate above is quantized at its stated scale before summing; the test asserts the exact
 strings, not approximate equality. Any change to these numbers must be a deliberate

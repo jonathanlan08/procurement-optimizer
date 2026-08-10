@@ -277,6 +277,27 @@ resolve `DATABASE_URL` through the same code path — see `08-test-strategy.md` 
 Every dependency choice above must be recorded with its licence in `docs/DEPENDENCIES.md` and
 checked in CI (`pip-licenses --fail-on 'AGPL*;GPL-3.0*'`).
 
+### 9.1 Conflict found with the approved design direction
+
+`design-system/procurement-optimizer/MASTER.md` (added to the repo during this planning session)
+specifies Lexend + Source Sans 3 loaded via a **Google Fonts CDN `@import`**. That conflicts with two
+commitments in this plan and must be resolved before Phase 1 frontend work:
+
+- the strict CSP of `07-security-model.md` §7 (`style-src 'self'`, no external hosts) would block it;
+- the demo and E2E suite are required to run with **no network egress** — a CDN font makes the demo
+  render differently offline and leaks visitor IPs to a third party.
+
+**Recommendation:** keep the exact typefaces, self-host them. `@fontsource/lexend` and
+`@fontsource-variable/source-sans-3` are npm packages under the SIL Open Font License; they are
+bundled by Vite, subset-able, and require no CSP relaxation. This is a one-line change now and a
+CSP-weakening argument later.
+
+Second, smaller discrepancy: the design system bands extraction confidence at `≥ 0.9 / 0.6–0.9 / < 0.6`
+while `04-document-pipeline.md` §7 uses `≥ 0.95 / 0.60–0.95 / < 0.60`. The two must be reconciled to a
+single source of truth (I recommend the stricter 0.95, with the critical-field override that makes the
+exact threshold largely moot for money fields). Whichever is chosen, the band boundaries belong in one
+backend constant that the design tokens reference, not in two documents.
+
 ---
 
 ## 10. Critique of the principal's provisional decisions

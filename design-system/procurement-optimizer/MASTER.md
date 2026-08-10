@@ -40,9 +40,12 @@
 | Negative delta | `#DC2626` | `--color-negative` | Cost increases, unfavorable deltas |
 | Warning | `#B45309` | `--color-warning` | Low-confidence extractions, assumption-dependent results |
 | Info/neutral | `#0369A1` | `--color-info` | Informational badges, calculated-value labels |
-| Confidence high | `#15803D` | `--color-conf-high` | Extraction confidence ≥ 0.9 |
-| Confidence medium | `#B45309` | `--color-conf-med` | Extraction confidence 0.6–0.9 (requires review) |
-| Confidence low | `#DC2626` | `--color-conf-low` | Extraction confidence < 0.6 (must confirm) |
+| Confidence high | `#15803D` | `--color-conf-high` | Extraction confidence ≥ 0.95 |
+| Confidence medium | `#B45309` | `--color-conf-med` | Extraction confidence 0.60–0.95 (requires review) |
+| Confidence low | `#DC2626` | `--color-conf-low` | Extraction confidence < 0.60 (must confirm) |
+
+> Confidence band thresholds (0.95 / 0.60) are defined once in the backend
+> (`app/domain/confidence.py` constant) and mirrored here; the backend constant is the source of truth.
 
 Data-source provenance labels (supplier-provided / user assumption / calculated / AI narrative /
 missing) each get a distinct badge style; never rely on color alone — always include a text label.
@@ -55,9 +58,10 @@ missing) each get a distinct badge style; never rely on color alone — always i
 - **Google Fonts:** [Lexend + Source Sans 3](https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&family=Source+Sans+3:wght@300;400;500;600;700&display=swap)
 
 **CSS Import:**
-```css
-@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&family=Source+Sans+3:wght@300;400;500;600;700&display=swap');
-```
+
+> **Principal's ruling:** fonts are **self-hosted via `@fontsource/lexend` and
+> `@fontsource/source-sans-3`** — no Google Fonts CDN. The strict CSP forbids external hosts and
+> the demo/E2E suite must run with zero network egress. Do not add the CDN `@import`.
 
 ### Spacing Variables
 

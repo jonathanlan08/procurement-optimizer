@@ -103,6 +103,18 @@ PERMISSIONS: dict[tuple[str, str], PermissionLevel] = {
     ("POST", "/api/v1/rfqs/{rfq_id}/suppliers"): Role.ANALYST,
     ("DELETE", "/api/v1/rfqs/{rfq_id}/suppliers/{rfq_supplier_id}"): Role.ANALYST,
     ("POST", "/api/v1/rfqs/{rfq_id}/suppliers/{rfq_supplier_id}/reinstate"): Role.ANALYST,
+    # Quotes (03-api-contract.md §4.11), manual entry only. List/get are
+    # viewer+; create/update/supersede are analyst+ (mirrors the RFQ mutation
+    # gate). `archive` has no contract-table entry of its own (see
+    # api/v1/quotes.py module docstring for why this router still implements
+    # it); gated administrator+ like every other archivable resource's
+    # archive route (suppliers/parts/BOMs), not the analyst+ level of create.
+    ("GET", "/api/v1/rfqs/{rfq_id}/quotes"): Role.VIEWER,
+    ("POST", "/api/v1/rfqs/{rfq_id}/quotes"): Role.ANALYST,
+    ("GET", "/api/v1/quotes/{quote_id}"): Role.VIEWER,
+    ("PATCH", "/api/v1/quotes/{quote_id}"): Role.ANALYST,
+    ("POST", "/api/v1/quotes/{quote_id}/supersede"): Role.ANALYST,
+    ("POST", "/api/v1/quotes/{quote_id}/archive"): Role.ADMINISTRATOR,
 }
 
 # Routes that are org-scoped resources (subject to the 404 cross-org matrix
@@ -117,4 +129,5 @@ ORG_SCOPED_RESOURCES: list[str] = [
     "boms",
     "exchange_rates",
     "rfqs",
+    "quotes",
 ]

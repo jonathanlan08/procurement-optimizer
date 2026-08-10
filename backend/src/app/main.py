@@ -18,6 +18,8 @@ from app.api.v1.boms import router as boms_router
 from app.api.v1.fx import router as fx_router
 from app.api.v1.part_imports import router as part_imports_router
 from app.api.v1.parts import router as parts_router
+from app.api.v1.quotes import rfq_quotes_router
+from app.api.v1.quotes import router as quotes_router
 from app.api.v1.rfqs import router as rfqs_router
 from app.api.v1.supplier_contacts import router as supplier_contacts_router
 from app.api.v1.supplier_performance import router as supplier_performance_router
@@ -122,5 +124,7 @@ def create_app(
     app.include_router(boms_router, prefix=API_PREFIX)
     app.include_router(fx_router, prefix=API_PREFIX)
     app.include_router(rfqs_router, prefix=API_PREFIX)
+    app.include_router(rfq_quotes_router, prefix=API_PREFIX)
+    app.include_router(quotes_router, prefix=API_PREFIX)
 
     return app

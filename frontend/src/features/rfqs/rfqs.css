@@ -1,0 +1,316 @@
+/* RFQ-specific chrome layered on top of components/workspace.css +
+   components/badges.css (both imported by RfqsPage.tsx). Kept in its own
+   file rather than editing either shared stylesheet (both are outside this
+   task's edit scope) — mirrors features/boms/boms.css's own rationale. */
+
+/* Status badges: draft/open/under_review/awarded/closed/archived need six
+   visually distinct states (MASTER.md "never rely on color alone" — every
+   badge here still carries its own text label). draft/closed/archived are
+   all "muted" in spirit but differentiated by background, foreground token,
+   and (for archived) a dashed border, rather than inventing three more hues
+   the palette doesn't define. */
+.rfq-badge--draft {
+  background: var(--color-muted);
+  color: var(--color-secondary);
+  border-color: var(--color-border);
+}
+
+.rfq-badge--open {
+  background: rgba(3, 105, 161, 0.1);
+  color: var(--color-info);
+  border-color: rgba(3, 105, 161, 0.28);
+}
+
+.rfq-badge--under_review {
+  background: rgba(180, 83, 9, 0.1);
+  color: var(--color-warning);
+  border-color: rgba(180, 83, 9, 0.28);
+}
+
+.rfq-badge--awarded {
+  background: rgba(21, 128, 61, 0.1);
+  color: var(--color-positive);
+  border-color: rgba(21, 128, 61, 0.28);
+}
+
+.rfq-badge--closed {
+  background: var(--color-background);
+  color: var(--color-muted-foreground);
+  border-color: var(--color-border);
+}
+
+.rfq-badge--archived {
+  background: var(--color-muted);
+  color: var(--color-muted-foreground);
+  border-color: var(--color-border);
+  border-style: dashed;
+}
+
+/* Toolbar status filter — a row of toggle chips (not a native <select
+   multiple>, which is a poor fit for this dense a 6-option toolbar and hard
+   to scan at a glance). Each button independently toggles its status in/out
+   of the filter set. */
+.status-filter {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.status-filter-chip {
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px var(--space-md);
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-muted-foreground);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.status-filter-chip:hover {
+  border-color: var(--color-accent);
+  color: var(--color-foreground);
+}
+
+.status-filter-chip:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.status-filter-chip[aria-pressed="true"] {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+/* Create-form mode toggle (inline lines vs. from-BOM explosion) — a two-way
+   segmented control, mutually exclusive by construction (radio-like via
+   aria-pressed pairs, not two independent checkboxes). */
+.mode-toggle {
+  display: inline-flex;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  width: fit-content;
+}
+
+.mode-toggle-btn {
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  padding: var(--space-sm) var(--space-lg);
+  border: none;
+  background: var(--color-surface);
+  color: var(--color-secondary);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.mode-toggle-btn:not(:last-child) {
+  border-right: 1px solid var(--color-border);
+}
+
+.mode-toggle-btn[aria-pressed="true"] {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+/* Line editor / line list rows (create form + drawer lines section) —
+   same shape as features/boms/boms.css's `.bom-line-row`, renamed for this
+   feature rather than importing boms.css into a sibling feature directory. */
+.rfq-line-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.rfq-line-row {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-lg);
+  background: var(--color-background);
+}
+
+.rfq-line-row-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-md);
+}
+
+.rfq-part-picker {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+/* Wraps the drawer's "add a line" inline form (AddRfqLineForm) below the
+   read-only lines table, and the create form's line-add affordance — a
+   dedicated class instead of an inline style. */
+.rfq-add-line-wrap {
+  margin-top: var(--space-lg);
+}
+
+/* Read-only lines table (drawer detail) — same tabular-nums/right-align
+   convention as boms.css's `.bom-lines-table`. */
+.rfq-lines-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.rfq-lines-table th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--color-border);
+  padding: var(--space-sm) var(--space-md);
+  white-space: nowrap;
+}
+
+.rfq-lines-table td {
+  padding: var(--space-md);
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: top;
+}
+
+.rfq-lines-table td[data-align="right"],
+.rfq-lines-table th[data-align="right"] {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.rfq-lines-table tr:last-child td {
+  border-bottom: none;
+}
+
+.rfq-lines-table tr.is-muted td {
+  opacity: 0.6;
+}
+
+.rfq-line-edit-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+}
+
+/* Status timeline — compact vertical list, most-recent last (chronological
+   read order), each entry a single line of "from -> to", actor, note. */
+.status-timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.status-timeline-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-md);
+  border-left: 2px solid var(--color-border);
+  padding-left: var(--space-lg);
+}
+
+.status-timeline-transition {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-foreground);
+}
+
+.status-timeline-meta {
+  font-size: 11px;
+  color: var(--color-muted-foreground);
+}
+
+.status-timeline-note {
+  font-size: 12px;
+  color: var(--color-secondary);
+}
+
+/* Status-change action panel — mirrors boms.css's archive-panel shape:
+   optional note field + Confirm/Cancel. */
+.status-change-panel {
+  margin-top: var(--space-xl);
+  padding: var(--space-lg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-background);
+}
+
+.status-change-panel textarea {
+  width: 100%;
+  font: inherit;
+  font-size: 13px;
+  padding: var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  resize: vertical;
+  min-height: 48px;
+}
+
+/* Invited-suppliers list */
+.rfq-supplier-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.rfq-supplier-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+}
+
+.rfq-supplier-row.is-excluded {
+  opacity: 0.6;
+}
+
+/* Name/meta + action buttons on one line; the exclude-reason panel (when
+   open) renders as a sibling block below, at full row width — see
+   `.rfq-supplier-row`'s column flex-direction above. */
+.rfq-supplier-row-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.rfq-supplier-row-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rfq-supplier-row-actions {
+  display: flex;
+  gap: var(--space-sm);
+  flex-shrink: 0;
+}
+
+.lock-hint {
+  font-size: 12px;
+  color: var(--color-muted-foreground);
+  margin: 0 0 var(--space-md);
+}

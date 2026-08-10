@@ -10,6 +10,7 @@ const NAV = [
   { to: "/parts", label: "Parts" },
   { to: "/boms", label: "BOMs" },
   { to: "/rfqs", label: "RFQs" },
+  { to: "/fx", label: "FX rates" }, // ALLOWED insertion: one NAV entry
   { to: "/scenarios", label: "Scenarios" },
   { to: "/reports", label: "Reports" },
   { to: "/audit", label: "Audit log" },

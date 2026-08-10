@@ -74,6 +74,7 @@ import { isAnalystOrAbove } from "../../lib/roles";
 import { useDebouncedValue } from "../../lib/useDebouncedValue";
 import { zodResolver } from "../../lib/zodResolver";
 import { type PartResponse, usePart, useParts } from "../parts/api";
+import { QuotesSection } from "../quotes/QuotesSection"; // ALLOWED insertion: quote entry, mounted below
 import { type SupplierResponse, useSupplier, useSuppliers } from "../suppliers/api";
 import { type UnitDefinitionResponse, useBom, useBoms, useUnits } from "../boms/api";
 import {
@@ -1545,6 +1546,8 @@ function RfqDetail({
       <RfqLinesSection rfq={rfq} unitsById={unitsById} units={units} canEdit={canEditNow} />
 
       <RfqSupplierSection rfq={rfq} canWrite={canWrite} />
+
+      <QuotesSection rfq={rfq} /> {/* ALLOWED insertion: quote entry section */}
 
       <div className="form-actions">
         <button type="button" className="btn-ghost-sm" onClick={onClosed}>

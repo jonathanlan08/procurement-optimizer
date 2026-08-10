@@ -18,6 +18,10 @@ import "./Drawer.css";
 const FOCUSABLE_SELECTOR =
   'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
+// Stack of open drawer ids so Escape only closes the topmost drawer when
+// drawers are stacked (e.g. quote entry on top of the RFQ detail drawer).
+const drawerStack: symbol[] = [];
+
 export interface DrawerProps {
   open: boolean;
   onClose: () => void;
@@ -29,10 +33,12 @@ export interface DrawerProps {
 export function Drawer({ open, onClose, title, children, footer }: DrawerProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const previouslyFocused = useRef<HTMLElement | null>(null);
+  const drawerId = useRef<symbol>(Symbol("drawer"));
 
   useEffect(() => {
     if (!open) return;
 
+    drawerStack.push(drawerId.current);
     previouslyFocused.current = document.activeElement as HTMLElement | null;
     const panel = panelRef.current;
     const focusables = panel
@@ -45,6 +51,8 @@ export function Drawer({ open, onClose, title, children, footer }: DrawerProps) 
 
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") {
+        // only the topmost drawer in the stack responds
+        if (drawerStack[drawerStack.length - 1] !== drawerId.current) return;
         e.stopPropagation();
         onClose();
         return;
@@ -68,6 +76,8 @@ export function Drawer({ open, onClose, title, children, footer }: DrawerProps) 
 
     document.addEventListener("keydown", onKeyDown, true);
     return () => {
+      const idx = drawerStack.indexOf(drawerId.current);
+      if (idx >= 0) drawerStack.splice(idx, 1);
       document.removeEventListener("keydown", onKeyDown, true);
       document.body.style.overflow = originalOverflow;
       previouslyFocused.current?.focus();

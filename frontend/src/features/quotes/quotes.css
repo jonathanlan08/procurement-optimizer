@@ -1,0 +1,216 @@
+/* Quotes-specific chrome layered on top of components/workspace.css +
+   components/badges.css (both imported by QuotesSection.tsx). Kept in its
+   own file rather than editing either shared stylesheet — same rationale
+   as features/rfqs/rfqs.css / features/boms/boms.css's own headers. */
+
+/* Status badges: draft/in_review/confirmed/superseded/rejected — five
+   visually distinct states (MASTER.md "never rely on color alone" — every
+   badge still carries its own text label). `superseded` additionally gets
+   a muted row (`.quote-row.is-muted` below), per the task brief's "status
+   badge incl. superseded muted". */
+.quote-badge--draft {
+  background: rgba(3, 105, 161, 0.1);
+  color: var(--color-info);
+  border-color: rgba(3, 105, 161, 0.28);
+}
+
+.quote-badge--in_review {
+  background: rgba(180, 83, 9, 0.1);
+  color: var(--color-warning);
+  border-color: rgba(180, 83, 9, 0.28);
+}
+
+.quote-badge--confirmed {
+  background: rgba(21, 128, 61, 0.1);
+  color: var(--color-positive);
+  border-color: rgba(21, 128, 61, 0.28);
+}
+
+.quote-badge--superseded {
+  background: var(--color-muted);
+  color: var(--color-secondary);
+  border-color: var(--color-border);
+  border-style: dashed;
+}
+
+.quote-badge--rejected {
+  background: rgba(220, 38, 38, 0.08);
+  color: var(--color-destructive);
+  border-color: rgba(220, 38, 38, 0.28);
+}
+
+/* Quote list (drawer section, one row per quote against this RFQ) */
+.quote-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.quote-row.is-muted {
+  opacity: 0.6;
+}
+
+.quote-row-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  width: 100%;
+  font: inherit;
+  text-align: left;
+  padding: var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-foreground);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.quote-row-btn:hover {
+  border-color: var(--color-accent);
+  background: var(--color-background);
+}
+
+.quote-row-btn:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+
+.quote-row-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.quote-row-supplier {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Line editor (quote entry / supersede form) — same shape as
+   features/rfqs/rfqs.css's `.rfq-line-row`, renamed for this feature
+   rather than importing a sibling feature's stylesheet. */
+.quote-line-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+}
+
+.quote-line-row {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-lg);
+  background: var(--color-background);
+}
+
+.quote-line-row-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-md);
+}
+
+.quote-costs-toggle {
+  margin-top: var(--space-lg);
+}
+
+.quote-costs-grid {
+  margin-top: var(--space-lg);
+  padding-top: var(--space-lg);
+  border-top: 1px dashed var(--color-border);
+}
+
+/* Price-break editor (per line, inside the entry form) */
+.quote-price-break-editor {
+  margin-top: var(--space-lg);
+  padding-top: var(--space-lg);
+  border-top: 1px dashed var(--color-border);
+}
+
+.quote-price-break-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.quote-price-break-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  position: relative;
+}
+
+/* Live structural hint (overlap / non-final open-ended) — a warning color,
+   distinct from `.field-error`'s hard-validation red, since this renders
+   ahead of submit as the user types (mirrors QuoteService.
+   _validate_price_breaks's rules client-side; the server re-validates
+   authoritatively). Reuses `.field-error`'s layout, overridden to the
+   warning token. */
+.quote-price-break-hint {
+  flex-basis: 100%;
+  color: var(--color-warning);
+}
+
+/* Price-break read-only table (quote detail view) — same tabular-nums/
+   right-align convention as rfqs.css's `.rfq-lines-table`. */
+.quote-price-break-view {
+  margin-top: var(--space-md);
+}
+
+.quote-price-break-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  margin-top: var(--space-sm);
+}
+
+.quote-price-break-table th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--color-border);
+  padding: var(--space-sm) var(--space-md);
+  white-space: nowrap;
+}
+
+.quote-price-break-table td {
+  padding: var(--space-sm) var(--space-md);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.quote-price-break-table td[data-align="right"],
+.quote-price-break-table th[data-align="right"] {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.quote-price-break-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* Quote detail view — read-only per-line mirror of the entry form */
+.quote-line-view-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+}
+
+.quote-line-view-row {
+  padding: var(--space-lg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-background);
+}

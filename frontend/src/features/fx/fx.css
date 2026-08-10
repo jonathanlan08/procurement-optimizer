@@ -1,0 +1,57 @@
+/* FX-specific chrome layered on top of components/workspace.css +
+   components/badges.css + components/DataTable.css (all imported by
+   FxPanel.tsx). Kept in its own file rather than editing any shared
+   stylesheet — same rationale as every other feature's own css file. */
+
+/* Source badges — provenance, never color-alone (MASTER.md). `synthetic`
+   uses the info/neutral token (an unremarkable fixture answer); `manual`
+   uses the warning token (a human override of what the fixture would have
+   said, worth a second look) — same "info vs. warning" split MASTER.md's
+   own provenance-label guidance describes. */
+.fx-badge--synthetic {
+  background: rgba(3, 105, 161, 0.1);
+  color: var(--color-info);
+  border-color: rgba(3, 105, 161, 0.28);
+}
+
+.fx-badge--manual {
+  background: rgba(180, 83, 9, 0.1);
+  color: var(--color-warning);
+  border-color: rgba(180, 83, 9, 0.28);
+}
+
+.fx-badge--other {
+  background: var(--color-muted);
+  color: var(--color-secondary);
+  border-color: var(--color-border);
+}
+
+/* Effective-rate lookup row: base/quote/as-of controls in one line. */
+.fx-lookup-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-lg);
+  align-items: flex-end;
+  margin-bottom: var(--space-lg);
+}
+
+.fx-lookup-row .field {
+  width: 140px;
+}
+
+.fx-lookup-result {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-lg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-background);
+}
+
+.fx-lookup-rate {
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}

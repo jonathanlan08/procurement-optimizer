@@ -1,6 +1,7 @@
 import { Route, Routes } from "react-router-dom";
 import { RequireAuth } from "./auth/session";
 import { BomsPage } from "./features/boms/BomsPage";
+import { FxPanel } from "./features/fx/FxPanel"; // ALLOWED insertion: /fx route
 import { PartsPage } from "./features/parts/PartsPage";
 import { RfqsPage } from "./features/rfqs/RfqsPage";
 import { SuppliersPage } from "./features/suppliers/SuppliersPage";
@@ -24,6 +25,7 @@ export function App() {
         <Route path="parts" element={<PartsPage />} />
         <Route path="boms" element={<BomsPage />} />
         <Route path="rfqs" element={<RfqsPage />} />
+        <Route path="fx" element={<FxPanel />} /> {/* ALLOWED insertion */}
         <Route path="scenarios" element={<PlaceholderPage title="Scenarios" />} />
         <Route path="reports" element={<PlaceholderPage title="Reports" />} />
         <Route path="audit" element={<PlaceholderPage title="Audit log" />} />

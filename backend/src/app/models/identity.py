@@ -9,7 +9,7 @@ from enum import StrEnum
 from sqlalchemy import Boolean, ForeignKey, SmallInteger, Text
 from sqlalchemy import Enum as SaEnum
 from sqlalchemy.dialects.postgresql import INET
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import (
     CURRENCY_CHAR,
@@ -78,6 +78,11 @@ class OrganizationMembership(PkMixin, TimestampedMixin, VersionedMixin, Base):
     accepted_at: Mapped[datetime | None] = mapped_column(default=None)
     revoked_at: Mapped[datetime | None] = mapped_column(default=None)
 
+    # relationships are declared so the unit of work orders inserts by
+    # dependency; without them SQLAlchemy does not FK-sort across mappers
+    user: Mapped[User] = relationship(lazy="joined", innerjoin=True)
+    organization: Mapped[Organization] = relationship(lazy="joined", innerjoin=True)
+
 
 class Session(PkMixin, Base):
     __tablename__ = "sessions"
@@ -96,6 +101,9 @@ class Session(PkMixin, Base):
     last_seen_at: Mapped[datetime]
     absolute_expires_at: Mapped[datetime]
     revoked_at: Mapped[datetime | None] = mapped_column(default=None)
+
+    user: Mapped[User] = relationship(lazy="select")
+    organization: Mapped[Organization] = relationship(lazy="select")
 
 
 __all__ = [

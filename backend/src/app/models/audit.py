@@ -10,7 +10,7 @@ from typing import Any
 from sqlalchemy import ForeignKey, SmallInteger, Text
 from sqlalchemy import Enum as SaEnum
 from sqlalchemy.dialects.postgresql import INET, JSONB
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, PkMixin
 
@@ -69,3 +69,7 @@ class Job(PkMixin, Base):
     locked_until: Mapped[datetime | None] = mapped_column(default=None)
     created_at: Mapped[datetime]
     finished_at: Mapped[datetime | None] = mapped_column(default=None)
+
+# UOW insert-ordering relationships (see identity.py note)
+AuditEvent.organization = relationship("Organization", lazy="select")
+Job.organization = relationship("Organization", lazy="select")

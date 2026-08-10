@@ -22,6 +22,7 @@ dependencies = [
     "reportlab>=4.2",
     "ortools>=9.10",
     "rapidfuzz>=3.9",
+    "email-validator>=2.3.0",
 ]
 
 [dependency-groups]

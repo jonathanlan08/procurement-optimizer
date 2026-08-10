@@ -73,6 +73,9 @@ export async function api<T>(
       timestamp: new Date().toISOString(),
     });
   }
+  if (resp.status === 204 || resp.headers.get("content-length") === "0") {
+    return undefined as T;
+  }
   return (await resp.json()) as T;
 }
 

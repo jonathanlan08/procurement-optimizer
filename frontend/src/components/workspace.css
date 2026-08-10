@@ -1,0 +1,404 @@
+/* Shared "chrome" for feature workspaces: toolbar, forms, pagination, detail
+   layout, and small buttons. Used by both Suppliers and Parts pages so the
+   two workspaces stay visually identical per MASTER.md. */
+
+.page-toolbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-xl);
+  margin-bottom: var(--space-xl);
+  flex-wrap: wrap;
+}
+
+.page-heading h1 {
+  font-size: 18px;
+  margin-bottom: var(--space-xs);
+}
+
+.page-heading p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-muted-foreground);
+}
+
+.toolbar-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+  flex-wrap: wrap;
+}
+
+.search-field {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm) var(--space-lg);
+  background: var(--color-surface);
+  color: var(--color-muted-foreground);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.search-field:focus-within {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(3, 105, 161, 0.15);
+}
+
+.search-field input {
+  font: inherit;
+  font-size: 13px;
+  border: none;
+  outline: none;
+  background: none;
+  color: var(--color-foreground);
+  width: 200px;
+}
+
+.checkbox-field {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: 13px;
+  color: var(--color-secondary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox-field input {
+  cursor: pointer;
+  width: 14px;
+  height: 14px;
+  accent-color: var(--color-accent);
+}
+
+.category-field {
+  font: inherit;
+  font-size: 13px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm) var(--space-lg);
+  color: var(--color-foreground);
+  background: var(--color-surface);
+  width: 160px;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.category-field:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(3, 105, 161, 0.15);
+}
+
+/* buttons */
+
+.btn-primary-sm,
+.btn-secondary-sm,
+.btn-danger-sm,
+.btn-ghost-sm {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm) var(--space-lg);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast),
+    color var(--transition-fast), opacity var(--transition-fast);
+  border: 1px solid transparent;
+}
+
+.btn-primary-sm {
+  background: var(--color-accent);
+  color: var(--color-on-primary);
+}
+
+.btn-primary-sm:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.btn-secondary-sm {
+  background: transparent;
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.btn-secondary-sm:hover:not(:disabled) {
+  background: var(--color-muted);
+}
+
+.btn-danger-sm {
+  background: transparent;
+  border-color: var(--color-destructive);
+  color: var(--color-destructive);
+}
+
+.btn-danger-sm:hover:not(:disabled) {
+  background: rgba(220, 38, 38, 0.08);
+}
+
+.btn-ghost-sm {
+  background: transparent;
+  border-color: var(--color-border);
+  color: var(--color-secondary);
+}
+
+.btn-ghost-sm:hover:not(:disabled) {
+  border-color: var(--color-secondary);
+  color: var(--color-foreground);
+}
+
+.btn-primary-sm:disabled,
+.btn-secondary-sm:disabled,
+.btn-danger-sm:disabled,
+.btn-ghost-sm:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* pagination */
+
+.pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--space-lg);
+  font-size: 13px;
+  color: var(--color-muted-foreground);
+}
+
+.pagination-controls {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+/* forms */
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-xl) var(--space-lg);
+}
+
+.form-grid .field--full {
+  grid-column: 1 / -1;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.field-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-secondary);
+}
+
+.field-optional {
+  font-weight: 400;
+  color: var(--color-muted-foreground);
+}
+
+.field input[type="text"],
+.field input[type="number"],
+.field input:not([type]),
+.field textarea,
+.field select {
+  font: inherit;
+  font-size: 14px;
+  padding: var(--space-md) var(--space-lg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-foreground);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.field input:focus,
+.field textarea:focus,
+.field select:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(3, 105, 161, 0.15);
+}
+
+.field input[aria-invalid="true"],
+.field textarea[aria-invalid="true"] {
+  border-color: var(--color-destructive);
+}
+
+.field-error {
+  font-size: 12px;
+  color: var(--color-destructive);
+}
+
+.field-checkbox {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-md);
+  margin-top: var(--space-2xl);
+}
+
+.banner-error {
+  background: rgba(220, 38, 38, 0.08);
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  color: var(--color-destructive);
+  border-radius: var(--radius-sm);
+  padding: var(--space-md) var(--space-lg);
+  font-size: 13px;
+  margin-bottom: var(--space-lg);
+}
+
+.banner-error ul {
+  margin: var(--space-sm) 0 0;
+  padding-left: 1.1em;
+}
+
+/* detail view */
+
+.detail-section {
+  margin-bottom: var(--space-2xl);
+}
+
+.detail-section-title {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-muted-foreground);
+  margin-bottom: var(--space-md);
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-lg) var(--space-xl);
+}
+
+.detail-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.detail-row--full {
+  grid-column: 1 / -1;
+}
+
+.detail-label {
+  font-size: 11px;
+  color: var(--color-muted-foreground);
+}
+
+.detail-value {
+  font-size: 14px;
+  color: var(--color-foreground);
+}
+
+.detail-value.mono {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 13px;
+}
+
+.detail-value.num {
+  font-variant-numeric: tabular-nums;
+}
+
+.detail-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-xl);
+  gap: var(--space-md);
+}
+
+.detail-actions {
+  display: flex;
+  gap: var(--space-md);
+}
+
+.archive-panel {
+  margin-top: var(--space-xl);
+  padding: var(--space-lg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-background);
+}
+
+.archive-panel textarea {
+  width: 100%;
+  font: inherit;
+  font-size: 13px;
+  padding: var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  resize: vertical;
+  min-height: 60px;
+}
+
+/* alternatives list (parts) */
+
+.alt-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.alt-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+}
+
+.alt-row-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.alt-row-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  background: none;
+  color: var(--color-muted-foreground);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.alt-row-remove:hover {
+  background: rgba(220, 38, 38, 0.08);
+  color: var(--color-destructive);
+}
+
+.alt-add-row {
+  display: flex;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+  flex-wrap: wrap;
+  align-items: flex-end;
+}

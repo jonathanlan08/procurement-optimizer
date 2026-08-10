@@ -53,6 +53,12 @@ PERMISSIONS: dict[tuple[str, str], PermissionLevel] = {
     ("GET", "/api/v1/parts/{part_id}/alternatives"): Role.VIEWER,
     ("POST", "/api/v1/parts/{part_id}/alternatives"): Role.ANALYST,
     ("DELETE", "/api/v1/parts/{part_id}/alternatives/{alternative_id}"): Role.ANALYST,
+    # part imports (03-api-contract.md §4.5): "O A N" for preview/commit/
+    # cancel, "O A N V" for the read-only row-level preview.
+    ("POST", "/api/v1/part-imports"): Role.ANALYST,
+    ("GET", "/api/v1/part-imports/{batch_id}"): Role.VIEWER,
+    ("POST", "/api/v1/part-imports/{batch_id}/commit"): Role.ANALYST,
+    ("POST", "/api/v1/part-imports/{batch_id}/cancel"): Role.ANALYST,
 }
 
 # Routes that are org-scoped resources (subject to the 404 cross-org matrix
@@ -63,4 +69,5 @@ ORG_SCOPED_RESOURCES: list[str] = [
     "supplier_performance",
     "parts",
     "part_alternatives",
+    "part_imports",
 ]

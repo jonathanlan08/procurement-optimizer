@@ -16,6 +16,15 @@ from app.models.identity import (
     Session,
     User,
 )
+from app.models.part_imports import (
+    IMPORT_STATE_ENUM,
+    PART_IMPORT_FORMAT_ENUM,
+    PartImportBatch,
+    PartImportFormat,
+    PartImportRow,
+    PartImportRowDisposition,
+    PartImportState,
+)
 from app.models.parts import Part, PartAlternative
 from app.models.suppliers import Supplier, SupplierContact, SupplierPerformanceRecord
 from app.models.units import DIMENSION_ENUM, UnitConversion, UnitDefinition, UnitDimension
@@ -23,7 +32,9 @@ from app.models.units import DIMENSION_ENUM, UnitConversion, UnitDefinition, Uni
 __all__ = [
     "BOM_STATUS_ENUM",
     "DIMENSION_ENUM",
+    "IMPORT_STATE_ENUM",
     "JOB_STATE_ENUM",
+    "PART_IMPORT_FORMAT_ENUM",
     "ROLE_ENUM",
     "AuditEvent",
     "Base",
@@ -37,6 +48,11 @@ __all__ = [
     "OrganizationMembership",
     "Part",
     "PartAlternative",
+    "PartImportBatch",
+    "PartImportFormat",
+    "PartImportRow",
+    "PartImportRowDisposition",
+    "PartImportState",
     "Role",
     "Session",
     "Supplier",

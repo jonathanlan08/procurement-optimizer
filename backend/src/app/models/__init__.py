@@ -15,6 +15,7 @@ from app.models.identity import (
     Session,
     User,
 )
+from app.models.parts import Part, PartAlternative
 from app.models.suppliers import Supplier, SupplierContact, SupplierPerformanceRecord
 from app.models.units import DIMENSION_ENUM, UnitConversion, UnitDefinition, UnitDimension
 
@@ -29,6 +30,8 @@ __all__ = [
     "OrgOwnedMixin",
     "Organization",
     "OrganizationMembership",
+    "Part",
+    "PartAlternative",
     "Role",
     "Session",
     "Supplier",

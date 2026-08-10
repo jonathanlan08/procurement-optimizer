@@ -15,6 +15,7 @@ from app.models.identity import (
     Session,
     User,
 )
+from app.models.suppliers import Supplier, SupplierContact, SupplierPerformanceRecord
 
 __all__ = [
     "JOB_STATE_ENUM",
@@ -28,6 +29,9 @@ __all__ = [
     "OrganizationMembership",
     "Role",
     "Session",
+    "Supplier",
+    "SupplierContact",
+    "SupplierPerformanceRecord",
     "User",
     "org_identity_constraint",
 ]

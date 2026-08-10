@@ -23,8 +23,16 @@ def _mk_org(db, org_id) -> None:
 
 class TestSchemaGuarantees:
     def test_migrations_reached_head(self, db) -> None:
+        from pathlib import Path
+
+        from alembic.config import Config
+        from alembic.script import ScriptDirectory
+
+        backend_dir = Path(__file__).resolve().parent.parent.parent
+        script = ScriptDirectory.from_config(Config(str(backend_dir / "alembic.ini")))
+        expected_head = script.get_current_head()
         version = db.execute(text("SELECT version_num FROM alembic_version")).scalar_one()
-        assert version == "0001"
+        assert version == expected_head
 
     def test_audit_events_are_append_only(self, db, make_uuid) -> None:
         org_id = make_uuid.new_id()

@@ -72,6 +72,12 @@ PERMISSIONS: dict[tuple[str, str], PermissionLevel] = {
     ("POST", "/api/v1/boms/{bom_id}/versions"): Role.ANALYST,
     ("POST", "/api/v1/boms/{bom_id}/activate"): Role.ANALYST,
     ("POST", "/api/v1/boms/{bom_id}/archive"): Role.ADMINISTRATOR,
+    # exchange rates (03-api-contract.md §4.13): "O A N V" for the list/
+    # effective-lookup GET, "O A N" for a manual override, "O A" (not
+    # analyst) for refresh.
+    ("GET", "/api/v1/exchange-rates"): Role.VIEWER,
+    ("POST", "/api/v1/exchange-rates"): Role.ANALYST,
+    ("POST", "/api/v1/exchange-rates/refresh"): Role.ADMINISTRATOR,
 }
 
 # Routes that are org-scoped resources (subject to the 404 cross-org matrix
@@ -84,4 +90,5 @@ ORG_SCOPED_RESOURCES: list[str] = [
     "part_alternatives",
     "part_imports",
     "boms",
+    "exchange_rates",
 ]

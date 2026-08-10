@@ -8,6 +8,7 @@ from app.models.base import (
     org_identity_constraint,
 )
 from app.models.boms import BOM_STATUS_ENUM, BillOfMaterialLine, BillOfMaterials, BomStatus
+from app.models.fx import ExchangeRate
 from app.models.identity import (
     ROLE_ENUM,
     Organization,
@@ -52,6 +53,7 @@ __all__ = [
     "BillOfMaterialLine",
     "BillOfMaterials",
     "BomStatus",
+    "ExchangeRate",
     "Job",
     "JobState",
     "OrgOwnedMixin",

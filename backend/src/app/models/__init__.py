@@ -26,15 +26,26 @@ from app.models.part_imports import (
     PartImportState,
 )
 from app.models.parts import Part, PartAlternative
+from app.models.rfqs import (
+    ALLOWED_RFQ_TRANSITIONS,
+    RFQ_STATUS_ENUM,
+    Rfq,
+    RfqLine,
+    RfqStatus,
+    RfqStatusHistory,
+    RfqSupplier,
+)
 from app.models.suppliers import Supplier, SupplierContact, SupplierPerformanceRecord
 from app.models.units import DIMENSION_ENUM, UnitConversion, UnitDefinition, UnitDimension
 
 __all__ = [
+    "ALLOWED_RFQ_TRANSITIONS",
     "BOM_STATUS_ENUM",
     "DIMENSION_ENUM",
     "IMPORT_STATE_ENUM",
     "JOB_STATE_ENUM",
     "PART_IMPORT_FORMAT_ENUM",
+    "RFQ_STATUS_ENUM",
     "ROLE_ENUM",
     "AuditEvent",
     "Base",
@@ -53,6 +64,11 @@ __all__ = [
     "PartImportRow",
     "PartImportRowDisposition",
     "PartImportState",
+    "Rfq",
+    "RfqLine",
+    "RfqStatus",
+    "RfqStatusHistory",
+    "RfqSupplier",
     "Role",
     "Session",
     "Supplier",

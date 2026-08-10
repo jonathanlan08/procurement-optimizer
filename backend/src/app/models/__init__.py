@@ -7,6 +7,7 @@ from app.models.base import (
     OrgOwnedMixin,
     org_identity_constraint,
 )
+from app.models.boms import BOM_STATUS_ENUM, BillOfMaterialLine, BillOfMaterials, BomStatus
 from app.models.identity import (
     ROLE_ENUM,
     Organization,
@@ -20,11 +21,15 @@ from app.models.suppliers import Supplier, SupplierContact, SupplierPerformanceR
 from app.models.units import DIMENSION_ENUM, UnitConversion, UnitDefinition, UnitDimension
 
 __all__ = [
+    "BOM_STATUS_ENUM",
     "DIMENSION_ENUM",
     "JOB_STATE_ENUM",
     "ROLE_ENUM",
     "AuditEvent",
     "Base",
+    "BillOfMaterialLine",
+    "BillOfMaterials",
+    "BomStatus",
     "Job",
     "JobState",
     "OrgOwnedMixin",

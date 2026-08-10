@@ -37,8 +37,30 @@ PERMISSIONS: dict[tuple[str, str], PermissionLevel] = {
     # "O A N" for create; no update/delete route in the contract.
     ("GET", "/api/v1/suppliers/{supplier_id}/performance"): Role.VIEWER,
     ("POST", "/api/v1/suppliers/{supplier_id}/performance"): Role.ANALYST,
+    # parts (03-api-contract.md §4.5): "O A N V" for list/get, "O A N" for
+    # create/update, "O A" for archive. `unarchive` has no contract-table
+    # entry of its own (see api/v1/parts.py module docstring for why this
+    # router still implements it); it is declared here with the same O A
+    # gate as archive, mirroring suppliers.
+    ("GET", "/api/v1/parts"): Role.VIEWER,
+    ("POST", "/api/v1/parts"): Role.ANALYST,
+    ("GET", "/api/v1/parts/{part_id}"): Role.VIEWER,
+    ("PATCH", "/api/v1/parts/{part_id}"): Role.ANALYST,
+    ("POST", "/api/v1/parts/{part_id}/archive"): Role.ADMINISTRATOR,
+    ("POST", "/api/v1/parts/{part_id}/unarchive"): Role.ADMINISTRATOR,
+    # part alternatives (03-api-contract.md §4.5): "O A N V" for list, "O A N"
+    # for create/delete.
+    ("GET", "/api/v1/parts/{part_id}/alternatives"): Role.VIEWER,
+    ("POST", "/api/v1/parts/{part_id}/alternatives"): Role.ANALYST,
+    ("DELETE", "/api/v1/parts/{part_id}/alternatives/{alternative_id}"): Role.ANALYST,
 }
 
 # Routes that are org-scoped resources (subject to the 404 cross-org matrix
 # test). Phase 2+ adds every business resource here as it lands.
-ORG_SCOPED_RESOURCES: list[str] = ["suppliers", "supplier_contacts", "supplier_performance"]
+ORG_SCOPED_RESOURCES: list[str] = [
+    "suppliers",
+    "supplier_contacts",
+    "supplier_performance",
+    "parts",
+    "part_alternatives",
+]

@@ -78,6 +78,31 @@ PERMISSIONS: dict[tuple[str, str], PermissionLevel] = {
     ("GET", "/api/v1/exchange-rates"): Role.VIEWER,
     ("POST", "/api/v1/exchange-rates"): Role.ANALYST,
     ("POST", "/api/v1/exchange-rates/refresh"): Role.ADMINISTRATOR,
+    # RFQs (03-api-contract.md §4.8): "O A N V" for every read route
+    # (list/get/status-history/lines-list/suppliers-list), "O A N" for every
+    # mutation. Unlike BOMs/parts/suppliers, the contract carves out no
+    # separate admin-only archive route for RFQs — reaching `archived` status
+    # happens through the same analyst-level `POST .../status` route as any
+    # other transition (see app/services/rfq_service.py module docstring).
+    # `.../suppliers/{rfq_supplier_id}/reinstate` has no contract-table entry
+    # of its own (see api/v1/rfqs.py module docstring for why this router
+    # still implements it); gated the same analyst+ level as the contract's
+    # own exclude route (`DELETE .../suppliers/{sid}`), not lifted to
+    # administrator+.
+    ("GET", "/api/v1/rfqs"): Role.VIEWER,
+    ("POST", "/api/v1/rfqs"): Role.ANALYST,
+    ("GET", "/api/v1/rfqs/{rfq_id}"): Role.VIEWER,
+    ("PATCH", "/api/v1/rfqs/{rfq_id}"): Role.ANALYST,
+    ("POST", "/api/v1/rfqs/{rfq_id}/status"): Role.ANALYST,
+    ("GET", "/api/v1/rfqs/{rfq_id}/status-history"): Role.VIEWER,
+    ("GET", "/api/v1/rfqs/{rfq_id}/lines"): Role.VIEWER,
+    ("POST", "/api/v1/rfqs/{rfq_id}/lines"): Role.ANALYST,
+    ("PATCH", "/api/v1/rfqs/{rfq_id}/lines/{line_id}"): Role.ANALYST,
+    ("DELETE", "/api/v1/rfqs/{rfq_id}/lines/{line_id}"): Role.ANALYST,
+    ("GET", "/api/v1/rfqs/{rfq_id}/suppliers"): Role.VIEWER,
+    ("POST", "/api/v1/rfqs/{rfq_id}/suppliers"): Role.ANALYST,
+    ("DELETE", "/api/v1/rfqs/{rfq_id}/suppliers/{rfq_supplier_id}"): Role.ANALYST,
+    ("POST", "/api/v1/rfqs/{rfq_id}/suppliers/{rfq_supplier_id}/reinstate"): Role.ANALYST,
 }
 
 # Routes that are org-scoped resources (subject to the 404 cross-org matrix
@@ -91,4 +116,5 @@ ORG_SCOPED_RESOURCES: list[str] = [
     "part_imports",
     "boms",
     "exchange_rates",
+    "rfqs",
 ]

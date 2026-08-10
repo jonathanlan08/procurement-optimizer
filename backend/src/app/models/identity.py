@@ -107,11 +107,11 @@ class Session(PkMixin, Base):
 
 
 __all__ = [
-    "Role",
     "ROLE_ENUM",
-    "Organization",
-    "User",
-    "OrganizationMembership",
-    "Session",
     "ArchivableMixin",
+    "Organization",
+    "OrganizationMembership",
+    "Role",
+    "Session",
+    "User",
 ]

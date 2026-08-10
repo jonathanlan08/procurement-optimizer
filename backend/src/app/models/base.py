@@ -37,7 +37,7 @@ NAMING_CONVENTION = {
 class Base(DeclarativeBase):
     metadata = MetaData(naming_convention=NAMING_CONVENTION)
 
-    type_annotation_map = {
+    type_annotation_map = {  # noqa: RUF012 — SQLAlchemy declarative API contract
         uuid.UUID: UUID(as_uuid=True),
         datetime: TIMESTAMP(timezone=True),
     }

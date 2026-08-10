@@ -7,8 +7,8 @@ from datetime import datetime
 from enum import StrEnum
 from typing import Any
 
-from sqlalchemy import ForeignKey, SmallInteger, Text
 from sqlalchemy import Enum as SaEnum
+from sqlalchemy import ForeignKey, SmallInteger, Text
 from sqlalchemy.dialects.postgresql import INET, JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 

@@ -11,7 +11,7 @@ Cross-org lookups return None and surface as 404 (never 403) at the API layer.
 from __future__ import annotations
 
 import uuid
-from typing import Any, Generic, TypeVar
+from typing import Any
 
 from sqlalchemy import Select, select
 from sqlalchemy.orm import Session as SaSession
@@ -27,10 +27,7 @@ class OrgIsolationViolation(RuntimeError):
     """
 
 
-ModelT = TypeVar("ModelT", bound=Base)
-
-
-class OrgScopedRepository(Generic[ModelT]):
+class OrgScopedRepository[ModelT: Base]:
     """Base repository bound to one organization for the life of the request."""
 
     model: type[ModelT]

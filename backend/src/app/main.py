@@ -14,6 +14,7 @@ from app.api.middleware import (
     SecurityHeadersMiddleware,
 )
 from app.api.v1.auth import router as auth_router
+from app.api.v1.suppliers import router as suppliers_router
 from app.core.clock import Clock, SystemClock
 from app.core.config import Environment, Settings, load_settings
 from app.core.errors import AppError, ErrorDetail, SafeInternalError, ValidationAppError
@@ -104,5 +105,6 @@ def create_app(
         return {"status": "ok"}
 
     app.include_router(auth_router, prefix=API_PREFIX)
+    app.include_router(suppliers_router, prefix=API_PREFIX)
 
     return app

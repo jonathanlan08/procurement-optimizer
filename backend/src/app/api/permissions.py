@@ -21,8 +21,14 @@ PERMISSIONS: dict[tuple[str, str], PermissionLevel] = {
     ("POST", "/api/v1/auth/login"): "public",
     ("POST", "/api/v1/auth/logout"): "authenticated",
     ("GET", "/api/v1/auth/me"): "authenticated",
+    ("GET", "/api/v1/suppliers"): Role.VIEWER,
+    ("POST", "/api/v1/suppliers"): Role.ANALYST,
+    ("GET", "/api/v1/suppliers/{supplier_id}"): Role.VIEWER,
+    ("PATCH", "/api/v1/suppliers/{supplier_id}"): Role.ANALYST,
+    ("POST", "/api/v1/suppliers/{supplier_id}/archive"): Role.ADMINISTRATOR,
+    ("POST", "/api/v1/suppliers/{supplier_id}/unarchive"): Role.ADMINISTRATOR,
 }
 
 # Routes that are org-scoped resources (subject to the 404 cross-org matrix
 # test). Phase 2+ adds every business resource here as it lands.
-ORG_SCOPED_RESOURCES: list[str] = []
+ORG_SCOPED_RESOURCES: list[str] = ["suppliers"]

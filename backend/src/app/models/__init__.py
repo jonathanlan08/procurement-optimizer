@@ -16,8 +16,10 @@ from app.models.identity import (
     User,
 )
 from app.models.suppliers import Supplier, SupplierContact, SupplierPerformanceRecord
+from app.models.units import DIMENSION_ENUM, UnitConversion, UnitDefinition, UnitDimension
 
 __all__ = [
+    "DIMENSION_ENUM",
     "JOB_STATE_ENUM",
     "ROLE_ENUM",
     "AuditEvent",
@@ -32,6 +34,9 @@ __all__ = [
     "Supplier",
     "SupplierContact",
     "SupplierPerformanceRecord",
+    "UnitConversion",
+    "UnitDefinition",
+    "UnitDimension",
     "User",
     "org_identity_constraint",
 ]

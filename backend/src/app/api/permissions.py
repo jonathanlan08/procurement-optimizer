@@ -27,8 +27,18 @@ PERMISSIONS: dict[tuple[str, str], PermissionLevel] = {
     ("PATCH", "/api/v1/suppliers/{supplier_id}"): Role.ANALYST,
     ("POST", "/api/v1/suppliers/{supplier_id}/archive"): Role.ADMINISTRATOR,
     ("POST", "/api/v1/suppliers/{supplier_id}/unarchive"): Role.ADMINISTRATOR,
+    # supplier contacts (03-api-contract.md §4.4): "O A N (V read)" — list is
+    # viewer+, create/update/archive are analyst+; delete = archive (soft).
+    ("GET", "/api/v1/suppliers/{supplier_id}/contacts"): Role.VIEWER,
+    ("POST", "/api/v1/suppliers/{supplier_id}/contacts"): Role.ANALYST,
+    ("PATCH", "/api/v1/suppliers/{supplier_id}/contacts/{contact_id}"): Role.ANALYST,
+    ("DELETE", "/api/v1/suppliers/{supplier_id}/contacts/{contact_id}"): Role.ANALYST,
+    # supplier performance (03-api-contract.md §4.4): "O A N V" for list,
+    # "O A N" for create; no update/delete route in the contract.
+    ("GET", "/api/v1/suppliers/{supplier_id}/performance"): Role.VIEWER,
+    ("POST", "/api/v1/suppliers/{supplier_id}/performance"): Role.ANALYST,
 }
 
 # Routes that are org-scoped resources (subject to the 404 cross-org matrix
 # test). Phase 2+ adds every business resource here as it lands.
-ORG_SCOPED_RESOURCES: list[str] = ["suppliers"]
+ORG_SCOPED_RESOURCES: list[str] = ["suppliers", "supplier_contacts", "supplier_performance"]

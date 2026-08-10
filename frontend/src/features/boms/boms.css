@@ -1,0 +1,143 @@
+/* BOM-specific chrome layered on top of components/workspace.css +
+   components/badges.css (both imported by BomsPage.tsx). Kept in its own
+   file rather than editing either shared stylesheet (both are outside this
+   task's edit scope) — see BomsPage.tsx's file header for why. */
+
+/* Status badges: draft/active/superseded/archived need four visually
+   distinct states (MASTER.md "never rely on color alone"); badges.css only
+   ships three (active/inactive/archived, boolean-derived). These modifiers
+   share `.badge`'s base layout and follow the same color roles as
+   badges.css's own active/archived variants, adding a fourth ("draft") from
+   MASTER.md's info/neutral token. Superseded reuses the inactive/muted
+   treatment — a superseded version is not wrong or dangerous, just no
+   longer current. */
+.bom-badge--draft {
+  background: rgba(3, 105, 161, 0.1);
+  color: var(--color-info);
+  border-color: rgba(3, 105, 161, 0.28);
+}
+
+.bom-badge--active {
+  background: rgba(21, 128, 61, 0.1);
+  color: var(--color-positive);
+  border-color: rgba(21, 128, 61, 0.28);
+}
+
+.bom-badge--superseded {
+  background: var(--color-muted);
+  color: var(--color-secondary);
+  border-color: var(--color-border);
+}
+
+.bom-badge--archived {
+  background: rgba(180, 83, 9, 0.1);
+  color: var(--color-warning);
+  border-color: rgba(180, 83, 9, 0.28);
+}
+
+/* Line editor (create / new-version form) */
+.bom-line-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.bom-line-row {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-lg);
+  background: var(--color-background);
+}
+
+.bom-line-row-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-md);
+}
+
+.bom-part-picker {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+/* Version chain (drawer, read-only view) */
+.bom-version-chain {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.bom-version-chain-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  width: 100%;
+  font: inherit;
+  font-size: 13px;
+  padding: var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-foreground);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.bom-version-chain-item:hover {
+  border-color: var(--color-accent);
+  background: var(--color-background);
+}
+
+.bom-version-chain-item:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+
+.bom-version-chain-item.is-current {
+  border-color: var(--color-accent);
+  background: rgba(3, 105, 161, 0.06);
+  font-weight: 600;
+}
+
+/* Lines table (read-only detail view) — same tabular-nums/right-align
+   convention as DataTable.css, reimplemented for this plain <table> since
+   the drawer's line list isn't paginated/sortable like the page-level
+   DataTable. */
+.bom-lines-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.bom-lines-table th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--color-border);
+  padding: var(--space-sm) var(--space-md);
+  white-space: nowrap;
+}
+
+.bom-lines-table td {
+  padding: var(--space-md);
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: top;
+}
+
+.bom-lines-table td[data-align="right"],
+.bom-lines-table th[data-align="right"] {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.bom-lines-table tr:last-child td {
+  border-bottom: none;
+}

@@ -1,5 +1,6 @@
 import { Route, Routes } from "react-router-dom";
 import { RequireAuth } from "./auth/session";
+import { BomsPage } from "./features/boms/BomsPage";
 import { PartsPage } from "./features/parts/PartsPage";
 import { SuppliersPage } from "./features/suppliers/SuppliersPage";
 import { AppShell } from "./layout/AppShell";
@@ -20,7 +21,7 @@ export function App() {
         <Route index element={<PlaceholderPage title="Overview" />} />
         <Route path="suppliers" element={<SuppliersPage />} />
         <Route path="parts" element={<PartsPage />} />
-        <Route path="boms" element={<PlaceholderPage title="Bills of materials" />} />
+        <Route path="boms" element={<BomsPage />} />
         <Route path="rfqs" element={<PlaceholderPage title="RFQs" />} />
         <Route path="scenarios" element={<PlaceholderPage title="Scenarios" />} />
         <Route path="reports" element={<PlaceholderPage title="Reports" />} />

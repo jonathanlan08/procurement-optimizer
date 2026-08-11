@@ -1,7 +1,10 @@
 """Seed the synthetic demonstration organization (idempotent).
 
-v0.1 scope grows phase by phase; currently: the demo org and three users
-(owner / analyst / viewer). ALL DATA IS SYNTHETIC.
+Thin CLI wrapper around `app.seed.demo_dataset.seed_demo_dataset`, which owns
+the actual dataset (org/users, suppliers, parts, BOMs, RFQs, quotes, FX
+overrides, scoring configurations, scenarios, documents + extraction — see
+that module's docstring for the full inventory and the SPEC checklist items
+each piece demonstrates). ALL DATA IS SYNTHETIC.
 
 Usage:
     export PO_DATABASE_URL=...   # from scripts/dev_db.py
@@ -10,78 +13,55 @@ Usage:
 
 from __future__ import annotations
 
-import uuid
-from datetime import UTC, datetime
-
-from sqlalchemy import create_engine, select
+from sqlalchemy import create_engine
 from sqlalchemy.orm import Session as SaSession
 
+from app.core.clock import SystemClock
 from app.core.config import load_settings
-from app.core.security import hash_password
-from app.models.identity import Organization, OrganizationMembership, Role, User
-
-DEMO_SLUG = "meridian-fab"
-DEMO_ORG_NAME = "Meridian Fabrication Works (Demo)"
-
-# Synthetic demo credentials — intentionally public, documented in the README.
-DEMO_USERS = [
-    ("demo-owner@meridianfab.example", "Morgan Reyes", Role.OWNER, "demo-owner-2026"),
-    ("demo-analyst@meridianfab.example", "Ada Chen", Role.ANALYST, "demo-analyst-2026"),
-    ("demo-viewer@meridianfab.example", "Sam Okafor", Role.VIEWER, "demo-viewer-2026"),
-]
+from app.core.ids import RandomIdGenerator
+from app.providers.extraction.mock import MockExtractionProvider
+from app.providers.storage import build_storage_provider
+from app.seed.demo_dataset import DemoDatasetSummary, seed_demo_dataset
 
 
-def seed() -> None:
+def _print_summary(summary: DemoDatasetSummary) -> None:
+    print(f"organization: {summary.organization_id}")
+    print(f"users: {len(summary.user_ids)}")
+    print(f"suppliers: {len(summary.supplier_ids)}")
+    print(f"parts: {len(summary.part_ids)}")
+    print(f"BOM versions: {len(summary.bom_ids)}")
+    print(f"RFQs: {len(summary.rfq_ids)}")
+    print(f"quotes: {len(summary.quote_ids)}")
+    print(f"scenarios: {len(summary.scenario_ids)}")
+    print(f"scoring configurations: {len(summary.scoring_configuration_ids)}")
+    print(f"documents: {len(summary.document_ids)}")
+    print(f"exchange rate overrides: {len(summary.exchange_rate_ids)}")
+    print(f"extraction run: {summary.extraction_run_id}")
+
+
+def seed() -> DemoDatasetSummary:
     settings = load_settings()
     engine = create_engine(settings.database_url)
-    now = datetime.now(UTC)
+    clock = SystemClock()
+    ids = RandomIdGenerator()
+    storage = build_storage_provider(settings)
+    extraction_provider = MockExtractionProvider()
 
-    with SaSession(engine) as s:
-        org = s.execute(
-            select(Organization).where(Organization.slug == DEMO_SLUG)
-        ).scalar_one_or_none()
-        if org is None:
-            org = Organization(
-                id=uuid.uuid4(),
-                slug=DEMO_SLUG,
-                name=DEMO_ORG_NAME,
-                base_currency="USD",
-                is_demo=True,
-                created_at=now,
-                updated_at=now,
-            )
-            s.add(org)
-            print(f"created demo organization {DEMO_SLUG}")
-
-        for email, full_name, role, password in DEMO_USERS:
-            user = s.execute(select(User).where(User.email == email)).scalar_one_or_none()
-            if user is None:
-                user = User(
-                    id=uuid.uuid4(),
-                    email=email,
-                    password_hash=hash_password(password),
-                    full_name=full_name,
-                    created_at=now,
-                    updated_at=now,
-                )
-                s.add(user)
-                s.add(
-                    OrganizationMembership(
-                        id=uuid.uuid4(),
-                        organization_id=org.id,
-                        user_id=user.id,
-                        role=role,
-                        accepted_at=now,
-                        created_at=now,
-                        updated_at=now,
-                    )
-                )
-                print(f"created {role.value}: {email}")
-
-        s.commit()
+    with SaSession(engine) as session:
+        summary = seed_demo_dataset(
+            session,
+            clock=clock,
+            ids=ids,
+            storage=storage,
+            extraction_provider=extraction_provider,
+            max_upload_bytes=settings.max_upload_bytes,
+        )
+        session.commit()
     engine.dispose()
-    print("seed complete")
+    return summary
 
 
 if __name__ == "__main__":
-    seed()
+    result = seed()
+    _print_summary(result)
+    print("seed complete")

@@ -27,6 +27,7 @@ from app.api.v1.parts import router as parts_router
 from app.api.v1.quotes import rfq_quotes_router
 from app.api.v1.quotes import router as quotes_router
 from app.api.v1.rfqs import router as rfqs_router
+from app.api.v1.scenarios import rfq_scenarios_router, scenarios_router
 from app.api.v1.supplier_contacts import router as supplier_contacts_router
 from app.api.v1.supplier_performance import router as supplier_performance_router
 from app.api.v1.suppliers import router as suppliers_router
@@ -140,5 +141,7 @@ def create_app(
     app.include_router(quote_lines_match_router, prefix=API_PREFIX)
     app.include_router(landed_cost_router, prefix=API_PREFIX)
     app.include_router(scoring_config_router, prefix=API_PREFIX)
+    app.include_router(rfq_scenarios_router, prefix=API_PREFIX)
+    app.include_router(scenarios_router, prefix=API_PREFIX)
 
     return app

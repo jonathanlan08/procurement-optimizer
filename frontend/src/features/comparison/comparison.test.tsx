@@ -496,57 +496,67 @@ describe("ComparisonPage", () => {
       AUTH_HANDLER("analyst"),
       ...BASE_HANDLERS,
       {
-        test: (url: string, method: string) => url === "/api/v1/rfqs/rfq-1/scoring" && method === "POST",
+        test: (url: string, method: string) =>
+          url === "/api/v1/rfqs/rfq-1/comparison-scenarios" && method === "POST",
         respond: () =>
-          jsonResponse(200, {
-            scores: [
-              {
-                supplier_id: "sup-a",
-                supplier_name: "Acme Co",
-                total_score: "0.820000",
-                rank: 1,
-                criterion_scores: [
-                  {
-                    criterion: "total_landed_cost",
-                    raw_value: "1350.500000",
-                    normalized_score: "1.000000",
-                    effective_weight: "0.350000",
-                    weighted_contribution: "0.350000",
-                    reason: "lowest landed cost in the compared cohort",
-                  },
-                ],
-                missing_criteria: [],
-                weights_renormalized: false,
-                excluded: false,
-                exclusion_reason: null,
-              },
-              {
-                supplier_id: "sup-b",
-                supplier_name: "Beta Supply",
-                total_score: "0.410000",
-                rank: 2,
-                criterion_scores: [
-                  {
-                    criterion: "total_landed_cost",
-                    raw_value: "1180.000000",
-                    normalized_score: "0.500000",
-                    effective_weight: "0.350000",
-                    weighted_contribution: "0.175000",
-                    reason: "mid-range landed cost in the compared cohort",
-                  },
-                ],
-                missing_criteria: ["spec_compliance"],
-                weights_renormalized: true,
-                excluded: false,
-                exclusion_reason: null,
-              },
-            ],
-            weights_used: [
-              { criterion: "total_landed_cost", weight: "0.350000", direction: "lower_is_better", label: "Total landed cost", is_sample_weight: true },
-            ],
-            cohort_size: 2,
-            notes: [],
-            scoring_version: "1.0.0",
+          jsonResponse(201, {
+            id: "scenario-1",
+            scoring_result: {
+              scores: [
+                {
+                  supplier_id: "sup-a",
+                  supplier_name: "Acme Co",
+                  total_score: "0.820000",
+                  rank: 1,
+                  criterion_scores: [
+                    {
+                      criterion: "total_landed_cost",
+                      raw_value: "1350.500000",
+                      normalized_score: "1.000000",
+                      effective_weight: "0.350000",
+                      weighted_contribution: "0.350000",
+                      reason: "lowest landed cost in the compared cohort",
+                    },
+                  ],
+                  missing_criteria: [],
+                  weights_renormalized: false,
+                  excluded: false,
+                  exclusion_reason: null,
+                },
+                {
+                  supplier_id: "sup-b",
+                  supplier_name: "Beta Supply",
+                  total_score: "0.410000",
+                  rank: 2,
+                  criterion_scores: [
+                    {
+                      criterion: "total_landed_cost",
+                      raw_value: "1180.000000",
+                      normalized_score: "0.500000",
+                      effective_weight: "0.350000",
+                      weighted_contribution: "0.175000",
+                      reason: "mid-range landed cost in the compared cohort",
+                    },
+                  ],
+                  missing_criteria: ["spec_compliance"],
+                  weights_renormalized: true,
+                  excluded: false,
+                  exclusion_reason: null,
+                },
+              ],
+              weights_used: [
+                {
+                  criterion: "total_landed_cost",
+                  weight: "0.350000",
+                  direction: "lower_is_better",
+                  label: "Total landed cost",
+                  is_sample_weight: true,
+                },
+              ],
+              cohort_size: 2,
+              notes: [],
+              scoring_version: "1.0.0",
+            },
           }),
       },
     ]);

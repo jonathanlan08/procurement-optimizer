@@ -166,6 +166,20 @@ PERMISSIONS: dict[tuple[str, str], PermissionLevel] = {
     ("POST", "/api/v1/scoring-configurations"): Role.ANALYST,
     ("PATCH", "/api/v1/scoring-configurations/{config_id}"): Role.ANALYST,
     ("POST", "/api/v1/scoring-configurations/{config_id}/archive"): Role.ADMINISTRATOR,
+    # Comparison scenarios (03-api-contract.md §4.16): "O A N V" for every
+    # read route (list/get/results/allocation), "O A N" for create/optimize/
+    # clone, "O A" (administrator+) for archive — mirroring every other
+    # archivable resource's archive gate. See api/v1/scenarios.py's own
+    # module docstring for why create/optimize/clone run synchronously and
+    # why optimize is idempotent rather than a fresh solve.
+    ("GET", "/api/v1/rfqs/{rfq_id}/comparison-scenarios"): Role.VIEWER,
+    ("POST", "/api/v1/rfqs/{rfq_id}/comparison-scenarios"): Role.ANALYST,
+    ("GET", "/api/v1/comparison-scenarios/{scenario_id}"): Role.VIEWER,
+    ("GET", "/api/v1/comparison-scenarios/{scenario_id}/results"): Role.VIEWER,
+    ("GET", "/api/v1/comparison-scenarios/{scenario_id}/allocation"): Role.VIEWER,
+    ("POST", "/api/v1/comparison-scenarios/{scenario_id}/optimize"): Role.ANALYST,
+    ("POST", "/api/v1/comparison-scenarios/{scenario_id}/clone"): Role.ANALYST,
+    ("POST", "/api/v1/comparison-scenarios/{scenario_id}/archive"): Role.ADMINISTRATOR,
 }
 
 # Routes that are org-scoped resources (subject to the 404 cross-org matrix
@@ -187,4 +201,5 @@ ORG_SCOPED_RESOURCES: list[str] = [
     "part_match_candidates",
     "landed_cost_results",
     "scoring_configurations",
+    "comparison_scenarios",
 ]

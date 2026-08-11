@@ -49,41 +49,36 @@
  *    carries a per-criterion `is_sample_weight`, but the config-level flag
  *    is what the scoring-config `<select>` badges.
  *
- * ## GENUINE BACKEND GAP: ranked supplier scoring has no implemented route
+ * ## Scoring: now backed by the real `/comparison-scenarios` endpoint
  *
- * `POST /rfqs/{rfq_id}/scoring` below is **this agent's own placeholder
- * route, not a verified backend contract path** — flagged loudly because
- * every other endpoint in this file is real and working and this one is
- * not. `docs/planning/03-api-contract.md` §4.16 documents the actual
- * intended surface (`/comparison-scenarios`), but that entire resource is
- * Phase 6 ("Optimization and scenarios",
- * `docs/planning/09-task-decomposition.md` 6.1-6.13) and is **not
- * implemented anywhere in this backend build**: no
- * `comparison_scenarios`/`scenario_results` table
- * (`backend/src/app/models/analysis.py`'s own module docstring point 1
- * confirms "comparison_scenarios does not exist yet in this codebase"), no
- * service, no route mounted in `app/main.py`. The pure, deterministic
- * scorer that would answer this (`app/domain/scoring/scorer.py`'s
- * `ScorerV1`, principal-owned and fully spec'd) has no caller anywhere in
- * `app/services/` or `app/api/v1/` today — only `ScoringConfiguration` CRUD
- * (weights *definitions*) is wired up (`api/v1/analysis.py`'s
- * `scoring_config_router`, both hooks below it in this file).
+ * Phase 6 (`docs/planning/09-task-decomposition.md` 6.1-6.13) landed the
+ * real backend surface this file's scoring hooks previously had to guess
+ * at: `backend/src/app/services/scenario_service.py` +
+ * `backend/src/app/api/v1/scenarios.py`, mounted in `app/main.py`. There is
+ * still no separate "ranked scoring" endpoint on its own — scoring only
+ * ever happens as half of creating a `ComparisonScenario`
+ * (`POST /rfqs/{rfq_id}/comparison-scenarios`, per that service's own module
+ * docstring: no job queue exists in this codebase, so scoring AND
+ * allocation both run synchronously in one call, one transaction). This
+ * file's `useComputeScoring` is kept as a thin adapter over that real
+ * route rather than changed at its call site (`ComparisonPage.tsx`'s
+ * `ScoringSection`, out of scope for this edit): it POSTs a `balanced`-
+ * strategy scenario using the given scoring configuration and default
+ * (empty) assumptions/constraints, then unwraps the response's
+ * `scoring_result` — a field shaped, deliberately, exactly like this file's
+ * pre-existing `ScoringRunResponse` (`backend/src/app/schemas/scenarios.py`'s
+ * `ScoringResultResponse` says as much in its own docstring), so no field
+ * remapping is needed beyond picking that one nested object out.
  *
- * Per this task's own FORBIDDEN list, `backend/**` is out of scope for this
- * agent, so no route was added there. `useComputeScoring` calls a
- * best-guess synchronous route (`POST /rfqs/{id}/scoring`, no job envelope
- * — mirroring the same "this codebase has no job queue, so run inline"
- * precedent `api/v1/matching.py`'s `generate_quote_matches` already sets
- * for its own similarly-shaped compute-and-return action), shaped
- * field-for-field after the FROZEN `ScoringResult`/`SupplierScore`/
- * `CriterionScore` dataclasses in `domain/scoring/contracts.py` — the most
- * authoritative source for what a real endpoint's response would look like
- * once wired up. Until that backend route exists, every call here 404s in
- * a live deployment (a plain, un-enveloped FastAPI 404, not this app's own
- * error shape — `ComparisonPage.tsx`'s `ApiErrorBanner` still renders it
- * safely via `api()`'s generic-fallback branch, just with a less specific
- * message). `comparison.test.tsx` verifies the *rendering* contract via a
- * mocked response, independent of whether the real route exists yet.
+ * Two behavioral changes from the old placeholder, both because the real
+ * endpoint scores an entire RFQ's eligible supplier cohort, not an
+ * explicit line list: `ComputeScoringVars.quoteLineIds` is no longer sent
+ * (the real request has no such field — scope is the whole RFQ) and is
+ * kept only so `ScoringSection`'s existing call site still type-checks
+ * unmodified; each call also creates a new, persisted `ComparisonScenario`
+ * row (audited, listed in scenario history) rather than a stateless
+ * compute — an accepted side effect of reusing the real, transactional
+ * endpoint rather than inventing a stateless one that does not exist.
  */
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -243,7 +238,7 @@ export function useScoringConfigurations() {
   });
 }
 
-// -- scoring compute (see this file's header: GENUINE BACKEND GAP) ---------
+// -- scoring compute (see this file's header: real /comparison-scenarios) --
 
 export interface CriterionScoreResponse {
   criterion: string;
@@ -277,15 +272,34 @@ export interface ScoringRunResponse {
 export interface ComputeScoringVars {
   rfqId: string;
   scoringConfigurationId: string;
+  /** No longer sent — the real endpoint scores the whole RFQ's eligible
+   * cohort, not an explicit line list. Kept so this interface (and
+   * ScoringSection's existing call site) still type-check unmodified;
+   * see this file's header comment. */
   quoteLineIds: string[];
+}
+
+/** The one nested field this hook actually needs from a real
+ * `ComparisonScenarioResponse` (backend/src/app/schemas/scenarios.py) —
+ * shaped, deliberately, exactly like `ScoringRunResponse` above. */
+interface ComparisonScenarioScoringEnvelope {
+  scoring_result: ScoringRunResponse;
 }
 
 export function useComputeScoring() {
   return useMutation({
-    mutationFn: ({ rfqId, scoringConfigurationId, quoteLineIds }: ComputeScoringVars) =>
-      post<ScoringRunResponse>(`/api/v1/rfqs/${rfqId}/scoring`, {
-        scoring_configuration_id: scoringConfigurationId,
-        quote_line_ids: quoteLineIds,
-      }),
+    mutationFn: async ({ rfqId, scoringConfigurationId }: ComputeScoringVars) => {
+      const scenario = await post<ComparisonScenarioScoringEnvelope>(
+        `/api/v1/rfqs/${rfqId}/comparison-scenarios`,
+        {
+          name: `Ad-hoc scoring ${new Date().toISOString()}`,
+          strategy: "balanced",
+          scoring_configuration_id: scoringConfigurationId,
+          assumptions: EMPTY_ASSUMPTIONS,
+          constraints: {},
+        },
+      );
+      return scenario.scoring_result;
+    },
   });
 }

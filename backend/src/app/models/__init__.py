@@ -1,6 +1,13 @@
 """All ORM models. Importing this package registers every table on Base.metadata,
 which Alembic's env.py relies on for autogenerate comparisons."""
 
+from app.models.analysis import (
+    LANDED_COST_COMPONENT_ENUM,
+    RESULT_COMPLETENESS_ENUM,
+    LandedCostComponent,
+    LandedCostResult,
+    ScoringConfiguration,
+)
 from app.models.audit import JOB_STATE_ENUM, AuditEvent, Job, JobState
 from app.models.base import (
     Base,
@@ -77,11 +84,13 @@ __all__ = [
     "EXTRACTION_STATE_ENUM",
     "IMPORT_STATE_ENUM",
     "JOB_STATE_ENUM",
+    "LANDED_COST_COMPONENT_ENUM",
     "MATCH_STATUS_ENUM",
     "MATCH_STRATEGY_ENUM",
     "PART_IMPORT_FORMAT_ENUM",
     "QUOTE_SOURCE_ENUM",
     "QUOTE_STATUS_ENUM",
+    "RESULT_COMPLETENESS_ENUM",
     "RFQ_STATUS_ENUM",
     "ROLE_ENUM",
     "AuditEvent",
@@ -97,6 +106,8 @@ __all__ = [
     "ExtractionRunState",
     "Job",
     "JobState",
+    "LandedCostComponent",
+    "LandedCostResult",
     "MatchStrategy",
     "OrgOwnedMixin",
     "Organization",
@@ -124,6 +135,7 @@ __all__ = [
     "RfqStatusHistory",
     "RfqSupplier",
     "Role",
+    "ScoringConfiguration",
     "Session",
     "Supplier",
     "SupplierContact",

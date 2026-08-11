@@ -13,6 +13,7 @@ from app.api.middleware import (
     RequestIdMiddleware,
     SecurityHeadersMiddleware,
 )
+from app.api.v1.analysis import landed_cost_router, scoring_config_router
 from app.api.v1.auth import router as auth_router
 from app.api.v1.boms import router as boms_router
 from app.api.v1.documents import rfq_documents_router
@@ -130,5 +131,7 @@ def create_app(
     app.include_router(quotes_router, prefix=API_PREFIX)
     app.include_router(rfq_documents_router, prefix=API_PREFIX)
     app.include_router(documents_router, prefix=API_PREFIX)
+    app.include_router(landed_cost_router, prefix=API_PREFIX)
+    app.include_router(scoring_config_router, prefix=API_PREFIX)
 
     return app

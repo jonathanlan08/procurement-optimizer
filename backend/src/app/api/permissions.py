@@ -126,6 +126,23 @@ PERMISSIONS: dict[tuple[str, str], PermissionLevel] = {
     ("GET", "/api/v1/quote-documents/{document_id}"): Role.VIEWER,
     ("GET", "/api/v1/quote-documents/{document_id}/content"): Role.VIEWER,
     ("POST", "/api/v1/quote-documents/{document_id}/archive"): Role.ADMINISTRATOR,
+    # Landed cost (03-api-contract.md §4.15). Preview is the contract's own
+    # literal "O A N V" — a stateless calculator, no audit row, viewer-
+    # readable (§6 gap #2), NOT the analyst+ this task's own paraphrase
+    # states; see api/v1/analysis.py module docstring point 1 for why the
+    # contract's literal role wins. Persisting and the per-RFQ latest-per-
+    # line listing follow this task's own explicit "analyst+"/"viewer+"
+    # split.
+    ("POST", "/api/v1/landed-costs:preview"): Role.VIEWER,
+    ("POST", "/api/v1/rfqs/{rfq_id}/landed-costs"): Role.ANALYST,
+    ("GET", "/api/v1/rfqs/{rfq_id}/landed-costs"): Role.VIEWER,
+    ("GET", "/api/v1/landed-cost-results/{result_id}"): Role.VIEWER,
+    # Scoring configurations (03-api-contract.md §4.14): "O A N V" for list,
+    # "O A N" for create/update, "O A" (administrator+) for archive.
+    ("GET", "/api/v1/scoring-configurations"): Role.VIEWER,
+    ("POST", "/api/v1/scoring-configurations"): Role.ANALYST,
+    ("PATCH", "/api/v1/scoring-configurations/{config_id}"): Role.ANALYST,
+    ("POST", "/api/v1/scoring-configurations/{config_id}/archive"): Role.ADMINISTRATOR,
 }
 
 # Routes that are org-scoped resources (subject to the 404 cross-org matrix
@@ -142,4 +159,6 @@ ORG_SCOPED_RESOURCES: list[str] = [
     "rfqs",
     "quotes",
     "quote_documents",
+    "landed_cost_results",
+    "scoring_configurations",
 ]

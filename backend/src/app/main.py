@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
 
 from app.api.middleware import (
+    BodySizeLimitMiddleware,
     OriginCheckMiddleware,
     RateLimitMiddleware,
     RequestIdMiddleware,
@@ -71,7 +72,10 @@ def create_app(
     app.state.session_factory = build_session_factory(engine)
 
     # middleware: last added runs first. Target order (outermost -> innermost):
-    # CORS -> RequestId -> SecurityHeaders -> OriginCheck -> RateLimit -> routes
+    # CORS -> RequestId -> SecurityHeaders -> OriginCheck -> RateLimit
+    # -> BodySizeLimit -> routes (BodySizeLimit innermost: rejects oversized
+    # declared bodies before FastAPI's form parsing can spool them to disk)
+    app.add_middleware(BodySizeLimitMiddleware, settings=settings)
     app.add_middleware(RateLimitMiddleware, settings=settings)
     app.add_middleware(OriginCheckMiddleware, settings=settings)
     app.add_middleware(SecurityHeadersMiddleware, environment=settings.environment)

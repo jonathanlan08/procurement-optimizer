@@ -90,6 +90,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 import uuid
 from dataclasses import dataclass
 from datetime import datetime, timedelta
@@ -99,7 +100,7 @@ from typing import Any, Final
 from sqlalchemy.orm import Session as SaSession
 
 from app.core.clock import Clock
-from app.core.errors import ConflictStateError, NotFoundError, ValidationAppError
+from app.core.errors import AppError, ConflictStateError, NotFoundError, ValidationAppError
 from app.core.ids import IdGenerator
 from app.core.money import CALC_CONTEXT, quantize_money, quantize_unit_price, to_wire
 from app.domain.landed_cost.breaks import select_price_break
@@ -117,7 +118,7 @@ from app.reports import (
     content_type_for,
     render,
 )
-from app.repositories.base import OrgScopedRepository
+from app.repositories.base import OrgIsolationViolation, OrgScopedRepository
 from app.repositories.matching_repository import QuoteLineRepository
 from app.repositories.quote_repository import QuoteRepository
 from app.repositories.rfq_repository import RfqRepository
@@ -130,6 +131,8 @@ from app.schemas.scenarios import (
 from app.services.audit import AuditRecorder
 from app.services.audit_read_service import AuditReadService
 from app.services.landed_cost_service import LandedCostService
+
+logger = logging.getLogger(__name__)
 
 REPORT_RETENTION_DAYS: Final[int] = 90
 
@@ -271,7 +274,16 @@ class ReportService:
                 purged_at=None,
                 error_message=None,
             )
+        except (AppError, OrgIsolationViolation):
+            # Never swallow domain/security failures into a `failed` row:
+            # AppError is a deliberate 4xx, and OrgIsolationViolation is
+            # designed to fail loudly (2026-08 security audit, MEDIUM-6).
+            raise
         except Exception as exc:
+            # The wire-visible message must not carry SQL fragments, paths,
+            # or stack detail (SECURITY.md §10) — the full exception goes to
+            # the server log only, keyed by the report id.
+            logger.exception("report generation failed (report_id=%s)", report_id)
             report = GeneratedReport(
                 id=report_id,
                 organization_id=self._organization_id,
@@ -288,7 +300,10 @@ class ReportService:
                 generated_at=now,
                 expires_at=expires_at,
                 purged_at=None,
-                error_message=str(exc)[:1000],
+                error_message=(
+                    f"Report generation failed ({type(exc).__name__}). "
+                    f"Details are in the server log under report id {report_id}."
+                ),
             )
 
         self._repo.add(report)

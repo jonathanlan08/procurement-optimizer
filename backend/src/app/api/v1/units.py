@@ -6,11 +6,14 @@ can resolve unit_definition_id to a human-readable code/name.
 
 from __future__ import annotations
 
-from fastapi import APIRouter
+from typing import Annotated
+
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlalchemy import or_, select
 
-from app.api.deps import DbDep, PrincipalDep
+from app.api.deps import DbDep, Principal, require_role
+from app.models.identity import Role
 from app.models.units import UnitDefinition
 
 router = APIRouter(prefix="/units", tags=["units"])
@@ -29,7 +32,10 @@ class UnitListResponse(BaseModel):
 
 
 @router.get("")
-def list_units(db: DbDep, principal: PrincipalDep) -> UnitListResponse:
+def list_units(
+    db: DbDep,
+    principal: Annotated[Principal, Depends(require_role(Role.VIEWER))],
+) -> UnitListResponse:
     rows = (
         db.execute(
             select(UnitDefinition)

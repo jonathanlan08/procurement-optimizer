@@ -44,6 +44,7 @@ Security, per this task's brief:
 from __future__ import annotations
 
 from typing import Annotated
+from urllib.parse import quote
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
@@ -106,10 +107,14 @@ DocumentServiceDep = Annotated[DocumentService, Depends(get_document_service)]
 
 
 def _read_upload_within_limit(file: UploadFile, max_bytes: int) -> bytes:
-    """Streamed size check: reads in fixed-size chunks and aborts with `413`
-    the moment the running total exceeds `max_bytes`, instead of buffering an
-    arbitrarily large upload into memory first (04-document-pipeline.md §2:
-    "Enforced while streaming, not after buffering")."""
+    """Chunked size check bounding what THIS handler holds in memory. It is
+    NOT the first line of defense: FastAPI resolves `UploadFile` by parsing
+    the multipart body before the handler runs, and Starlette spools file
+    parts to a temp file with no size limit of its own — so oversized
+    DECLARED bodies are rejected pre-routing by `BodySizeLimitMiddleware`
+    (app/api/middleware.py), and a chunked body without Content-Length must
+    be capped by the reverse proxy (DEPLOYMENT.md §8). This check remains
+    authoritative for the exact per-file limit."""
     buf = bytearray()
     while True:
         chunk = file.file.read(_READ_CHUNK_BYTES)
@@ -206,6 +211,22 @@ def get_document(
     return DocumentResponse.from_model(document)
 
 
+def _content_disposition(filename: str) -> str:
+    """RFC 6266 attachment header. Starlette encodes response headers as
+    latin-1, so a sanitized-but-non-Latin-1 filename (e.g. a CJK supplier
+    document name) placed directly in `filename="..."` raises
+    `UnicodeEncodeError` and permanently 500s the download (2026-08 security
+    audit, MEDIUM-3). Send an ASCII fallback plus the RFC 5987 `filename*`
+    form, which every current browser prefers when present."""
+    ascii_fallback = (
+        filename.encode("ascii", "replace").decode("ascii").replace('"', "_")
+    )
+    return (
+        f'attachment; filename="{ascii_fallback}"; '
+        f"filename*=UTF-8''{quote(filename, safe='')}"
+    )
+
+
 @router.get("/{document_id}/content")
 def download_document_content(
     document_id: UUID,
@@ -213,7 +234,7 @@ def download_document_content(
     _principal: Annotated[Principal, Depends(require_role(Role.VIEWER))],
 ) -> StreamingResponse:
     data, content_type, safe_filename = service.download(document_id)
-    headers = {"Content-Disposition": f'attachment; filename="{safe_filename}"'}
+    headers = {"Content-Disposition": _content_disposition(safe_filename)}
     return StreamingResponse(iter([data]), media_type=content_type, headers=headers)
 
 

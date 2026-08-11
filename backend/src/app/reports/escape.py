@@ -30,8 +30,13 @@ def escape_formula_cell(value: str) -> str:
     """Prefix `value` with `'` when it starts with a character a spreadsheet
     application could interpret as the start of a formula/command
     (`=`, `+`, `-`, `@`) or a whitespace-based injection technique
-    (tab, carriage return). Anything else is returned unchanged."""
-    if value.startswith(_DANGEROUS_PREFIXES):
+    (tab, carriage return). The check runs on the LEADING-WHITESPACE-STRIPPED
+    value — matching the ingress check in `app.importing.part_import_parser` —
+    so `" =HYPERLINK(...)"` and `"\\n=..."` are escaped too (2026-08 security
+    audit, LOW-9). Anything else is returned unchanged."""
+    if value.lstrip().startswith(_DANGEROUS_PREFIXES) or value.startswith(
+        _DANGEROUS_PREFIXES
+    ):
         return "'" + value
     return value
 

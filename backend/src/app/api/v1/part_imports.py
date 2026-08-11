@@ -83,9 +83,11 @@ def _determine_format(filename: str | None) -> PartImportFormat:
 
 
 def _read_upload_within_limit(file: UploadFile, max_bytes: int) -> bytes:
-    """Streamed size check: reads in fixed-size chunks and aborts with `413`
-    the moment the running total exceeds `max_bytes`, instead of buffering an
-    arbitrarily large upload into memory before ever looking at its size."""
+    """Chunked size check bounding what THIS handler holds in memory — not
+    the first line of defense (Starlette spools multipart file parts to disk
+    before the handler runs); oversized declared bodies are rejected
+    pre-routing by `BodySizeLimitMiddleware`, and chunked bodies need the
+    reverse-proxy cap documented in DEPLOYMENT.md §8."""
     buf = bytearray()
     while True:
         chunk = file.file.read(_READ_CHUNK_BYTES)

@@ -61,10 +61,12 @@ preserved as history.
 
 **3 · Quotes — manual or extracted from documents.** Upload a PDF, scanned image, CSV, or
 XLSX. Every upload is treated as hostile: type decided by **magic bytes**, filenames
-sanitized to display-only metadata, storage keys server-generated and org-namespaced, size
-and row/column caps enforced. Document text is then wrapped in a **per-request nonce fence**
-before it reaches any AI provider, and scanned by an injection canary that *flags without
-blocking*. Extracted fields carry per-field confidence bands (≥ 0.95 high, ≥ 0.60 medium,
+sanitized to display-only metadata, storage keys server-generated and org-namespaced, and
+size, row/column, and decompression-bomb bounds enforced. Document text is scanned by an
+injection canary that *flags without blocking* (zero-width-evasion-normalized), and the
+**per-request nonce fence** is the mandatory envelope any future AI provider must receive
+document text through — the shipped mock answers from committed fixtures and never sees a
+prompt at all. Extracted fields carry per-field confidence bands (≥ 0.95 high, ≥ 0.60 medium,
 below 0.60 low), and **materialization is blocked while any low-confidence field is
 unconfirmed**. Mock-provider results are labelled "Simulated" wherever they surface.
 

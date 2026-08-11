@@ -218,6 +218,14 @@ it anywhere real:
 
 - set `PO_ENVIRONMENT=prod`, a real `PO_SECRET_KEY`, and a tight `PO_ALLOWED_ORIGINS`;
 - terminate TLS in front of the app (the `Secure` cookie flag and HSTS assume HTTPS);
+- cap request bodies at the proxy (`client_max_body_size 21m;` in nginx, matching
+  `PO_MAX_UPLOAD_BYTES` + slack): the app rejects oversized **declared** bodies
+  pre-routing, but a chunked upload without `Content-Length` is only bounded by the proxy;
+- if the app runs behind that proxy, start uvicorn with `--proxy-headers
+  --forwarded-allow-ips=<proxy address>` — otherwise every client shares the proxy's IP
+  for rate limiting (one shared login bucket) and `audit_events.ip_address` records the
+  proxy, not the client; never use a permissive `--forwarded-allow-ips=*`, which would
+  make the per-IP rate limit header-spoofable;
 - replace the in-memory rate limiter with a shared store — it is per-process;
 - `REVOKE UPDATE, DELETE ON audit_events` from the application role, as belt-and-braces
   alongside the append-only triggers (development runs as the table owner);

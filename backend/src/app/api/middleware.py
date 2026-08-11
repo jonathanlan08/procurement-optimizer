@@ -110,11 +110,18 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
         now = time.monotonic()
         if key not in self._hits and len(self._hits) >= self._max_keys:
-            # evict entries whose windows have fully expired; if none have,
-            # drop the oldest-inserted (dict preserves insertion order)
+            # Evict only entries whose windows have fully expired. NEVER evict a
+            # key with fresh hits: oldest-inserted eviction let an address-spray
+            # reset the sprayer's own auth counter (2026-08 security audit,
+            # MEDIUM-4). If every key is active, new clients share one bounded
+            # overflow bucket instead — existing counters survive, and the spray
+            # itself gets collectively rate-limited.
             stale = [k for k, w in self._hits.items() if not w or now - w[-1] > 60.0]
-            for k in stale[:1000] or list(self._hits)[:100]:
-                self._hits.pop(k, None)
+            if stale:
+                for k in stale[:1000]:
+                    self._hits.pop(k, None)
+            else:
+                key = f"{'auth' if is_auth else 'general'}:overflow"
         window = self._hits[key]
         while window and now - window[0] > 60.0:
             window.popleft()
@@ -135,4 +142,54 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                 headers={"Retry-After": "60"},
             )
         window.append(now)
+        return await call_next(request)
+
+
+class BodySizeLimitMiddleware(BaseHTTPMiddleware):
+    """Reject oversized request bodies from the Content-Length header BEFORE
+    routing. FastAPI resolves `UploadFile` by awaiting `request.form()`, and
+    Starlette's multipart parser spools file parts to disk with no size limit —
+    so the route-level 413 checks only fire after the whole body is already on
+    disk (2026-08 security audit, MEDIUM-2). This closes the declared-length
+    path; a chunked body without Content-Length still spools, which is why
+    DEPLOYMENT.md §8 requires a reverse-proxy body cap (client_max_body_size)
+    in front of any real deployment.
+
+    The cap is max_upload_bytes plus slack for multipart framing and ordinary
+    JSON bodies — this is a guard against gigabyte-scale abuse, not the exact
+    per-file limit (the route-level streamed check stays authoritative)."""
+
+    _SLACK_BYTES = 1024 * 1024
+
+    def __init__(self, app: ASGIApp, *, settings: Settings) -> None:
+        super().__init__(app)
+        self._max_bytes = settings.max_upload_bytes + self._SLACK_BYTES
+
+    async def dispatch(
+        self, request: Request, call_next: RequestResponseEndpoint
+    ) -> Response:
+        content_length = request.headers.get("content-length")
+        if content_length is not None:
+            try:
+                declared = int(content_length)
+            except ValueError:
+                declared = 0
+            if declared > self._max_bytes:
+                from datetime import UTC, datetime
+
+                from starlette.responses import JSONResponse
+
+                from app.core.errors import PayloadTooLargeError
+
+                err = PayloadTooLargeError(
+                    f"Request body exceeds the maximum allowed size of "
+                    f"{self._max_bytes} bytes."
+                )
+                return JSONResponse(
+                    status_code=err.status,
+                    content=err.envelope(
+                        getattr(request.state, "request_id", ""),
+                        datetime.now(UTC).isoformat(),
+                    ),
+                )
         return await call_next(request)

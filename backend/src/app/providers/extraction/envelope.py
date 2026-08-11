@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import re
 import secrets
+import unicodedata
 from dataclasses import dataclass
 
 SYSTEM_INSTRUCTIONS = """You extract structured data from supplier quotation documents.
@@ -53,10 +54,22 @@ def _neutralize_fences(text: str, nonce: str) -> str:
 
 
 # Instruction-like phrases that legitimate quotes rarely contain. Matching is
-# a FLAG, not a block: the run is marked, audited, and surfaced for review.
+# a FLAG, not a block: the run is marked, audited, and surfaced for review —
+# a false positive costs one review banner, never data. Text is normalized
+# first (zero-width characters stripped, NFKC) so "Ign​ore all previous
+# instructions" cannot slip between the characters of a pattern (2026-08
+# security audit, LOW-8).
 _CANARY_PATTERNS: tuple[re.Pattern[str], ...] = tuple(
     re.compile(p, re.IGNORECASE)
     for p in (
+        # verb + (short gap) + instruction-ish object, any phrasing between:
+        # catches "ignore the above instructions", "override these rules",
+        # "forget your prior directives", "disregard previous instructions"
+        r"(ignore|disregard|forget|override)\b[^.\n]{0,40}"
+        r"\b(instructions?|rules?|directives?|prompts?)",
+        r"(ignore|disregard)\s+the\s+above",
+        r"forget\s+everything",
+        r"\bnew\s+directive\b",
         r"ignore\s+(all\s+|any\s+)?(previous|prior|above|earlier)\s+instructions",
         r"disregard\s+(all\s+|any\s+)?(previous|prior|above|earlier)",
         r"you\s+are\s+now\s+",
@@ -66,9 +79,18 @@ _CANARY_PATTERNS: tuple[re.Pattern[str], ...] = tuple(
         r"reveal\s+(your|the)\s+(instructions|prompt|system)",
         r"do\s+not\s+(tell|inform)\s+the\s+user",
         r"instead\s+of\s+extracting",
-        r"set\s+(the\s+)?(price|confidence|total)\s+to\b",
+        r"set\s+(the\s+)?(price|confidence|total|unit[\s_]?price)\s+to\b",
     )
 )
+
+# Zero-width / invisible code points an attacker can thread through a phrase
+# to defeat pattern matching while the rendered text still reads normally:
+# ZWSP, ZWNJ, ZWJ, word joiner, BOM/ZWNBSP, soft hyphen.
+_ZERO_WIDTH_RE = re.compile("[​‌‍⁠﻿­]")
+
+
+def _normalize_for_scan(text: str) -> str:
+    return unicodedata.normalize("NFKC", _ZERO_WIDTH_RE.sub("", text))
 
 
 @dataclass(frozen=True, slots=True)
@@ -80,8 +102,9 @@ class CanaryScan:
 def scan_for_injection(pages: list[str]) -> CanaryScan:
     found: list[str] = []
     for text in pages:
+        normalized = _normalize_for_scan(text)
         for pattern in _CANARY_PATTERNS:
-            m = pattern.search(text)
+            m = pattern.search(normalized)
             if m:
                 snippet = m.group(0)[:80]
                 if snippet not in found:

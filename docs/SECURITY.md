@@ -129,8 +129,19 @@ Covered in detail in [DOCUMENT_PIPELINE.md](DOCUMENT_PIPELINE.md) §1. Summary o
   must agree with the sniffed kind;
 - CSV rejected if it contains NUL bytes or fails to decode;
 - XLSX parsed `read_only=True, data_only=True` — **no formula evaluation** — with row/column
-  caps (10 000 × 50) enforced during acquisition;
-- size cap `PO_MAX_UPLOAD_BYTES` (20 MiB default), empty files rejected;
+  caps (10 000 × 50) plus decompression-bomb bounds checked against the zip directory's
+  declared sizes **before** any parsing (100:1 ratio cap, 100 MiB absolute cap), a
+  32,767-character per-cell cap (Excel's own limit), and a 10 M-character total
+  acquired-text cap; PDFs are capped at 500 pages and the same total-text bound
+  (all in `backend/src/app/ingestion/acquisition.py`; added after the 2026-08
+  security audit demonstrated a 68 KiB upload expanding to 67 MB through the
+  row/column caps alone);
+- size cap `PO_MAX_UPLOAD_BYTES` (20 MiB default), empty files rejected. Oversized
+  **declared** bodies are rejected pre-routing by `BodySizeLimitMiddleware` (Starlette
+  would otherwise spool the whole multipart body to a temp file before the route-level
+  check runs); a chunked body without `Content-Length` still spools, which is why
+  [DEPLOYMENT.md](DEPLOYMENT.md) §8 requires a reverse-proxy body cap
+  (`client_max_body_size`) in any real deployment;
 - filenames sanitized and treated as display metadata only; **storage keys are
   server-generated UUID hex + canonical extension** and re-validated against a strict regex
   in every storage method;
@@ -168,15 +179,23 @@ Document content is **data, never instructions**
 (`backend/src/app/providers/extraction/envelope.py`):
 
 - a per-request `secrets.token_hex(16)` nonce fences the document text; the nonce is
-  generated after upload, so a document cannot forge a closing fence;
+  generated after upload, so a document cannot forge a closing fence. **Honesty note:**
+  because no external AI provider ships in v0.1 (the mock answers from committed
+  fixtures and never receives a prompt), `build_document_envelope` has no caller today —
+  it is the mandatory entry point for the future Anthropic adapter, not an active
+  control in this build;
 - lookalike fence markers inside document text are neutralized anyway;
 - system instructions sit outside the fences and state that everything inside is untrusted
   third-party data, that unstated fields are `null`, and that text addressing the model has
   no effect;
-- a canary detector scans the acquired text for ten instruction-shaped patterns and **flags
-  without blocking**: a `security.injection_suspected` audit event is written with the matched
-  snippets, the verdict is stored on the run, every field is marked `injection_flagged`, and
-  the review UI shows a banner;
+- a canary detector scans the acquired text for instruction-shaped patterns — after
+  stripping zero-width characters and NFKC-normalizing, so "Ign​ore all previous
+  instructions" cannot slip between a pattern's letters — and **flags without blocking**:
+  a `security.injection_suspected` audit event is written with the matched snippets, the
+  verdict is stored on the run, every field is marked `injection_flagged`, and the review
+  UI shows a banner. Pattern matching is heuristic by nature; a paraphrase can evade it,
+  which is acceptable for a flag-only control whose hard guarantees live elsewhere
+  (human confirmation gates, the numeric cross-check);
 - providers must never execute tools, browse, or act on text found in documents; provider
   output stays untrusted until it clears the validation ladder.
 
@@ -291,3 +310,6 @@ Stated plainly; also tracked in [ROADMAP.md](ROADMAP.md).
 | No `pip-audit` / licence gate in CI | Planned; today CI runs ruff, mypy, migrations, tests, and gitleaks |
 | No OpenAPI drift job | `docs/openapi.json` is not committed in this build |
 | Inline job execution | A long solve holds an HTTP request open; there is no queue or backpressure |
+| No in-app proxy-header handling | Behind a reverse proxy the app must be started with uvicorn's `--proxy-headers --forwarded-allow-ips=<proxy>` (DEPLOYMENT.md §8) or all clients share one rate-limit bucket and audit rows record the proxy's IP |
+| Chunked uploads spool before rejection | A body without `Content-Length` bypasses `BodySizeLimitMiddleware` and is bounded only by the reverse-proxy cap (DEPLOYMENT.md §8) |
+| Canary patterns are heuristic | Zero-width evasion is normalized away, but a paraphrased injection can still evade the flag; the hard gates are human confirmation and the numeric cross-check |

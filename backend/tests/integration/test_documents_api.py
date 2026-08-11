@@ -398,7 +398,12 @@ class TestDocumentDownload:
         assert resp.status_code == 200, resp.text
         assert resp.content == PDF_BYTES
         assert resp.headers["content-type"].startswith("application/pdf")
-        assert resp.headers["content-disposition"] == 'attachment; filename="Round Trip.pdf"'
+        disposition = resp.headers["content-disposition"]
+        # RFC 6266 (2026-08 security audit MEDIUM-3): ASCII fallback plus the
+        # UTF-8 filename* form, and always latin-1-encodable.
+        assert disposition.startswith('attachment; filename="Round Trip.pdf"')
+        assert "filename*=UTF-8''Round%20Trip.pdf" in disposition
+        disposition.encode("latin-1")
         assert resp.headers["x-content-type-options"] == "nosniff"
 
     def test_viewer_can_download(

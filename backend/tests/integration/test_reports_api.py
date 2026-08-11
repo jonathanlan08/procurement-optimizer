@@ -689,3 +689,72 @@ class TestCrossOrgIsolation:
         )
         assert resp.status_code == 404
         assert resp.json()["error"]["code"] == "not_found"
+
+
+class TestFailedReportErrorHygiene:
+    """2026-08 security audit MEDIUM-6: a renderer failure's wire-visible
+    error_message must not leak exception detail (SQL, paths, secrets), and
+    OrgIsolationViolation must propagate loudly instead of becoming a stored
+    `failed` row."""
+
+    def test_error_message_is_generic_and_leak_free(
+        self,
+        client: TestClient,
+        org_a: dict[str, Any],
+        migrated_engine: Engine,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        headers = _headers(_login_as(client, org_a, Role.ANALYST))
+        ctx = _setup_two_supplier_case(client, headers, migrated_engine, org_a)
+        scenario = _create_and_complete_scenario(client, headers, ctx["rfq"]["id"])
+
+        def _boom(*args: Any, **kwargs: Any) -> bytes:
+            raise RuntimeError("hunter2 at /private/secret/path in SELECT * FROM users")
+
+        monkeypatch.setattr("app.services.report_service.render", _boom)
+        resp = _generate_report(
+            client, headers,
+            scenario_id=scenario["id"], report_type="scenario_summary", format="csv",
+        )
+        assert resp.status_code == 201, resp.text
+        body = resp.json()
+        assert body["state"] == "failed"
+        message = body["error_message"]
+        assert "hunter2" not in message
+        assert "/private" not in message
+        assert "SELECT" not in message
+        assert "RuntimeError" in message  # type name only, plus the report id
+
+    def test_org_isolation_violation_propagates_not_stored(
+        self,
+        client: TestClient,
+        org_a: dict[str, Any],
+        migrated_engine: Engine,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        from app.repositories.base import OrgIsolationViolation
+
+        headers = _headers(_login_as(client, org_a, Role.ANALYST))
+        ctx = _setup_two_supplier_case(client, headers, migrated_engine, org_a)
+        scenario = _create_and_complete_scenario(client, headers, ctx["rfq"]["id"])
+
+        def _violate(*args: Any, **kwargs: Any) -> bytes:
+            raise OrgIsolationViolation("cross-org read detected")
+
+        monkeypatch.setattr("app.services.report_service.render", _violate)
+        with pytest.raises(OrgIsolationViolation):
+            _generate_report(
+                client, headers,
+                scenario_id=scenario["id"], report_type="scenario_summary", format="csv",
+            )
+
+        # The transaction rolled back: no failed row was persisted for it.
+        with migrated_engine.connect() as conn:
+            count = conn.execute(
+                sqltext(
+                    "SELECT count(*) FROM generated_reports"
+                    " WHERE scenario_id = :sid AND state = 'failed'"
+                ),
+                {"sid": scenario["id"]},
+            ).scalar_one()
+        assert count == 0

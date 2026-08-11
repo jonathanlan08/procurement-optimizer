@@ -35,6 +35,7 @@ from __future__ import annotations
 import contextlib
 import csv
 import io
+import zipfile
 from dataclasses import dataclass
 
 import openpyxl  # type: ignore[import-untyped]
@@ -51,6 +52,21 @@ from app.ingestion.file_validation import DocumentKind
 # and CSV (same row/column shape, same cost concern).
 MAX_ACQUIRED_ROWS = 10_000
 MAX_ACQUIRED_COLUMNS = 50
+# Decompression-bomb bounds for XLSX (a zip container): row/column caps alone do not bound
+# cost, because a single cell can carry an arbitrarily long inline string that DEFLATE
+# compresses ~1000:1 — a 68 KiB upload expanding to 67 MB in-process satisfied both caps
+# before these limits existed (2026-08 security audit, HIGH-1). Checked against the zip
+# directory's declared sizes BEFORE openpyxl parses anything.
+MAX_XLSX_DECOMPRESSION_RATIO = 100
+MAX_XLSX_DECOMPRESSED_BYTES = 100 * 1024 * 1024
+# Excel's own hard limit is 32,767 characters per cell; anything larger can only come from
+# a hand-crafted malicious container, never a real workbook.
+MAX_XLSX_CELL_CHARS = 32_767
+# Total acquired text per document, all pages combined — bounds DB row growth
+# (document_pages.text_layer) and downstream provider cost for every format.
+MAX_ACQUIRED_TEXT_CHARS = 10_000_000
+# PDFs: pypdf + pdfplumber both walk every page; a 20 MiB file can declare ~100k pages.
+MAX_PDF_PAGES = 500
 
 
 class AcquisitionLimitError(ValueError):
@@ -86,7 +102,20 @@ def acquire_pages(data: bytes, kind: DocumentKind) -> list[PageText]:
 
 def _acquire_pdf(data: bytes) -> list[PageText]:
     reader = PdfReader(io.BytesIO(data))
-    texts: list[str] = [(page.extract_text() or "") for page in reader.pages]
+    if len(reader.pages) > MAX_PDF_PAGES:
+        raise AcquisitionLimitError(
+            f"PDF exceeds the {MAX_PDF_PAGES}-page acquisition cap"
+        )
+    texts: list[str] = []
+    total_chars = 0
+    for page in reader.pages:
+        text = page.extract_text() or ""
+        total_chars += len(text)
+        if total_chars > MAX_ACQUIRED_TEXT_CHARS:
+            raise AcquisitionLimitError(
+                "PDF exceeds the total acquired-text cap"
+            )
+        texts.append(text)
 
     # Table extraction is a best-effort supplement to the pypdf text above; a pdfplumber
     # failure on a structurally-odd PDF must not discard text pypdf already produced.
@@ -131,10 +160,33 @@ def _acquire_csv(data: bytes) -> list[PageText]:
     return [PageText(page_number=1, text=text)]
 
 
+def _check_xlsx_decompression_bounds(data: bytes) -> None:
+    """Reject decompression bombs from the zip directory's own declared sizes, BEFORE
+    openpyxl inflates anything. Row/column caps cannot do this job: one 1x1 sheet with a
+    giant inline string satisfies both while expanding ~1000:1 (module constants)."""
+    try:
+        with zipfile.ZipFile(io.BytesIO(data)) as zf:
+            declared_total = sum(info.file_size for info in zf.infolist())
+    except zipfile.BadZipFile as exc:
+        raise AcquisitionLimitError("XLSX container is not a readable zip archive") from exc
+    if declared_total > MAX_XLSX_DECOMPRESSED_BYTES:
+        raise AcquisitionLimitError(
+            "XLSX declared decompressed size exceeds the "
+            f"{MAX_XLSX_DECOMPRESSED_BYTES}-byte acquisition cap"
+        )
+    if declared_total > MAX_XLSX_DECOMPRESSION_RATIO * max(len(data), 1):
+        raise AcquisitionLimitError(
+            "XLSX compression ratio exceeds the "
+            f"{MAX_XLSX_DECOMPRESSION_RATIO}:1 acquisition cap"
+        )
+
+
 def _acquire_xlsx(data: bytes) -> list[PageText]:
+    _check_xlsx_decompression_bounds(data)
     workbook = openpyxl.load_workbook(io.BytesIO(data), read_only=True, data_only=True)
     try:
         pages: list[PageText] = []
+        total_chars = 0
         for page_number, sheet_name in enumerate(workbook.sheetnames, start=1):
             worksheet = workbook[sheet_name]
             lines: list[str] = []
@@ -150,7 +202,13 @@ def _acquire_xlsx(data: bytes) -> list[PageText]:
                         "acquisition cap"
                     )
                 cells = [_cell_text(cell.value) for cell in row]
-                lines.append("|".join(cells))
+                line = "|".join(cells)
+                total_chars += len(line)
+                if total_chars > MAX_ACQUIRED_TEXT_CHARS:
+                    raise AcquisitionLimitError(
+                        "XLSX exceeds the total acquired-text cap"
+                    )
+                lines.append(line)
             pages.append(PageText(page_number=page_number, text="\n".join(lines)))
         return pages
     finally:
@@ -160,12 +218,24 @@ def _acquire_xlsx(data: bytes) -> list[PageText]:
 def _cell_text(value: object) -> str:
     if value is None:
         return ""
-    return str(value)
+    text = str(value)
+    if len(text) > MAX_XLSX_CELL_CHARS:
+        # Excel itself cannot produce a cell this long (module constants) — only a
+        # hand-crafted container can, so this is a limit violation, not data.
+        raise AcquisitionLimitError(
+            f"a cell exceeds the {MAX_XLSX_CELL_CHARS}-character acquisition cap"
+        )
+    return text
 
 
 __all__ = [
     "MAX_ACQUIRED_COLUMNS",
     "MAX_ACQUIRED_ROWS",
+    "MAX_ACQUIRED_TEXT_CHARS",
+    "MAX_PDF_PAGES",
+    "MAX_XLSX_CELL_CHARS",
+    "MAX_XLSX_DECOMPRESSED_BYTES",
+    "MAX_XLSX_DECOMPRESSION_RATIO",
     "AcquisitionLimitError",
     "PageText",
     "acquire_pages",

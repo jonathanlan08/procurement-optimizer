@@ -1,0 +1,239 @@
+/* Negotiation-briefs panel — attaches to the comparison workspace (see
+   ../comparison/ComparisonPage.tsx's insertion point). Provenance badges use
+   five distinct styles per MASTER.md's "never rely on color alone" rule for
+   data-source provenance labels; "ai_narrative" additionally gets an accent
+   border so it reads as clearly marked, not just another muted badge. */
+
+.briefs-panel {
+  margin-top: var(--space-2xl);
+}
+
+.briefs-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.briefs-list-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  font-size: 13px;
+  padding: var(--space-md) var(--space-lg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.briefs-list-row:hover {
+  border-color: var(--color-accent);
+  background: var(--color-background);
+}
+
+.briefs-list-supplier {
+  font-weight: 600;
+  color: var(--color-foreground);
+  flex: 1;
+}
+
+/* provenance badges — five distinct styles, always paired with a text label */
+.badge--brief-provenance-supplier_provided {
+  background: rgba(21, 128, 61, 0.1);
+  color: var(--color-positive);
+  border-color: rgba(21, 128, 61, 0.28);
+}
+
+.badge--brief-provenance-user_assumption {
+  background: rgba(3, 105, 161, 0.1);
+  color: var(--color-info);
+  border-color: rgba(3, 105, 161, 0.28);
+}
+
+.badge--brief-provenance-calculated {
+  background: var(--color-muted);
+  color: var(--color-secondary);
+  border-color: var(--color-border);
+}
+
+.badge--brief-provenance-ai_narrative {
+  background: rgba(3, 105, 161, 0.16);
+  color: var(--color-accent);
+  border: 1px dashed var(--color-accent);
+  font-weight: 700;
+}
+
+.badge--brief-provenance-missing {
+  background: rgba(180, 83, 9, 0.1);
+  color: var(--color-warning);
+  border-color: rgba(180, 83, 9, 0.28);
+}
+
+.badge--brief-needs-review {
+  background: rgba(180, 83, 9, 0.1);
+  color: var(--color-warning);
+  border-color: rgba(180, 83, 9, 0.28);
+}
+
+.badge--brief-simulated {
+  background: var(--color-muted);
+  color: var(--color-secondary);
+  border-color: var(--color-border);
+}
+
+.badge--brief-state-draft {
+  background: var(--color-muted);
+  color: var(--color-secondary);
+  border-color: var(--color-border);
+}
+
+.badge--brief-state-human_reviewed {
+  background: rgba(21, 128, 61, 0.1);
+  color: var(--color-positive);
+  border-color: rgba(21, 128, 61, 0.28);
+}
+
+/* generate form */
+
+.brief-targets-hint {
+  font-size: 12px;
+  color: var(--color-muted-foreground);
+  margin: var(--space-sm) 0 var(--space-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+/* drawer detail */
+
+.brief-detail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+}
+
+.brief-review-banner {
+  background: rgba(180, 83, 9, 0.1);
+  border: 1px solid rgba(180, 83, 9, 0.3);
+  color: var(--color-warning);
+  border-radius: var(--radius-sm);
+  padding: var(--space-md) var(--space-lg);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.brief-simulated-label {
+  background: var(--color-muted);
+  color: var(--color-secondary);
+  border-radius: var(--radius-sm);
+  padding: var(--space-md) var(--space-lg);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.brief-meta-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+  flex-wrap: wrap;
+}
+
+.brief-targets-grid {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-lg);
+}
+
+.brief-sections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.brief-section-row {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-lg);
+}
+
+.brief-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin-bottom: var(--space-sm);
+}
+
+.brief-section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-foreground);
+}
+
+.brief-section-text {
+  font-size: 13px;
+  color: var(--color-foreground);
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.brief-section-text--empty {
+  color: var(--color-muted-foreground);
+  font-style: italic;
+}
+
+.brief-email-callout {
+  background: rgba(220, 38, 38, 0.06);
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  color: var(--color-destructive);
+  border-radius: var(--radius-sm);
+  padding: var(--space-md) var(--space-lg);
+  font-size: 12px;
+  margin-bottom: var(--space-md);
+}
+
+.brief-email-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.brief-email-body-text {
+  white-space: pre-wrap;
+  font: inherit;
+  font-size: 13px;
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-md);
+  margin: 0;
+  max-height: 260px;
+  overflow: auto;
+}
+
+.brief-review-form {
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-xl);
+}
+
+.brief-data-list {
+  list-style: none;
+  margin: var(--space-sm) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.brief-data-list-item {
+  font-size: 12px;
+  color: var(--color-muted-foreground);
+}

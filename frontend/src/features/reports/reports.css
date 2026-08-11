@@ -1,0 +1,38 @@
+/* Reports page — generate form + reports table. Tone naming mirrors
+   ../comparison/ScenarioHistory.tsx's badge--scenario-state-* convention. */
+
+.reports-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: var(--space-xl) 0 var(--space-md);
+}
+
+.badge--report-state-info {
+  background: rgba(3, 105, 161, 0.1);
+  color: var(--color-info);
+  border-color: rgba(3, 105, 161, 0.28);
+}
+
+.badge--report-state-positive {
+  background: rgba(21, 128, 61, 0.1);
+  color: var(--color-positive);
+  border-color: rgba(21, 128, 61, 0.28);
+}
+
+.badge--report-state-destructive {
+  background: rgba(220, 38, 38, 0.08);
+  color: var(--color-destructive);
+  border-color: rgba(220, 38, 38, 0.28);
+}
+
+.badge--report-purged {
+  background: var(--color-muted);
+  color: var(--color-secondary);
+  border-color: var(--color-border);
+}
+
+.report-error-text {
+  color: var(--color-destructive);
+  font-size: 12px;
+}

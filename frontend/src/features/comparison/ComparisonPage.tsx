@@ -58,6 +58,7 @@ import { compareDecimalStrings } from "../../lib/decimalSort";
 import { formatMoney, isDecimalString } from "../../lib/money";
 import { isAdministratorOrAbove, isAnalystOrAbove } from "../../lib/roles";
 import { zodResolver } from "../../lib/zodResolver";
+import { BriefsPanel, type BriefSupplierOption } from "../briefs/BriefsPanel"; // ALLOWED insertion: negotiation briefs entry point
 import { usePart } from "../parts/api";
 import { quoteKeys, type QuoteLineResponse, type QuoteResponse } from "../quotes/api";
 import { useRfqQuotes } from "../quotes/api";
@@ -786,6 +787,20 @@ export function ComparisonPage() {
         }
       : null;
 
+  // Negotiation-briefs pick-list: the scenario's own scoring result already
+  // carries every scored, non-excluded supplier's name (ALLOWED insertion —
+  // see ../briefs/BriefsPanel.tsx's file header for why this is passed in
+  // rather than re-fetched).
+  const briefSupplierOptions: BriefSupplierOption[] = useMemo(
+    () =>
+      scenario
+        ? scenario.scoring_result.scores
+            .filter((s) => !s.excluded)
+            .map((s) => ({ id: s.supplier_id, label: s.supplier_name }))
+        : [],
+    [scenario],
+  );
+
   return (
     <section className="comparison-page">
       <header className="page-toolbar">
@@ -868,6 +883,12 @@ export function ComparisonPage() {
                 allocation={scenario.allocation_result}
                 currency={rfqQuery.data.base_currency}
                 savedResult={savedResultVersions}
+              />
+              {/* ALLOWED insertion: negotiation briefs entry point */}
+              <BriefsPanel
+                scenarioId={scenario.id}
+                supplierOptions={briefSupplierOptions}
+                canWrite={canWrite}
               />
             </>
           )}

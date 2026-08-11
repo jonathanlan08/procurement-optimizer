@@ -1,0 +1,470 @@
+{
+  "schema_version": "1.0",
+  "supplier_name": {
+    "value": "Pacific Metal Fabricación S.A. de C.V.",
+    "raw_text": "Pacific Metal Fabricación S.A. de C.V.",
+    "confidence": 0.93,
+    "page_number": 1
+  },
+  "quote_number": {
+    "value": "PMF-2026-0917",
+    "raw_text": "PMF-2026-0917",
+    "confidence": 0.91,
+    "page_number": 1
+  },
+  "quote_date": {
+    "value": "2026-02-22",
+    "raw_text": "2026-02-22",
+    "confidence": 0.9,
+    "page_number": 1
+  },
+  "expiration_date": {
+    "value": "2026-03-24",
+    "raw_text": "2026-03-24",
+    "confidence": 0.85,
+    "page_number": 1
+  },
+  "currency": {
+    "value": "MXN",
+    "raw_text": "MXN",
+    "confidence": 0.92,
+    "page_number": 1
+  },
+  "lines": [
+    {
+      "part_number": {
+        "value": "MF-PLT-021",
+        "raw_text": "MF-PLT-021",
+        "confidence": 0.9,
+        "page_number": 1
+      },
+      "description": {
+        "value": "Mounting Plate, Aluminum 5052, 3mm",
+        "raw_text": "Mounting Plate, Aluminum 5052, 3mm",
+        "confidence": 0.82,
+        "page_number": 1
+      },
+      "quantity": {
+        "value": "1200",
+        "raw_text": "1,200",
+        "confidence": 0.88,
+        "page_number": 1
+      },
+      "unit_of_measure": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "unit_price": {
+        "value": "36.80",
+        "raw_text": "$36.80",
+        "confidence": 0.55,
+        "page_number": 1
+      },
+      "moq": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "lead_time_days": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "country_of_origin": {
+        "value": "Mexico",
+        "raw_text": "Mexico",
+        "confidence": 0.7,
+        "page_number": 1
+      },
+      "production_capacity": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "tooling_cost": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "setup_cost": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "packaging_cost": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "shipping_cost": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "insurance_cost": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "tariff_amount": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "duty_amount": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "customs_fees": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "tax_amount": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "price_breaks": [
+        {
+          "min_quantity": {
+            "value": "1",
+            "raw_text": "1",
+            "confidence": 0.8,
+            "page_number": 1
+          },
+          "max_quantity": {
+            "value": "499",
+            "raw_text": "499",
+            "confidence": 0.8,
+            "page_number": 1
+          },
+          "unit_price": {
+            "value": "42.50",
+            "raw_text": "$42.50",
+            "confidence": 0.82,
+            "page_number": 1
+          }
+        },
+        {
+          "min_quantity": {
+            "value": "500",
+            "raw_text": "500",
+            "confidence": 0.82,
+            "page_number": 1
+          },
+          "max_quantity": {
+            "value": "1199",
+            "raw_text": "1,199",
+            "confidence": 0.82,
+            "page_number": 1
+          },
+          "unit_price": {
+            "value": "39.20",
+            "raw_text": "$39.20",
+            "confidence": 0.83,
+            "page_number": 1
+          }
+        },
+        {
+          "min_quantity": {
+            "value": "1200",
+            "raw_text": "1,200+",
+            "confidence": 0.85,
+            "page_number": 1
+          },
+          "max_quantity": {
+            "value": null,
+            "raw_text": "—",
+            "confidence": 0.3,
+            "page_number": 1
+          },
+          "unit_price": {
+            "value": "36.80",
+            "raw_text": "$36.80",
+            "confidence": 0.85,
+            "page_number": 1
+          }
+        }
+      ]
+    },
+    {
+      "part_number": {
+        "value": "MF-PLT-022",
+        "raw_text": "MF-PLT-022",
+        "confidence": 0.89,
+        "page_number": 1
+      },
+      "description": {
+        "value": "Cover Plate, Aluminum 5052, 2mm",
+        "raw_text": "Cover Plate, Aluminum 5052, 2mm",
+        "confidence": 0.8,
+        "page_number": 1
+      },
+      "quantity": {
+        "value": "800",
+        "raw_text": "800",
+        "confidence": 0.85,
+        "page_number": 1
+      },
+      "unit_of_measure": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "unit_price": {
+        "value": "33.10",
+        "raw_text": "$33.10",
+        "confidence": 0.83,
+        "page_number": 1
+      },
+      "moq": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "lead_time_days": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "country_of_origin": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "production_capacity": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "tooling_cost": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "setup_cost": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "packaging_cost": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "shipping_cost": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "insurance_cost": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "tariff_amount": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "duty_amount": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "customs_fees": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "tax_amount": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "price_breaks": []
+    },
+    {
+      "part_number": {
+        "value": "MF-CLIP-005",
+        "raw_text": "MF-CLIP-005",
+        "confidence": 0.87,
+        "page_number": 1
+      },
+      "description": {
+        "value": "Retaining Clip, Spring Steel",
+        "raw_text": "Retaining Clip, Spring Steel",
+        "confidence": 0.78,
+        "page_number": 1
+      },
+      "quantity": {
+        "value": "6000",
+        "raw_text": "6,000",
+        "confidence": 0.82,
+        "page_number": 1
+      },
+      "unit_of_measure": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "unit_price": {
+        "value": "1.55",
+        "raw_text": "$1.55",
+        "confidence": 0.8,
+        "page_number": 1
+      },
+      "moq": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "lead_time_days": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "country_of_origin": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "production_capacity": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "tooling_cost": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "setup_cost": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "packaging_cost": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "shipping_cost": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "insurance_cost": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "tariff_amount": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "duty_amount": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "customs_fees": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "tax_amount": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "price_breaks": []
+    }
+  ],
+  "terms": {
+    "payment_terms": {
+      "value": "50% deposit, balance Net 30",
+      "raw_text": "50% deposit, balance Net 30",
+      "confidence": 0.75,
+      "page_number": 1
+    },
+    "shipping_terms": {
+      "value": "FOB Manzanillo",
+      "raw_text": "FOB Manzanillo",
+      "confidence": 0.88,
+      "page_number": 1
+    },
+    "warranty": {
+      "value": "6 months",
+      "raw_text": "6 months",
+      "confidence": 0.8,
+      "page_number": 1
+    },
+    "exceptions": {
+      "value": null,
+      "raw_text": null,
+      "confidence": 0.0,
+      "page_number": null
+    },
+    "exclusions": {
+      "value": null,
+      "raw_text": null,
+      "confidence": 0.0,
+      "page_number": null
+    },
+    "notes": {
+      "value": null,
+      "raw_text": null,
+      "confidence": 0.0,
+      "page_number": null
+    }
+  },
+  "overall_confidence": 0.78,
+  "provider_notes": "golden fixture: OCR-derived text (scanned image); acquisition confidence reduced",
+  "injection_suspected": false
+}

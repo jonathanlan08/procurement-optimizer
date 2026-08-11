@@ -1,0 +1,409 @@
+{
+  "schema_version": "1.0",
+  "supplier_name": {
+    "value": "Baltic Casting Works SIA",
+    "raw_text": "Baltic Casting Works SIA",
+    "confidence": 0.98,
+    "page_number": 1
+  },
+  "quote_number": {
+    "value": "BC-Q-4471",
+    "raw_text": "BC-Q-4471",
+    "confidence": 0.97,
+    "page_number": 1
+  },
+  "quote_date": {
+    "value": "2026-04-18",
+    "raw_text": "2026-04-18",
+    "confidence": 0.98,
+    "page_number": 1
+  },
+  "expiration_date": {
+    "value": "2026-05-18",
+    "raw_text": "2026-05-18",
+    "confidence": 0.96,
+    "page_number": 1
+  },
+  "currency": {
+    "value": "EUR",
+    "raw_text": "EUR",
+    "confidence": 0.99,
+    "page_number": 1
+  },
+  "lines": [
+    {
+      "part_number": {
+        "value": "MF-CAST-300",
+        "raw_text": "MF-CAST-300",
+        "confidence": 0.99,
+        "page_number": 1
+      },
+      "description": {
+        "value": "Bearing Housing, Ductile Iron Casting",
+        "raw_text": "Bearing Housing, Ductile Iron Casting",
+        "confidence": 0.96,
+        "page_number": 1
+      },
+      "quantity": {
+        "value": "400",
+        "raw_text": "400",
+        "confidence": 0.99,
+        "page_number": 1
+      },
+      "unit_of_measure": {
+        "value": "each",
+        "raw_text": "each",
+        "confidence": 0.9,
+        "page_number": 1
+      },
+      "unit_price": {
+        "value": "18.50",
+        "raw_text": "18.50",
+        "confidence": 0.99,
+        "page_number": 1
+      },
+      "moq": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "lead_time_days": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "country_of_origin": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "production_capacity": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "tooling_cost": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "setup_cost": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "packaging_cost": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "shipping_cost": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "insurance_cost": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "tariff_amount": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "duty_amount": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "customs_fees": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "tax_amount": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "price_breaks": []
+    },
+    {
+      "part_number": {
+        "value": "MF-CAST-301",
+        "raw_text": "MF-CAST-301",
+        "confidence": 0.99,
+        "page_number": 1
+      },
+      "description": {
+        "value": "Pump Body, Ductile Iron Casting",
+        "raw_text": "Pump Body, Ductile Iron Casting",
+        "confidence": 0.96,
+        "page_number": 1
+      },
+      "quantity": {
+        "value": "250",
+        "raw_text": "250",
+        "confidence": 0.99,
+        "page_number": 1
+      },
+      "unit_of_measure": {
+        "value": "each",
+        "raw_text": "each",
+        "confidence": 0.9,
+        "page_number": 1
+      },
+      "unit_price": {
+        "value": "26.75",
+        "raw_text": "26.75",
+        "confidence": 0.99,
+        "page_number": 1
+      },
+      "moq": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "lead_time_days": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "country_of_origin": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "production_capacity": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "tooling_cost": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "setup_cost": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "packaging_cost": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "shipping_cost": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "insurance_cost": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "tariff_amount": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "duty_amount": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "customs_fees": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "tax_amount": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "price_breaks": []
+    },
+    {
+      "part_number": {
+        "value": "MF-CAST-302",
+        "raw_text": "MF-CAST-302",
+        "confidence": 0.99,
+        "page_number": 1
+      },
+      "description": {
+        "value": "Flange Adapter, Grey Iron Casting",
+        "raw_text": "Flange Adapter, Grey Iron Casting",
+        "confidence": 0.96,
+        "page_number": 1
+      },
+      "quantity": {
+        "value": "900",
+        "raw_text": "900",
+        "confidence": 0.99,
+        "page_number": 1
+      },
+      "unit_of_measure": {
+        "value": "each",
+        "raw_text": "each",
+        "confidence": 0.9,
+        "page_number": 1
+      },
+      "unit_price": {
+        "value": "9.20",
+        "raw_text": "9.20",
+        "confidence": 0.99,
+        "page_number": 1
+      },
+      "moq": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "lead_time_days": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "country_of_origin": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "production_capacity": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "tooling_cost": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "setup_cost": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "packaging_cost": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "shipping_cost": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "insurance_cost": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "tariff_amount": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "duty_amount": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "customs_fees": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "tax_amount": {
+        "value": null,
+        "raw_text": null,
+        "confidence": 0.0,
+        "page_number": null
+      },
+      "price_breaks": []
+    }
+  ],
+  "terms": {
+    "payment_terms": {
+      "value": null,
+      "raw_text": null,
+      "confidence": 0.0,
+      "page_number": null
+    },
+    "shipping_terms": {
+      "value": "FOB Riga",
+      "raw_text": "FOB Riga",
+      "confidence": 0.97,
+      "page_number": 1
+    },
+    "warranty": {
+      "value": "12 months",
+      "raw_text": "12 months",
+      "confidence": 0.95,
+      "page_number": 1
+    },
+    "exceptions": {
+      "value": null,
+      "raw_text": null,
+      "confidence": 0.0,
+      "page_number": null
+    },
+    "exclusions": {
+      "value": null,
+      "raw_text": null,
+      "confidence": 0.0,
+      "page_number": null
+    },
+    "notes": {
+      "value": null,
+      "raw_text": null,
+      "confidence": 0.0,
+      "page_number": null
+    }
+  },
+  "overall_confidence": 0.93,
+  "provider_notes": "golden fixture: native XLSX cell values; payment terms cell was blank",
+  "injection_suspected": false
+}

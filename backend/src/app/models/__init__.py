@@ -8,6 +8,22 @@ from app.models.base import (
     org_identity_constraint,
 )
 from app.models.boms import BOM_STATUS_ENUM, BillOfMaterialLine, BillOfMaterials, BomStatus
+from app.models.documents import (
+    ALLOWED_EXTRACTION_RUN_TRANSITIONS,
+    CONFIDENCE_BAND_ENUM,
+    DOCUMENT_STATE_ENUM,
+    EXTRACTION_STATE_ENUM,
+    MATCH_STRATEGY_ENUM,
+    DocumentPage,
+    DocumentState,
+    ExtractionField,
+    ExtractionRun,
+    ExtractionRunState,
+    MatchStrategy,
+    PartMatchCandidate,
+    QuoteCorrection,
+    QuoteDocument,
+)
 from app.models.fx import ExchangeRate
 from app.models.identity import (
     ROLE_ENUM,
@@ -52,12 +68,17 @@ from app.models.suppliers import Supplier, SupplierContact, SupplierPerformanceR
 from app.models.units import DIMENSION_ENUM, UnitConversion, UnitDefinition, UnitDimension
 
 __all__ = [
+    "ALLOWED_EXTRACTION_RUN_TRANSITIONS",
     "ALLOWED_RFQ_TRANSITIONS",
     "BOM_STATUS_ENUM",
+    "CONFIDENCE_BAND_ENUM",
     "DIMENSION_ENUM",
+    "DOCUMENT_STATE_ENUM",
+    "EXTRACTION_STATE_ENUM",
     "IMPORT_STATE_ENUM",
     "JOB_STATE_ENUM",
     "MATCH_STATUS_ENUM",
+    "MATCH_STRATEGY_ENUM",
     "PART_IMPORT_FORMAT_ENUM",
     "QUOTE_SOURCE_ENUM",
     "QUOTE_STATUS_ENUM",
@@ -68,9 +89,15 @@ __all__ = [
     "BillOfMaterialLine",
     "BillOfMaterials",
     "BomStatus",
+    "DocumentPage",
+    "DocumentState",
     "ExchangeRate",
+    "ExtractionField",
+    "ExtractionRun",
+    "ExtractionRunState",
     "Job",
     "JobState",
+    "MatchStrategy",
     "OrgOwnedMixin",
     "Organization",
     "OrganizationMembership",
@@ -81,7 +108,10 @@ __all__ = [
     "PartImportRow",
     "PartImportRowDisposition",
     "PartImportState",
+    "PartMatchCandidate",
     "Quote",
+    "QuoteCorrection",
+    "QuoteDocument",
     "QuoteLine",
     "QuoteLineMatchStatus",
     "QuotePriceBreak",

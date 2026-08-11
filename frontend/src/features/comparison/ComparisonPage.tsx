@@ -1,7 +1,8 @@
 /** Comparison workspace — routed at `/scenarios` (replaces the
- * `PlaceholderPage`, per this task's ALLOWED App.tsx edit), the
- * pre-optimizer surface for comparing live quotes against one RFQ line's
- * landed cost, plus a vendor-scoring section below it.
+ * `PlaceholderPage`, per this task's ALLOWED App.tsx edit): a per-RFQ-line
+ * landed-cost comparison table, plus the full comparison-scenario surface
+ * below it (strategy/constraint controls -> scoring + allocation results ->
+ * saved-scenario history).
  *
  * Design decisions:
  *  - **The comparison grain is one RFQ line, not the whole RFQ.** The task
@@ -30,11 +31,16 @@
  *    explainability drawer is exactly what that component already is,
  *    per MASTER.md's own "signature interaction" framing), unlike
  *    ../extraction/ReviewPane.tsx's full-screen surface.
- *  - **Scoring section**: see ./api.ts's file header for the documented
- *    backend gap (no implemented ranked-scoring route yet) — this section
- *    is fully built and testable against a mocked response, with an
- *    explicit on-page note about the gap rather than pretending the
- *    feature is production-ready.
+ *  - **Scenario surface** (ScenarioControls.tsx / AllocationPanel.tsx /
+ *    ScenarioHistory.tsx, all in this feature dir) is one page-level
+ *    `ScenarioResponse | null` (`scenario` state below) plus an
+ *    `isSavedResult` flag: "Run scenario" and "Clone & re-run" both set a
+ *    *live* result (flag false); selecting a scenario-history row sets a
+ *    *saved* one (flag true, drives AllocationPanel.tsx's read-only version-
+ *    stamp footer). One state slot, not three, because exactly one scenario
+ *    result is ever shown at a time — see ./api.ts's file header for why
+ *    the create endpoint alone (scoring AND allocation in one call) makes
+ *    that possible.
  */
 
 import { useQueries } from "@tanstack/react-query";
@@ -50,26 +56,27 @@ import { FormField } from "../../components/FormField";
 import "../../components/workspace.css";
 import { compareDecimalStrings } from "../../lib/decimalSort";
 import { formatMoney, isDecimalString } from "../../lib/money";
-import { isAnalystOrAbove } from "../../lib/roles";
+import { isAdministratorOrAbove, isAnalystOrAbove } from "../../lib/roles";
 import { zodResolver } from "../../lib/zodResolver";
 import { usePart } from "../parts/api";
 import { quoteKeys, type QuoteLineResponse, type QuoteResponse } from "../quotes/api";
 import { useRfqQuotes } from "../quotes/api";
 import { type RfqLineResponse, type RfqStatus, useRfq, useRfqs } from "../rfqs/api";
 import { useSupplier } from "../suppliers/api";
+import { AllocationPanel, type SavedResultVersions } from "./AllocationPanel";
 import {
   type Completeness,
   type CostComponentKind,
-  EMPTY_ASSUMPTIONS,
   type LandedCostAssumptionsInput,
   type LandedCostResultResponse,
-  type ScoringRunResponse,
+  type ScenarioResponse,
+  type ScoringResultResponse,
   useCalculateLandedCost,
-  useComputeScoring,
   useRfqLandedCosts,
-  useScoringConfigurations,
 } from "./api";
 import "./comparison.css";
+import { ScenarioControls } from "./ScenarioControls";
+import { ScenarioHistory } from "./ScenarioHistory";
 
 const OPEN_RFQ_STATUSES: RfqStatus[] = ["open", "under_review", "awarded"];
 
@@ -569,43 +576,21 @@ function ExplainDrawer({
   );
 }
 
-// --- scoring section -------------------------------------------------
+// --- scoring result view (half of a scenario's result; the other half is
+// AllocationPanel.tsx) --------------------------------------------------
 
 function criterionLabel(criterion: string): string {
   return statusLabel(criterion);
 }
 
-function ScoringSection({
-  rfqId,
-  canWrite,
-  quoteLineIds,
-}: {
-  rfqId: string;
-  canWrite: boolean;
-  quoteLineIds: string[];
-}) {
-  const configsQuery = useScoringConfigurations();
-  const [configId, setConfigId] = useState("");
-  const computeMutation = useComputeScoring();
-  const [result, setResult] = useState<ScoringRunResponse | null>(null);
+/** Renders `ScenarioResponse.scoring_result` — a pure display component, no
+ * fetching/mutating of its own; ScenarioControls.tsx/ScenarioHistory.tsx own
+ * producing the `ScoringResultResponse` this receives (via "Run scenario",
+ * "Clone & re-run", or selecting a history row). Markup unchanged from the
+ * pre-Phase-7 `ScoringSection`, which rendered the identical shape from an
+ * ad-hoc adapter — see ./api.ts's file header. */
+function ScoringResultView({ result }: { result: ScoringResultResponse }) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
-
-  const configs = configsQuery.data?.items ?? [];
-  const selectedConfig = configs.find((c) => c.id === configId);
-
-  async function handleScore() {
-    if (!configId || quoteLineIds.length === 0) return;
-    try {
-      const r = await computeMutation.mutateAsync({
-        rfqId,
-        scoringConfigurationId: configId,
-        quoteLineIds,
-      });
-      setResult(r);
-    } catch {
-      // surfaced via ApiErrorBanner below
-    }
-  }
 
   function toggleExpanded(key: string) {
     setExpanded((prev) => {
@@ -619,108 +604,70 @@ function ScoringSection({
   return (
     <section className="detail-section">
       <h3 className="detail-section-title">Scoring</h3>
-      <p className="scoring-gap-note">
-        Ranks compared suppliers by a scoring configuration&apos;s weighted criteria
-        (total landed cost, spec compliance, lead time, and more). This calls a
-        scoring endpoint not yet implemented in this backend build — see
-        features/comparison/api.ts for the documented gap; the UI below is ready for
-        when it lands.
-      </p>
-      <div className="scoring-config-select-row">
-        <FormField label="Scoring configuration">
-          <select value={configId} onChange={(e) => setConfigId(e.target.value)}>
-            <option value="">Select configuration…</option>
-            {configs.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-                {c.is_sample ? " — Sample weights (demonstration)" : ""}
-              </option>
-            ))}
-          </select>
-        </FormField>
-        {canWrite && (
-          <button
-            type="button"
-            className="btn-primary-sm"
-            disabled={!configId || quoteLineIds.length === 0 || computeMutation.isPending}
-            onClick={() => void handleScore()}
-          >
-            {computeMutation.isPending ? "Scoring…" : "Score"}
-          </button>
-        )}
-      </div>
-      {selectedConfig?.is_sample && (
-        <span className="badge badge--sample-weights">Sample weights (demonstration)</span>
+      {result.notes.length > 0 && (
+        <ul className="explain-list">
+          {result.notes.map((n, i) => (
+            <li className="explain-list-item" key={i}>
+              {n}
+            </li>
+          ))}
+        </ul>
       )}
-      <ApiErrorBanner error={computeMutation.error} />
-      {result && (
-        <>
-          {result.notes.length > 0 && (
-            <ul className="explain-list">
-              {result.notes.map((n, i) => (
-                <li className="explain-list-item" key={i}>
-                  {n}
-                </li>
-              ))}
-            </ul>
-          )}
-          <div className="score-list">
-            {result.scores.map((s) => (
-              <div className={`score-row${s.excluded ? " is-excluded" : ""}`} key={s.supplier_id}>
-                <div className="score-row-header">
-                  <span>
-                    <span className="score-rank">{s.excluded ? "—" : `#${s.rank}`}</span>{" "}
-                    {s.supplier_name}
-                  </span>
-                  <span className="score-total">
-                    {s.excluded ? "Excluded" : toPercentDisplay(s.total_score)}
-                  </span>
-                </div>
-                {s.excluded ? (
-                  <p className="detail-label">{s.exclusion_reason ?? "Excluded from scoring."}</p>
-                ) : (
-                  <>
-                    {s.criterion_scores.map((cs) => {
-                      const key = `${s.supplier_id}:${cs.criterion}`;
-                      const isOpen = expanded.has(key);
-                      const widthPct =
-                        cs.normalized_score !== null ? toPercentDisplay(cs.normalized_score) : "0%";
-                      return (
-                        <div key={cs.criterion}>
-                          <div
-                            className="score-criterion-row"
-                            onClick={() => toggleExpanded(key)}
-                            title={cs.reason}
-                          >
-                            <span className="score-criterion-label">{criterionLabel(cs.criterion)}</span>
-                            <div className="score-bar-track">
-                              <div className="score-bar-fill" style={{ width: widthPct }} />
-                            </div>
-                            <span className="score-criterion-value">
-                              {cs.normalized_score !== null ? widthPct : "—"}
-                            </span>
-                          </div>
-                          {isOpen && <div className="score-criterion-reason">{cs.reason}</div>}
+      <div className="score-list">
+        {result.scores.map((s) => (
+          <div className={`score-row${s.excluded ? " is-excluded" : ""}`} key={s.supplier_id}>
+            <div className="score-row-header">
+              <span>
+                <span className="score-rank">{s.excluded ? "—" : `#${s.rank}`}</span>{" "}
+                {s.supplier_name}
+              </span>
+              <span className="score-total">
+                {s.excluded ? "Excluded" : toPercentDisplay(s.total_score)}
+              </span>
+            </div>
+            {s.excluded ? (
+              <p className="detail-label">{s.exclusion_reason ?? "Excluded from scoring."}</p>
+            ) : (
+              <>
+                {s.criterion_scores.map((cs) => {
+                  const key = `${s.supplier_id}:${cs.criterion}`;
+                  const isOpen = expanded.has(key);
+                  const widthPct =
+                    cs.normalized_score !== null ? toPercentDisplay(cs.normalized_score) : "0%";
+                  return (
+                    <div key={cs.criterion}>
+                      <div
+                        className="score-criterion-row"
+                        onClick={() => toggleExpanded(key)}
+                        title={cs.reason}
+                      >
+                        <span className="score-criterion-label">{criterionLabel(cs.criterion)}</span>
+                        <div className="score-bar-track">
+                          <div className="score-bar-fill" style={{ width: widthPct }} />
                         </div>
-                      );
-                    })}
-                    {s.missing_criteria.length > 0 && (
-                      <p className="score-missing-note">
-                        Missing: {s.missing_criteria.map(criterionLabel).join(", ")}
-                      </p>
-                    )}
-                    {s.weights_renormalized && (
-                      <p className="score-renormalized-note">
-                        Weights renormalized for this supplier due to missing criteria.
-                      </p>
-                    )}
-                  </>
+                        <span className="score-criterion-value">
+                          {cs.normalized_score !== null ? widthPct : "—"}
+                        </span>
+                      </div>
+                      {isOpen && <div className="score-criterion-reason">{cs.reason}</div>}
+                    </div>
+                  );
+                })}
+                {s.missing_criteria.length > 0 && (
+                  <p className="score-missing-note">
+                    Missing: {s.missing_criteria.map(criterionLabel).join(", ")}
+                  </p>
                 )}
-              </div>
-            ))}
+                {s.weights_renormalized && (
+                  <p className="score-renormalized-note">
+                    Weights renormalized for this supplier due to missing criteria.
+                  </p>
+                )}
+              </>
+            )}
           </div>
-        </>
-      )}
+        ))}
+      </div>
     </section>
   );
 }
@@ -730,6 +677,7 @@ function ScoringSection({
 export function ComparisonPage() {
   const { session } = useAuth();
   const canWrite = isAnalystOrAbove(session?.role);
+  const canArchiveScenario = isAdministratorOrAbove(session?.role);
 
   const rfqsQuery = useRfqs({ status: OPEN_RFQ_STATUSES, limit: 100, offset: 0 });
   const [rfqId, setRfqId] = useState("");
@@ -810,6 +758,34 @@ export function ComparisonPage() {
     ? `${explainSupplierQuery.data.code} — ${explainSupplierQuery.data.name}`
     : (explainColumn?.quote.supplier_id ?? "");
 
+  // -- scenario surface: a live (freshly created/cloned) or saved-from-
+  // history `ScenarioResponse` drives both ScoringResultView and
+  // AllocationPanel below (./api.ts's header: one POST returns both halves).
+  const [scenario, setScenario] = useState<ScenarioResponse | null>(null);
+  const [isSavedResult, setIsSavedResult] = useState(false);
+
+  const handleScenarioCreated = useCallback((s: ScenarioResponse) => {
+    setScenario(s);
+    setIsSavedResult(false);
+  }, []);
+  const handleScenarioCloned = useCallback((s: ScenarioResponse) => {
+    setScenario(s);
+    setIsSavedResult(false);
+  }, []);
+  const handleSelectSavedScenario = useCallback((s: ScenarioResponse | null) => {
+    setScenario(s);
+    setIsSavedResult(s !== null);
+  }, []);
+
+  const savedResultVersions: SavedResultVersions | null =
+    isSavedResult && scenario
+      ? {
+          calculationVersion: scenario.calculation_version,
+          solverVersion: scenario.solver_version,
+          scoringVersion: scenario.scoring_result.scoring_version,
+        }
+      : null;
+
   return (
     <section className="comparison-page">
       <header className="page-toolbar">
@@ -828,6 +804,8 @@ export function ComparisonPage() {
               setRfqLineId("");
               setFreshResults({});
               setExplainLineId(null);
+              setScenario(null);
+              setIsSavedResult(false);
             }}
           >
             <option value="">Select RFQ…</option>
@@ -875,10 +853,31 @@ export function ComparisonPage() {
             <ComparisonTable columns={columns} resultFor={resultFor} onOpenExplain={setExplainLineId} />
           )}
 
-          <ScoringSection
+          <ScenarioControls rfqId={rfqId} canWrite={canWrite} onCreated={handleScenarioCreated} />
+
+          {scenario && (
+            <>
+              {isSavedResult && (
+                <p className="scenario-saved-result-note">
+                  Showing a saved result from scenario history — read-only. Run a new scenario
+                  above, or collapse the history row to return to your last live run.
+                </p>
+              )}
+              <ScoringResultView result={scenario.scoring_result} />
+              <AllocationPanel
+                allocation={scenario.allocation_result}
+                currency={rfqQuery.data.base_currency}
+                savedResult={savedResultVersions}
+              />
+            </>
+          )}
+
+          <ScenarioHistory
             rfqId={rfqId}
-            canWrite={canWrite}
-            quoteLineIds={columns.map((c) => c.line.id)}
+            canClone={canWrite}
+            canArchive={canArchiveScenario}
+            onSelectSaved={handleSelectSavedScenario}
+            onCloned={handleScenarioCloned}
           />
         </>
       )}

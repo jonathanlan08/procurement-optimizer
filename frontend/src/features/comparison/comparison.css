@@ -392,3 +392,398 @@ td.is-winning {
   color: var(--color-muted-foreground);
   margin-top: var(--space-sm);
 }
+
+/* scenario controls (ScenarioControls.tsx) ---------------------------------- */
+
+.scenario-strategy-description {
+  font-size: 12px;
+  color: var(--color-muted-foreground);
+  margin: calc(-1 * var(--space-md)) 0 var(--space-lg);
+}
+
+.scenario-incomplete-warning {
+  font-size: 12px;
+  color: var(--color-warning);
+  margin: var(--space-sm) 0 var(--space-lg);
+}
+
+.scenario-saved-result-note {
+  font-size: 12px;
+  color: var(--color-info);
+  background: rgba(3, 105, 161, 0.08);
+  border: 1px solid rgba(3, 105, 161, 0.25);
+  border-radius: var(--radius-sm);
+  padding: var(--space-md) var(--space-lg);
+  margin-bottom: var(--space-lg);
+}
+
+.exclude-supplier-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+/* Same toggle-chip idiom as features/rfqs/rfqs.css's `.status-filter-chip`
+   (see this file's header + RfqsPage.tsx's own file header for the
+   precedent), applied to a per-scenario solver constraint instead of a
+   list filter. */
+.exclude-supplier-chip {
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px var(--space-md);
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-muted-foreground);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.exclude-supplier-chip:hover {
+  border-color: var(--color-destructive);
+  color: var(--color-foreground);
+}
+
+.exclude-supplier-chip:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.exclude-supplier-chip[aria-pressed="true"] {
+  background: rgba(220, 38, 38, 0.08);
+  border-color: var(--color-destructive);
+  color: var(--color-destructive);
+}
+
+/* chips (shared row layout; chip/chip--assumed/chip--missing already exist
+   above for the landed-cost explain drawer — these add the allocation-panel
+   and infeasibility-explainer variants) -------------------------------- */
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.chip--binding {
+  color: var(--color-info);
+  background: rgba(3, 105, 161, 0.1);
+  border-color: rgba(3, 105, 161, 0.28);
+  cursor: help;
+}
+
+.chip--conflict {
+  color: var(--color-warning);
+  background: rgba(180, 83, 9, 0.1);
+  border-color: rgba(180, 83, 9, 0.28);
+}
+
+/* allocation panel (AllocationPanel.tsx) ------------------------------------ */
+
+.allocation-panel {
+  margin-bottom: var(--space-2xl);
+}
+
+.allocation-status-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  border-radius: var(--radius-sm);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-xl);
+  border: 1px solid var(--color-border);
+}
+
+.allocation-status-pill {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 3px var(--space-md);
+  border-radius: 999px;
+}
+
+.allocation-status-text {
+  font-size: 13px;
+}
+
+.allocation-status-banner--positive,
+.allocation-status-pill--positive {
+  background: rgba(21, 128, 61, 0.08);
+  border-color: rgba(21, 128, 61, 0.28);
+  color: var(--color-positive);
+}
+
+.allocation-status-banner--info,
+.allocation-status-pill--info {
+  background: rgba(3, 105, 161, 0.08);
+  border-color: rgba(3, 105, 161, 0.28);
+  color: var(--color-info);
+}
+
+.allocation-status-banner--warning,
+.allocation-status-pill--warning {
+  background: rgba(180, 83, 9, 0.08);
+  border-color: rgba(180, 83, 9, 0.28);
+  color: var(--color-warning);
+}
+
+.allocation-status-banner--destructive,
+.allocation-status-pill--destructive {
+  background: rgba(220, 38, 38, 0.08);
+  border-color: rgba(220, 38, 38, 0.28);
+  color: var(--color-destructive);
+}
+
+.allocation-status-pill--positive,
+.allocation-status-pill--info,
+.allocation-status-pill--warning,
+.allocation-status-pill--destructive {
+  border: 1px solid currentColor;
+}
+
+.allocation-summary-strip {
+  display: flex;
+  gap: var(--space-2xl);
+  margin-bottom: var(--space-lg);
+}
+
+.allocation-summary-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.allocation-summary-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-foreground);
+}
+
+.allocation-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-lg);
+}
+
+.allocation-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.allocation-table th,
+.allocation-table td {
+  padding: var(--space-md) var(--space-lg);
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+.allocation-table thead th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: var(--color-background);
+}
+
+.allocation-table tbody tr:hover {
+  background: var(--color-background);
+}
+
+.allocation-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.allocation-table-empty {
+  color: var(--color-muted-foreground);
+  font-size: 13px;
+  white-space: normal;
+  text-align: center;
+}
+
+.allocation-tier-range {
+  font-variant-numeric: tabular-nums;
+}
+
+.allocation-tier-price {
+  color: var(--color-muted-foreground);
+  font-size: 12px;
+}
+
+.infeasibility-explainer {
+  border: 1px solid rgba(180, 83, 9, 0.28);
+  background: rgba(180, 83, 9, 0.04);
+  border-radius: var(--radius-sm);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-lg);
+}
+
+.infeasibility-narrative {
+  font-size: 13px;
+  margin: var(--space-md) 0;
+}
+
+.infeasibility-relaxation-callout {
+  background: rgba(21, 128, 61, 0.08);
+  border: 1px solid rgba(21, 128, 61, 0.28);
+  border-radius: var(--radius-sm);
+  padding: var(--space-lg);
+  margin-top: var(--space-md);
+}
+
+.infeasibility-relaxation-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-positive);
+  margin-bottom: var(--space-sm);
+}
+
+.infeasibility-relaxation-callout p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-foreground);
+}
+
+.allocation-provenance {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-lg);
+  padding-top: var(--space-lg);
+  margin-top: var(--space-lg);
+  border-top: 1px dashed var(--color-border);
+}
+
+.badge--saved-result {
+  background: var(--color-muted);
+  color: var(--color-secondary);
+  border-color: var(--color-border);
+}
+
+/* scenario history (ScenarioHistory.tsx) ------------------------------------ */
+
+.scenario-history-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.scenario-history-row {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.scenario-history-row:last-child {
+  border-bottom: none;
+}
+
+.scenario-history-row-header {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr auto auto auto;
+  align-items: center;
+  gap: var(--space-lg);
+  width: 100%;
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  background: var(--color-surface);
+  border: none;
+  padding: var(--space-md) var(--space-lg);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.scenario-history-row-header:hover {
+  background: var(--color-background);
+}
+
+.scenario-history-row-header:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+
+.scenario-history-name {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.scenario-history-strategy,
+.scenario-history-date {
+  font-size: 12px;
+  color: var(--color-muted-foreground);
+}
+
+.badge--scenario-state-positive {
+  background: rgba(21, 128, 61, 0.1);
+  color: var(--color-positive);
+  border-color: rgba(21, 128, 61, 0.28);
+}
+
+.badge--scenario-state-info {
+  background: rgba(3, 105, 161, 0.1);
+  color: var(--color-info);
+  border-color: rgba(3, 105, 161, 0.28);
+}
+
+.badge--scenario-state-destructive {
+  background: rgba(220, 38, 38, 0.08);
+  color: var(--color-destructive);
+  border-color: rgba(220, 38, 38, 0.28);
+}
+
+.badge--scenario-state-muted {
+  background: var(--color-muted);
+  color: var(--color-secondary);
+  border-color: var(--color-border);
+}
+
+.scenario-history-detail {
+  padding: var(--space-lg);
+  background: var(--color-background);
+  border-top: 1px solid var(--color-border);
+}
+
+.scenario-history-actions {
+  display: flex;
+  gap: var(--space-md);
+  margin-top: var(--space-lg);
+}
+
+.scenario-snapshot-summary {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-lg) var(--space-xl);
+}
+
+.scenario-snapshot-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+@media (max-width: 768px) {
+  .scenario-history-row-header {
+    grid-template-columns: 1fr;
+    row-gap: var(--space-sm);
+  }
+
+  .scenario-snapshot-summary {
+    grid-template-columns: 1fr;
+  }
+}

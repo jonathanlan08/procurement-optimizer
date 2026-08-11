@@ -491,16 +491,61 @@ describe("ComparisonPage", () => {
     expect(within(dialog).getByText("Financing")).toBeInTheDocument();
   });
 
-  it("computes and renders ranked supplier scores", async () => {
+  it("runs a scenario and renders its ranked supplier scores", async () => {
     installFetchMock([
       AUTH_HANDLER("analyst"),
       ...BASE_HANDLERS,
+      {
+        test: (url: string, method: string) =>
+          url.startsWith("/api/v1/rfqs/rfq-1/comparison-scenarios?") && method === "GET",
+        respond: () => jsonResponse(200, { items: [], page: { limit: 50, offset: 0, total: 0 } }),
+      },
+      {
+        test: (url: string, method: string) =>
+          url === "/api/v1/rfqs/rfq-1/suppliers" && method === "GET",
+        respond: () => jsonResponse(200, { items: [] }),
+      },
       {
         test: (url: string, method: string) =>
           url === "/api/v1/rfqs/rfq-1/comparison-scenarios" && method === "POST",
         respond: () =>
           jsonResponse(201, {
             id: "scenario-1",
+            rfq_id: "rfq-1",
+            name: "Test run",
+            strategy: "balanced",
+            scoring_configuration_id: "cfg-1",
+            state: "complete",
+            notes: null,
+            calculation_version: "1.0.0",
+            solver_version: "1.0.0",
+            constraints_snapshot: {},
+            assumptions_snapshot: {},
+            fx_snapshot: [],
+            quote_snapshot_refs: [],
+            weights_snapshot: [],
+            version: 1,
+            created_by_id: "user-1",
+            created_at: "2026-08-05T00:00:00Z",
+            updated_at: "2026-08-05T00:00:00Z",
+            completed_at: "2026-08-05T00:00:05Z",
+            is_archived: false,
+            archived_at: null,
+            archive_reason: null,
+            allocation_result: {
+              solver_status: "optimal",
+              status_explanation:
+                "A provably optimal allocation was found within the deterministic search budget.",
+              objective_total_cost: { amount: "1350.500000", currency: "USD" },
+              objective_source: "exact_decimal_recomputation",
+              allocations: [],
+              binding_constraints: [],
+              infeasibility_explanation: null,
+              rejected_alternatives: [],
+              stats: null,
+              optimization_version: "1.0.0",
+              error_message: null,
+            },
             scoring_result: {
               scores: [
                 {
@@ -563,9 +608,13 @@ describe("ComparisonPage", () => {
     renderPage();
     await selectRfq();
 
+    const nameInput = await screen.findByLabelText(/scenario name/i);
+    fireEvent.change(nameInput, { target: { value: "Test run" } });
+    const strategySelect = screen.getByLabelText(/^strategy$/i);
+    fireEvent.change(strategySelect, { target: { value: "balanced" } });
     const configSelect = await screen.findByLabelText(/scoring configuration/i);
     fireEvent.change(configSelect, { target: { value: "cfg-1" } });
-    fireEvent.click(screen.getByRole("button", { name: /^score$/i }));
+    fireEvent.click(screen.getByRole("button", { name: /run scenario/i }));
 
     expect(await screen.findByText("#1")).toBeInTheDocument();
     expect(screen.getByText("Beta Supply")).toBeInTheDocument();

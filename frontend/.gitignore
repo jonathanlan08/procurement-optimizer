@@ -1,0 +1,3 @@
+# Playwright E2E auth storage state — real session cookies for the seeded
+# demo accounts, written by e2e/global-setup.ts. Never commit.
+e2e/.auth/

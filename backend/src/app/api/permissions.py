@@ -115,6 +115,17 @@ PERMISSIONS: dict[tuple[str, str], PermissionLevel] = {
     ("PATCH", "/api/v1/quotes/{quote_id}"): Role.ANALYST,
     ("POST", "/api/v1/quotes/{quote_id}/supersede"): Role.ANALYST,
     ("POST", "/api/v1/quotes/{quote_id}/archive"): Role.ADMINISTRATOR,
+    # Quote documents (03-api-contract.md §4.9): "O A N V" for every read
+    # route (list/get/content), "O A N" for upload, "O A" (administrator+)
+    # for archive — mirroring every other archivable resource's archive
+    # gate (suppliers/parts/BOMs/quotes). See app/services/document_service.py
+    # and api/v1/documents.py module docstrings for the create/list nesting
+    # under the RFQ vs. the contract's own terse route-table shorthand.
+    ("POST", "/api/v1/rfqs/{rfq_id}/quote-documents"): Role.ANALYST,
+    ("GET", "/api/v1/rfqs/{rfq_id}/quote-documents"): Role.VIEWER,
+    ("GET", "/api/v1/quote-documents/{document_id}"): Role.VIEWER,
+    ("GET", "/api/v1/quote-documents/{document_id}/content"): Role.VIEWER,
+    ("POST", "/api/v1/quote-documents/{document_id}/archive"): Role.ADMINISTRATOR,
 }
 
 # Routes that are org-scoped resources (subject to the 404 cross-org matrix
@@ -130,4 +141,5 @@ ORG_SCOPED_RESOURCES: list[str] = [
     "exchange_rates",
     "rfqs",
     "quotes",
+    "quote_documents",
 ]

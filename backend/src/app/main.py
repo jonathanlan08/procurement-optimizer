@@ -15,6 +15,8 @@ from app.api.middleware import (
 )
 from app.api.v1.auth import router as auth_router
 from app.api.v1.boms import router as boms_router
+from app.api.v1.documents import rfq_documents_router
+from app.api.v1.documents import router as documents_router
 from app.api.v1.fx import router as fx_router
 from app.api.v1.part_imports import router as part_imports_router
 from app.api.v1.parts import router as parts_router
@@ -126,5 +128,7 @@ def create_app(
     app.include_router(rfqs_router, prefix=API_PREFIX)
     app.include_router(rfq_quotes_router, prefix=API_PREFIX)
     app.include_router(quotes_router, prefix=API_PREFIX)
+    app.include_router(rfq_documents_router, prefix=API_PREFIX)
+    app.include_router(documents_router, prefix=API_PREFIX)
 
     return app

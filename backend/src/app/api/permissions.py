@@ -126,6 +126,19 @@ PERMISSIONS: dict[tuple[str, str], PermissionLevel] = {
     ("GET", "/api/v1/quote-documents/{document_id}"): Role.VIEWER,
     ("GET", "/api/v1/quote-documents/{document_id}/content"): Role.VIEWER,
     ("POST", "/api/v1/quote-documents/{document_id}/archive"): Role.ADMINISTRATOR,
+    # Extraction (03-api-contract.md §4.10): "O A N" for starting a run and
+    # for every field-review/materialize mutation, "O A N V" for every read
+    # route (run history, run detail, field list). See
+    # api/v1/extractions.py's own module docstring for why these paths
+    # follow the contract's literal route table rather than this task's own
+    # paraphrase (POST .../extractions, POST .../confirm+.../correct,
+    # POST .../materialize).
+    ("POST", "/api/v1/quote-documents/{document_id}/extraction-runs"): Role.ANALYST,
+    ("GET", "/api/v1/quote-documents/{document_id}/extraction-runs"): Role.VIEWER,
+    ("GET", "/api/v1/extraction-runs/{run_id}"): Role.VIEWER,
+    ("GET", "/api/v1/extraction-runs/{run_id}/fields"): Role.VIEWER,
+    ("PATCH", "/api/v1/extraction-runs/{run_id}/fields/{field_id}"): Role.ANALYST,
+    ("POST", "/api/v1/extraction-runs/{run_id}/confirm"): Role.ANALYST,
     # Landed cost (03-api-contract.md §4.15). Preview is the contract's own
     # literal "O A N V" — a stateless calculator, no audit row, viewer-
     # readable (§6 gap #2), NOT the analyst+ this task's own paraphrase
@@ -159,6 +172,8 @@ ORG_SCOPED_RESOURCES: list[str] = [
     "rfqs",
     "quotes",
     "quote_documents",
+    "extraction_runs",
+    "extraction_fields",
     "landed_cost_results",
     "scoring_configurations",
 ]

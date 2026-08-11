@@ -71,13 +71,25 @@ from app.models.rfqs import (
     RfqStatusHistory,
     RfqSupplier,
 )
+from app.models.scenarios import (
+    ALLOCATION_STATUS_ENUM,
+    COMPARISON_STRATEGY_ENUM,
+    SCENARIO_STATE_ENUM,
+    AllocationResultRecord,
+    ComparisonScenario,
+    ComparisonStrategy,
+    ScenarioResult,
+    ScenarioState,
+)
 from app.models.suppliers import Supplier, SupplierContact, SupplierPerformanceRecord
 from app.models.units import DIMENSION_ENUM, UnitConversion, UnitDefinition, UnitDimension
 
 __all__ = [
+    "ALLOCATION_STATUS_ENUM",
     "ALLOWED_EXTRACTION_RUN_TRANSITIONS",
     "ALLOWED_RFQ_TRANSITIONS",
     "BOM_STATUS_ENUM",
+    "COMPARISON_STRATEGY_ENUM",
     "CONFIDENCE_BAND_ENUM",
     "DIMENSION_ENUM",
     "DOCUMENT_STATE_ENUM",
@@ -93,11 +105,15 @@ __all__ = [
     "RESULT_COMPLETENESS_ENUM",
     "RFQ_STATUS_ENUM",
     "ROLE_ENUM",
+    "SCENARIO_STATE_ENUM",
+    "AllocationResultRecord",
     "AuditEvent",
     "Base",
     "BillOfMaterialLine",
     "BillOfMaterials",
     "BomStatus",
+    "ComparisonScenario",
+    "ComparisonStrategy",
     "DocumentPage",
     "DocumentState",
     "ExchangeRate",
@@ -135,6 +151,8 @@ __all__ = [
     "RfqStatusHistory",
     "RfqSupplier",
     "Role",
+    "ScenarioResult",
+    "ScenarioState",
     "ScoringConfiguration",
     "Session",
     "Supplier",

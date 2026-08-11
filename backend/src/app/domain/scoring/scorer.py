@@ -136,10 +136,13 @@ def _cohort_stats(
     criterion: Criterion,
     included: Sequence[SupplierScoringInput],
     value_maps: Mapping[UUID, dict[Criterion, Decimal | None]],
-) -> tuple[Decimal, Decimal] | None:
-    """min/max across the INCLUDED cohort's present values for `criterion`.
-    `None` means no supplier in the cohort has a present value at all — the
-    criterion is globally missing, not just for one supplier."""
+) -> tuple[Decimal, Decimal, int] | None:
+    """(min, max, present_count) across the INCLUDED cohort's present values
+    for `criterion`. `None` means no supplier in the cohort has a present
+    value at all — the criterion is globally missing, not just for one
+    supplier. The count exists so the degenerate-cohort reason can say
+    "only candidate with a value" instead of the untrue "all candidates
+    equal" (2026-08 calculation audit F7)."""
     present: list[Decimal] = []
     for s in included:
         v = value_maps[s.supplier_id].get(criterion)
@@ -147,22 +150,28 @@ def _cohort_stats(
             present.append(v)
     if not present:
         return None
-    return min(present), max(present)
+    return min(present), max(present), len(present)
 
 
 def _criterion_score_present(
     spec: CriterionSpec,
     raw: Decimal,
-    stats: tuple[Decimal, Decimal],
+    stats: tuple[Decimal, Decimal, int],
 ) -> tuple[Decimal, str]:
     """Returns (normalized_score, reason) for a present, non-degenerate or
     degenerate cohort. Full CALC_CONTEXT precision; not quantized here."""
-    min_v, max_v = stats
+    min_v, max_v, present_count = stats
     if min_v == max_v:
-        reason = (
-            f"all candidates equal on this criterion ({spec.label}={to_wire(raw)}); "
-            "criterion is non-discriminating"
-        )
+        if present_count == 1:
+            reason = (
+                f"only candidate with a value for this criterion "
+                f"({spec.label}={to_wire(raw)}); the criterion could not discriminate"
+            )
+        else:
+            reason = (
+                f"all {present_count} candidates equal on this criterion "
+                f"({spec.label}={to_wire(raw)}); criterion is non-discriminating"
+            )
         return _ONE, reason
 
     with localcontext(CALC_CONTEXT):
@@ -182,7 +191,7 @@ def _score_included_supplier(
     supplier: SupplierScoringInput,
     weights: tuple[CriterionSpec, ...],
     value_map: dict[Criterion, Decimal | None],
-    cohort_stats: Mapping[Criterion, tuple[Decimal, Decimal] | None],
+    cohort_stats: Mapping[Criterion, tuple[Decimal, Decimal, int] | None],
 ) -> SupplierScore:
     missing: list[Criterion] = []
     present_specs: list[CriterionSpec] = []
@@ -295,14 +304,61 @@ class ScorerV1:
             for spec in renormalized_weights
         }
 
+        # A supplier with NO present value on ANY positive-weight criterion is
+        # NOT scoreable. Scoring it 0.000000 would be exactly the
+        # worst-in-cohort imputation the methodology forbids (00-decisions.md
+        # §2 ruling 5; 2026-08 calculation audit F3) — it is reported like an
+        # exclusion instead: rank=0 sentinel, reason attached, never ranked.
+        # It still contributes any present zero-weight values to cohort stats
+        # above, so other suppliers' displayed normalizations are unaffected.
+        def _is_scoreable(s: SupplierScoringInput) -> bool:
+            return any(
+                spec.weight > _ZERO
+                and value_maps[s.supplier_id].get(spec.criterion) is not None
+                for spec in renormalized_weights
+            )
+
+        scoreable = tuple(s for s in included if _is_scoreable(s))
+        unscoreable = tuple(s for s in included if not _is_scoreable(s))
+        if unscoreable:
+            names = ", ".join(
+                s.supplier_name
+                for s in sorted(unscoreable, key=lambda s: (s.supplier_name, s.supplier_id))
+            )
+            notes = (
+                *notes,
+                f"not scoreable (no weighted criterion has a value): {names}",
+            )
+
         scored = [
             _score_included_supplier(
                 s, renormalized_weights, value_maps[s.supplier_id], cohort_stats
             )
-            for s in included
+            for s in scoreable
         ]
         scored.sort(key=lambda s: (-s.total_score, s.supplier_name, s.supplier_id))
         ranked = _assign_ranks(scored)
+
+        unscoreable_scores = [
+            SupplierScore(
+                supplier_id=s.supplier_id,
+                supplier_name=s.supplier_name,
+                total_score=_ZERO,
+                rank=0,
+                criterion_scores=(),
+                missing_criteria=tuple(
+                    spec.criterion
+                    for spec in renormalized_weights
+                    if value_maps[s.supplier_id].get(spec.criterion) is None
+                ),
+                weights_renormalized=False,
+                excluded=True,
+                exclusion_reason=(
+                    "not scoreable: no weighted criterion has a value for this supplier"
+                ),
+            )
+            for s in sorted(unscoreable, key=lambda s: (s.supplier_name, s.supplier_id))
+        ]
 
         excluded_scores = [
             SupplierScore(
@@ -320,9 +376,9 @@ class ScorerV1:
         ]
 
         return ScoringResult(
-            scores=tuple(ranked) + tuple(excluded_scores),
+            scores=tuple(ranked) + tuple(unscoreable_scores) + tuple(excluded_scores),
             weights_used=renormalized_weights,
-            cohort_size=len(included),
+            cohort_size=len(scoreable),
             notes=notes,
             scoring_version=SCORING_VERSION,
         )

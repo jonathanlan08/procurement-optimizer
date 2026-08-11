@@ -97,6 +97,18 @@ several **exactly**-tied optima a future code change would surface. This is flag
 solver's module docstring rather than silently added or silently skipped, and is on the
 [roadmap](ROADMAP.md).
 
+**The scaling caveat (methodology §7.4).** The objective sees costs rounded half-even to
+0.0001 currency units (`MONEY_INT_SCALE = 10^4`), so two offers whose landed unit costs
+differ by less than `10^-4` are indistinguishable to the solver — it can return the
+canonically-first of the two and truthfully report `optimal` in scaled space while the
+other is marginally cheaper in exact space. Every solved result therefore carries
+`stats.max_scaling_error` — a conservative worst-case bound,
+`2 × 5×10^-5 × (total required units + number of nonzero fixed costs)` — and the
+disclosure appears wherever an `optimal` status is shown: *"Optimality is proven with
+respect to costs rounded to 0.0001 currency units; any unconsidered alternative is at
+most `max_scaling_error` cheaper."* (Added after the 2026-08 independent calculation
+audit, F1, demonstrated a scaled tie between costs differing at the 5th decimal.)
+
 ## 4. Honest statuses
 
 `AllocationStatus` has four members and the mapping is 1:1 — **`FEASIBLE` is never presented

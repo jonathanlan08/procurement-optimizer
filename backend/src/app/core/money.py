@@ -14,6 +14,7 @@ Policy (docs/planning/05-calculation-methodology.md §1, ratified in 00-decision
 
 from __future__ import annotations
 
+import re
 from decimal import (
     ROUND_HALF_EVEN,
     Context,
@@ -26,6 +27,10 @@ from decimal import (
 from typing import Final
 
 CALC_PRECISION: Final[int] = 34
+
+# The exact wire shape for a decimal string — no exponents, no PEP-515
+# underscores, no leading '+'; the frontend enforces the same pattern.
+_DECIMAL_STRING_RE: Final[re.Pattern[str]] = re.compile(r"-?\d+(\.\d+)?")
 
 MONEY_SCALE: Final[Decimal] = Decimal("0.000001")  # 6 dp -> NUMERIC(18,6)
 UNIT_PRICE_SCALE: Final[Decimal] = Decimal("0.00000001")  # 8 dp -> NUMERIC(18,8)
@@ -75,11 +80,18 @@ def parse_decimal(raw: str | int | Decimal) -> Decimal:
         return Decimal(raw)
     if isinstance(raw, float):  # pragma: no cover - defensive; typing forbids it
         raise InvalidDecimalString(repr(raw))
+    stripped = raw.strip()
+    # Strict shape check BEFORE Decimal(): Python's parser accepts PEP-515
+    # digit separators ("1_0.5" -> 10.5), which is looser than the wire
+    # contract (2026-08 calculation audit F11). Same regex the frontend's
+    # isDecimalString enforces.
+    if _DECIMAL_STRING_RE.fullmatch(stripped) is None:
+        raise InvalidDecimalString(raw)
     try:
-        value = Decimal(raw.strip())
-    except InvalidOperation as exc:
+        value = Decimal(stripped)
+    except InvalidOperation as exc:  # pragma: no cover - regex already gates
         raise InvalidDecimalString(raw) from exc
-    if not value.is_finite():
+    if not value.is_finite():  # pragma: no cover - regex already gates
         raise InvalidDecimalString(raw)
     return value
 

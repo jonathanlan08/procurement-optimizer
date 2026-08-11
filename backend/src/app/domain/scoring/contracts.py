@@ -74,6 +74,13 @@ class CriterionSpec:
     label: str  # display label; required for USER_DEFINED
     is_sample_weight: bool = False  # demonstration weights are labelled as such
 
+    def __post_init__(self) -> None:
+        # The API boundary already enforces weight in [0, 1]; this is the
+        # defence-in-depth the scorer's [0,1] total-score proof relies on —
+        # a negative weight silently voids it (2026-08 calculation audit F10).
+        if self.weight < 0:
+            raise ValueError(f"criterion weight must be >= 0, got {self.weight}")
+
 
 @dataclass(frozen=True, slots=True)
 class SupplierCriterionValue:

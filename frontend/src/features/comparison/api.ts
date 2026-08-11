@@ -398,6 +398,10 @@ export interface SolverStatsResponse {
   model_hash: string;
   num_variables: number;
   num_constraints: number;
+  /** Optimality is proven for costs rounded to 0.0001 currency units; an
+   * unconsidered alternative can be at most this much cheaper (decimal
+   * string). Null on results saved before the field existed. */
+  max_scaling_error?: string | null;
 }
 
 export interface MoneyAmount {

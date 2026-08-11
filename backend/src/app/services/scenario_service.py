@@ -172,7 +172,7 @@ from sqlalchemy.orm import Session as SaSession
 from app.core.clock import Clock
 from app.core.errors import ConflictStateError, NotFoundError, ValidationAppError
 from app.core.ids import IdGenerator
-from app.core.money import CALC_CONTEXT, to_wire
+from app.core.money import CALC_CONTEXT, quantize_unit_price, to_wire
 from app.domain.landed_cost.contracts import CALCULATION_VERSION, CostComponent
 from app.domain.optimization.contracts import (
     OPTIMIZATION_VERSION,
@@ -477,6 +477,10 @@ def _solver_stats_json(stats: SolverStats | None) -> dict[str, Any] | None:
         "model_hash": stats.model_hash,
         "num_variables": stats.num_variables,
         "num_constraints": stats.num_constraints,
+        # §7.4 disclosure (2026-08 calculation audit F1); string on the wire
+        "max_scaling_error": (
+            to_wire(stats.max_scaling_error) if stats.max_scaling_error is not None else None
+        ),
     }
 
 
@@ -806,9 +810,15 @@ class ScenarioService:
     def _criterion_values_for_supplier(
         self, ctxs: list[_OfferContext], *, include_user_defined: bool
     ) -> tuple[SupplierCriterionValue, ...]:
-        total_landed = sum((c.landed_row.total_landed_cost for c in ctxs), Decimal("0"))
-        total_qty = sum((c.landed_row.accepted_quantity for c in ctxs), Decimal("0"))
-        effective_unit_cost = (total_landed / total_qty) if total_qty else None
+        # In CALC_CONTEXT and quantized at the unit-price boundary, exactly as
+        # brief_service/report_service compute the same figure — the three
+        # paths must agree on the wire (2026-08 calculation audit F4).
+        with localcontext(CALC_CONTEXT):
+            total_landed = sum((c.landed_row.total_landed_cost for c in ctxs), Decimal("0"))
+            total_qty = sum((c.landed_row.accepted_quantity for c in ctxs), Decimal("0"))
+            effective_unit_cost = (
+                quantize_unit_price(total_landed / total_qty) if total_qty else None
+            )
 
         lead_times = [
             Decimal(c.quote_line.lead_time_days)

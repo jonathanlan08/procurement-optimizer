@@ -81,6 +81,13 @@ class ConvertedQuantity:
 
     value: Decimal  # quantized at QTY_SCALE
     conversion_note: str  # e.g. "1 lb = 0.45359237 kg"
+    # The UNQUANTIZED from/to factor ratio, for callers that need it as a
+    # divisor/multiplier in further arithmetic. `value` is quantized at
+    # QTY_SCALE because it IS a quantity (a boundary), but dividing a price
+    # by the 6-dp-quantized `value` puts a rounded intermediate mid-formula —
+    # the 2026-08 calculation audit (F2) measured a 1.8e-5/unit error on the
+    # documented lb->kg example. Use this field instead.
+    unit_ratio: Decimal = Decimal(1)
 
 
 class DimensionMismatchError(ValueError):
@@ -169,7 +176,7 @@ def convert_quantity(
     if from_is_assumption or to_is_assumption:
         note += " (per-part conversion assumption)"
 
-    return ConvertedQuantity(value=result, conversion_note=note)
+    return ConvertedQuantity(value=result, conversion_note=note, unit_ratio=ratio)
 
 
 __all__ = [

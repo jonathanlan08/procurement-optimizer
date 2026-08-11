@@ -528,9 +528,34 @@ def _validate_locks(
     return locked, None
 
 
-def _check_overflow(lines: tuple[DemandLine, ...], live_offers: tuple[Offer, ...]) -> int:
+def _max_scaling_error(
+    lines: tuple[DemandLine, ...], live_offers: tuple[Offer, ...]
+) -> Decimal:
+    """06-optimization-methodology.md §7.4 (2026-08 calculation audit F1):
+    each scaled per-unit cost is off by at most 5e-5 (half-even at 4 dp), so
+    a full allocation's scaled total is off by at most 5e-5 x allocated
+    units + 5e-5 per nonzero fixed cost — and comparing the chosen solution
+    against a passed-over alternative doubles the band. This is the amount
+    by which an unconsidered alternative could be cheaper in exact space
+    while 'optimal' is still truthful in scaled space."""
+    total_units = sum(line.required_quantity for line in lines)
+    fixed_terms = sum(1 for o in live_offers if o.fixed_cost != 0)
+    return Decimal(2) * Decimal("0.00005") * Decimal(total_units + fixed_terms)
+
+
+def _check_overflow(
+    lines: tuple[DemandLine, ...],
+    live_offers: tuple[Offer, ...],
+    *,
+    has_concentration_cap: bool = False,
+) -> int:
     """Raises `ScalingOverflowError` before any variable is created. Returns
-    the worst-case scaled objective bound (reused as variable domains)."""
+    the worst-case scaled objective bound (reused as variable domains).
+
+    With a concentration cap, the constraint multiplies scaled spend by
+    `CONCENTRATION_DENOM` (10^6), so the effective ceiling is int64 / 10^6 —
+    otherwise CP-SAT returns an opaque MODEL_INVALID above ~$922M total
+    (2026-08 calculation audit F8)."""
     line_by_id = {line.rfq_line_id: line for line in lines}
     worst_case = 0
     for o in live_offers:
@@ -557,6 +582,13 @@ def _check_overflow(lines: tuple[DemandLine, ...], live_offers: tuple[Offer, ...
                 f"worst-case scaled objective bound ({worst_case}) exceeds the overflow "
                 f"threshold {SCALE_OVERFLOW_THRESHOLD}"
             )
+    if has_concentration_cap and worst_case > INT64_MAX // CONCENTRATION_DENOM:
+        raise ScalingOverflowError(
+            f"worst-case scaled spend ({worst_case}) times the concentration "
+            f"denominator ({CONCENTRATION_DENOM}) would overflow int64; the "
+            "max_concentration constraint cannot be modelled at this problem "
+            "size — remove the concentration cap or reduce the total cost scale"
+        )
     return worst_case
 
 
@@ -802,7 +834,11 @@ class AllocationSolver:
         if budget_explanation is not None:
             return self._presolve_infeasible(model_hash, budget_explanation)
 
-        total_cost_upper_bound = _check_overflow(problem.lines, live_offers)
+        total_cost_upper_bound = _check_overflow(
+            problem.lines,
+            live_offers,
+            has_concentration_cap=problem.constraints.max_concentration is not None,
+        )
 
         upper_by_offer = {
             o.quote_line_id: _upper_bound(o, line_by_id[o.rfq_line_id].required_quantity)
@@ -842,6 +878,7 @@ class AllocationSolver:
             model_hash=model_hash,
             num_variables=len(built.model.proto.variables),
             num_constraints=len(built.model.proto.constraints),
+            max_scaling_error=_max_scaling_error(problem.lines, live_offers),
         )
 
         if raw_status == cp_model.INFEASIBLE:
@@ -1153,8 +1190,19 @@ class AllocationSolver:
             delta = alt_result.expected_total_cost - main_cost
             sign = "+" if delta >= 0 else ""
             alt_cost_str = format(alt_result.expected_total_cost, "f")
+            if alt_result.status is AllocationStatus.OPTIMAL:
+                verb = "would cost"
+            else:
+                # FEASIBLE is an upper bound, not a proven figure — the one
+                # place this discipline lapsed (2026-08 calculation audit F9).
+                verb = "would cost at most"
             return (
-                f"a single-supplier allocation would cost {alt_cost_str} "
-                f"({sign}{format(delta, 'f')} vs. the recommended split)"
+                f"a single-supplier allocation {verb} {alt_cost_str} "
+                f"({sign}{format(delta, 'f')} vs. the recommended split"
+                + (
+                    ")"
+                    if alt_result.status is AllocationStatus.OPTIMAL
+                    else "; optimality of the alternative not proven within the search budget)"
+                )
             )
         return "no feasible single-supplier alternative"

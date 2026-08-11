@@ -136,4 +136,10 @@ Accepted v0.1 limitations, all from `docs/planning/00-decisions.md` §4 #18–#2
   adds members directly;
 - demo reset is "re-run the idempotent seed script";
 - no uploader/confirmer segregation of duties;
-- PDF output bundles DejaVu Sans; CJK glyph coverage is deferred.
+- PDF output uses ReportLab's built-in Helvetica (Latin-1 coverage) — the ruled DejaVu Sans
+  bundling and CJK glyph coverage are both deferred;
+- the negotiation-brief numeric cross-check validates every number token (integers
+  included, exact-`Decimal` match) against the brief's own facts, but the allowed set is
+  global to the brief: a *real* number attributed to the *wrong supplier* in generated
+  prose is not caught. Per-section/per-entity scoping is deferred until a real LLM
+  narrative provider ships (today's template provider cannot cross-attribute).

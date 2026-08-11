@@ -55,8 +55,11 @@ src = ["src", "tests"]
 select = ["E", "F", "W", "I", "UP", "B", "C4", "SIM", "RUF", "TID"]
 ignore = ["SIM108"]
 
-[tool.ruff.lint.flake8-tidy-imports.banned-api]
-"app.domain.float".msg = "floats are banned in domain code; use Decimal"
+# NOTE: an earlier `flake8-tidy-imports.banned-api` entry for "app.domain.float"
+# was removed after the 2026-08 calculation audit showed it matched an import
+# path that cannot exist and therefore enforced nothing. The no-floats-in-money
+# discipline is maintained by review (audit-verified: zero `float(` calls in
+# backend/src) — see docs/METHODOLOGY.md §1.
 
 [tool.mypy]
 python_version = "3.12"

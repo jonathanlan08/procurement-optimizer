@@ -358,7 +358,10 @@ class LandedCostService:
             return Quantified.missing(note=note), {"applied": False, "reason": note}
 
         with localcontext(CALC_CONTEXT):
-            adjusted_raw = price.value / ratio.value
+            # Divide by the UNQUANTIZED ratio (2026-08 calculation audit F2):
+            # ratio.value is quantized at QTY_SCALE (6 dp) as a quantity
+            # boundary, and using it as a divisor rounds mid-formula.
+            adjusted_raw = price.value / ratio.unit_ratio
         adjusted = quantize_unit_price(adjusted_raw)
         is_assumption = part_factor is not None
         provenance = Provenance.USER_ASSUMPTION if is_assumption else price.provenance

@@ -232,6 +232,11 @@ class SolverStatsResponse(BaseModel):
     model_hash: str
     num_variables: int
     num_constraints: int
+    # 06-optimization-methodology.md §7.4: optimality is proven for costs
+    # rounded to 0.0001 currency units; an unconsidered alternative can be at
+    # most this much cheaper. None on results persisted before this field
+    # existed and on pre-solve/error paths.
+    max_scaling_error: str | None = None
 
 
 class MoneyAmount(BaseModel):

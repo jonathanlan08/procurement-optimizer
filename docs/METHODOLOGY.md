@@ -13,15 +13,23 @@ Related: [OPTIMIZATION.md](OPTIMIZATION.md) (allocation) ·
 ## 1. Decimal policy
 
 `backend/src/app/core/money.py` is the single source of truth. Binary floating point is
-forbidden for money and quantities; `ruff` even bans a `app.domain.float` import path in
-`backend/pyproject.toml`.
+forbidden for money and quantities — a discipline maintained by review, not tooling: the
+2026-08 independent calculation audit confirmed **zero** `float(` calls anywhere in
+`backend/src`, and also confirmed that the `app.domain.float` `banned-api` entry in
+`backend/pyproject.toml` matches an import path that cannot exist, i.e. it enforces
+nothing.
 
 - Working precision **34** significant digits, rounding **`ROUND_HALF_EVEN`** (banker's).
 - Traps enabled for `InvalidOperation`, `DivisionByZero`, `Overflow` — arithmetic raises
-  instead of quietly producing `NaN`/`Infinity`.
+  instead of quietly producing `NaN`/`Infinity`. (Honesty note: with no `Emax` set, the
+  `Overflow` trap is effectively unreachable; the guard that actually stops runaway
+  magnitudes is `quantize_money` raising `InvalidOperation` past 34 digits — loudly.)
 - Arithmetic runs at full precision *inside* a formula; each result is quantized **once**
-  at its boundary scale. Components are quantized before summing, so displayed components
-  sum **exactly** to the displayed total.
+  at its boundary scale. Components are quantized before summing, so **stored components
+  (6 dp) sum exactly to the stored total** — a Hypothesis property test proves it. The
+  2-dp *display* rendering of each row can differ from the displayed total by a cent
+  (independent rounding of parts vs. whole); the stored figures, which every calculation
+  and export reads, always reconcile exactly.
 - Boundary scales: `MONEY_SCALE` 6 dp, `UNIT_PRICE_SCALE` 8 dp, `RATE_SCALE` 12 dp,
   `QTY_SCALE` 6 dp, `RATIO_SCALE` 6 dp, `DISPLAY_SCALE` 2 dp (presentation only).
 - Input finer than a column's scale is a **validation error**, never a silent round
@@ -68,6 +76,14 @@ effective_unit_cost    = total_landed_cost / accepted_quantity
 
 `accepted_quantity == 0` raises `ZeroQuantityError`; `< 0` raises `NegativeQuantityError` —
 never a division into infinity.
+
+**Aggregation caveat.** When a supplier's offer spans multiple quote lines, the
+per-supplier `effective_unit_cost` used by scenario scoring, negotiation-brief targets,
+and reports is `Σ total_landed_cost / Σ accepted_quantity` across **all** of that
+supplier's matched lines. For a multi-line RFQ covering different parts this is a blended
+per-unit figure across unlike items — useful as a comparable index across suppliers
+quoting the same line set, but not a price for any single part. All three consumers
+compute it identically (in `CALC_CONTEXT`, quantized once at `UNIT_PRICE_SCALE`).
 
 ### The signed component
 

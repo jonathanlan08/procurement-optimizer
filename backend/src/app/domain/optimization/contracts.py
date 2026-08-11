@@ -140,6 +140,14 @@ class SolverStats:
     model_hash: str  # sha256 over the canonical serialized model inputs
     num_variables: int
     num_constraints: int
+    # 06-optimization-methodology.md §7.4 disclosure (2026-08 calculation
+    # audit F1): the objective sees costs rounded half-even at 4 dp, so two
+    # offers differing by < 10^-4/unit are indistinguishable to the solver.
+    # Conservative worst-case bound on how much cheaper a passed-over
+    # alternative could be in exact space:
+    #   2 x 5e-5 x (total required units + number of nonzero fixed costs).
+    # None only on pre-solve/error paths where no objective was built.
+    max_scaling_error: Decimal | None = None
 
 
 @dataclass(frozen=True, slots=True)

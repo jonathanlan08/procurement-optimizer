@@ -535,6 +535,21 @@ class ReportService:
             ("Supplier count", str(allocation.supplier_count)),
             ("Optimization version", resp.optimization_version),
         ]
+        if (
+            resp.solver_status == "optimal"
+            and resp.stats is not None
+            and resp.stats.max_scaling_error is not None
+        ):
+            # 06-optimization-methodology.md §7.4 / §10.8: the caveat must
+            # appear in the exported report, not only in the docs.
+            summary_pairs.append(
+                (
+                    "Optimality caveat",
+                    "Optimality is proven with respect to costs rounded to 0.0001 "
+                    "currency units; any unconsidered alternative is at most "
+                    f"{resp.stats.max_scaling_error} {rfq_base_currency} cheaper.",
+                )
+            )
         if resp.error_message:
             summary_pairs.append(("Error", resp.error_message))
 

@@ -144,7 +144,12 @@ from app.services.landed_cost_service import LandedCostService
 
 STRETCH_FACTOR: Decimal = Decimal("0.97")
 
-_DECIMAL_TOKEN_RE = re.compile(r"-?\d+\.\d+")
+# Any number-looking token: integers included (MOQ, lead-time days, unit
+# counts, whole-dollar savings and percentages are all integers in this
+# domain — the original decimals-only pattern let every one of them through;
+# 2026-08 calculation audit F6), with thousands separators/underscores
+# tolerated and stripped before comparison.
+_NUMBER_TOKEN_RE = re.compile(r"-?\d[\d,_]*(?:\.\d+)?")
 
 _QUOTE_LINE_QUESTIONS: tuple[tuple[str, str], ...] = (
     ("moq", "What is the minimum order quantity (MOQ)?"),
@@ -193,35 +198,50 @@ def build_narrative_provider(settings: Settings) -> AiNarrativeProvider:
 # -- numeric cross-check: the mechanical guard against invented figures ----
 
 
-def _collect_decimal_tokens(value: Any) -> set[str]:
-    tokens: set[str] = set()
+def _token_to_decimal(token: str) -> Decimal | None:
+    try:
+        return Decimal(token.replace(",", "").replace("_", ""))
+    except Exception:  # pragma: no cover - regex shape makes this unreachable
+        return None
+
+
+def _collect_number_tokens(value: Any) -> set[Decimal]:
+    tokens: set[Decimal] = set()
     if isinstance(value, str):
-        tokens.update(_DECIMAL_TOKEN_RE.findall(value))
+        for raw in _NUMBER_TOKEN_RE.findall(value):
+            parsed = _token_to_decimal(raw)
+            if parsed is not None:
+                tokens.add(parsed)
     elif isinstance(value, list):
         for item in value:
-            tokens.update(_collect_decimal_tokens(item))
+            tokens.update(_collect_number_tokens(item))
     return tokens
 
 
 def numeric_cross_check(rendered: dict[str, str], brief_facts: dict[str, Any]) -> None:
-    """After narrative rendering: every decimal-looking token
-    (`-?\\d+\\.\\d+`) in the provider's rendered text must already appear
-    somewhere in `brief_facts`'s own values (including inside list items).
-    Raises `ValidationAppError` — a clear, generation-halting error, never a
-    silently-shipped brief — the first token that fails to match. This is
+    """After narrative rendering: every number-looking token — integers
+    included, separators stripped — in the provider's rendered text must
+    equal (as an exact `Decimal`, so `500` matches a stored `500.000000` but
+    `14.48` does NOT match `14.48109664` — rounding a fact is a provider bug
+    that fails closed) some number already present in `brief_facts`'s own
+    values. Raises `ValidationAppError` — a clear, generation-halting error,
+    never a silently-shipped brief — on the first token that fails. This is
     the guard `docs/SPEC.md` §Negotiation brief's "AI must not invent...
-    savings, concessions..." names; exercised in
-    `tests/integration/test_briefs_api.py` by injecting a provider whose
-    `render_sections` returns a fabricated figure."""
-    allowed: set[str] = set()
+    savings, concessions..." names; widened from decimals-only after the
+    2026-08 calculation audit (F6) showed fabricated integers (MOQ, days,
+    percentages, whole-dollar savings) passed unchecked. Known remaining
+    limit, documented in ROADMAP.md: the allowed set is global to the brief,
+    so a real number attributed to the wrong supplier is not caught."""
+    allowed: set[Decimal] = set()
     for value in brief_facts.values():
-        allowed.update(_collect_decimal_tokens(value))
+        allowed.update(_collect_number_tokens(value))
     for section_key, text in rendered.items():
-        for token in _DECIMAL_TOKEN_RE.findall(text):
-            if token not in allowed:
+        for raw in _NUMBER_TOKEN_RE.findall(text):
+            parsed = _token_to_decimal(raw)
+            if parsed is not None and parsed not in allowed:
                 raise ValidationAppError(
                     f"Narrative section {section_key!r} contains the number "
-                    f"{token!r}, which does not appear anywhere in the underlying "
+                    f"{raw!r}, which does not appear anywhere in the underlying "
                     "brief facts. Refusing to generate a brief that may contain an "
                     "invented figure (SPEC: AI must not invent numbers)."
                 )

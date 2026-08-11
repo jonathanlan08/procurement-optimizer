@@ -292,6 +292,14 @@ export function AllocationPanel({
     <section className="allocation-panel">
       <AllocationStatusBanner allocation={allocation} />
 
+      {allocation.solver_status === "optimal" && allocation.stats?.max_scaling_error && (
+        <p className="detail-label allocation-scaling-caveat">
+          Optimality is proven with respect to costs rounded to 0.0001 currency units; any
+          unconsidered alternative is at most {allocation.stats.max_scaling_error} {currency}{" "}
+          cheaper.
+        </p>
+      )}
+
       {(allocation.solver_status === "optimal" || allocation.solver_status === "feasible") && (
         <AllocationTable allocation={allocation} currency={currency} />
       )}

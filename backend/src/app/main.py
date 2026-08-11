@@ -14,6 +14,7 @@ from app.api.middleware import (
     SecurityHeadersMiddleware,
 )
 from app.api.v1.analysis import landed_cost_router, scoring_config_router
+from app.api.v1.audit import audit_events_router, entity_audit_router
 from app.api.v1.auth import router as auth_router
 from app.api.v1.boms import router as boms_router
 from app.api.v1.briefs import briefs_router, rfq_briefs_router, scenario_briefs_router
@@ -27,6 +28,7 @@ from app.api.v1.part_imports import router as part_imports_router
 from app.api.v1.parts import router as parts_router
 from app.api.v1.quotes import rfq_quotes_router
 from app.api.v1.quotes import router as quotes_router
+from app.api.v1.reports import router as reports_router
 from app.api.v1.rfqs import router as rfqs_router
 from app.api.v1.scenarios import rfq_scenarios_router, scenarios_router
 from app.api.v1.supplier_contacts import router as supplier_contacts_router
@@ -147,5 +149,8 @@ def create_app(
     app.include_router(scenario_briefs_router, prefix=API_PREFIX)
     app.include_router(rfq_briefs_router, prefix=API_PREFIX)
     app.include_router(briefs_router, prefix=API_PREFIX)
+    app.include_router(reports_router, prefix=API_PREFIX)
+    app.include_router(audit_events_router, prefix=API_PREFIX)
+    app.include_router(entity_audit_router, prefix=API_PREFIX)
 
     return app

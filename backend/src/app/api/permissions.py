@@ -195,6 +195,23 @@ PERMISSIONS: dict[tuple[str, str], PermissionLevel] = {
     ("GET", "/api/v1/negotiation-briefs/{brief_id}"): Role.VIEWER,
     ("POST", "/api/v1/negotiation-briefs/{brief_id}/review"): Role.ANALYST,
     ("POST", "/api/v1/negotiation-briefs/{brief_id}/archive"): Role.ADMINISTRATOR,
+    # Reports (03-api-contract.md §4.18): "O A N" for generate, "O A N V"
+    # for every read route (list/get/content) — the contract's own literal
+    # answer to its §6 gap #1 ("should viewer download reports?"): yes. See
+    # api/v1/reports.py's own module docstring for why generate returns
+    # 201 synchronously and why content returns a hand-built 410 on purge.
+    ("POST", "/api/v1/reports"): Role.ANALYST,
+    ("GET", "/api/v1/reports"): Role.VIEWER,
+    ("GET", "/api/v1/reports/{report_id}"): Role.VIEWER,
+    ("GET", "/api/v1/reports/{report_id}/content"): Role.VIEWER,
+    # Audit events (03-api-contract.md §4.19): "O A N V" on every route —
+    # the contract's own parenthetical spells out viewer read-own-org
+    # access explicitly. No write/update/delete route exists anywhere for
+    # audit events (see api/v1/audit.py's own module docstring); there is
+    # therefore nothing to declare here but GET.
+    ("GET", "/api/v1/audit-events"): Role.VIEWER,
+    ("GET", "/api/v1/audit-events/{event_id}"): Role.VIEWER,
+    ("GET", "/api/v1/entities/{entity_type}/{entity_id}/audit-events"): Role.VIEWER,
 }
 
 # Routes that are org-scoped resources (subject to the 404 cross-org matrix
@@ -218,4 +235,6 @@ ORG_SCOPED_RESOURCES: list[str] = [
     "scoring_configurations",
     "comparison_scenarios",
     "negotiation_briefs",
+    "generated_reports",
+    "audit_events",
 ]

@@ -68,6 +68,15 @@ from app.models.quotes import (
     QuoteStatus,
     QuoteTerms,
 )
+from app.models.reports import (
+    REPORT_FORMAT_ENUM,
+    REPORT_STATE_ENUM,
+    REPORT_TYPE_ENUM,
+    GeneratedReport,
+    ReportFormat,
+    ReportState,
+    ReportType,
+)
 from app.models.rfqs import (
     ALLOWED_RFQ_TRANSITIONS,
     RFQ_STATUS_ENUM,
@@ -109,6 +118,9 @@ __all__ = [
     "PART_IMPORT_FORMAT_ENUM",
     "QUOTE_SOURCE_ENUM",
     "QUOTE_STATUS_ENUM",
+    "REPORT_FORMAT_ENUM",
+    "REPORT_STATE_ENUM",
+    "REPORT_TYPE_ENUM",
     "RESULT_COMPLETENESS_ENUM",
     "RFQ_STATUS_ENUM",
     "ROLE_ENUM",
@@ -128,6 +140,7 @@ __all__ = [
     "ExtractionField",
     "ExtractionRun",
     "ExtractionRunState",
+    "GeneratedReport",
     "Job",
     "JobState",
     "LandedCostComponent",
@@ -154,6 +167,9 @@ __all__ = [
     "QuoteSource",
     "QuoteStatus",
     "QuoteTerms",
+    "ReportFormat",
+    "ReportState",
+    "ReportType",
     "Rfq",
     "RfqLine",
     "RfqStatus",

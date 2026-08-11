@@ -139,6 +139,16 @@ PERMISSIONS: dict[tuple[str, str], PermissionLevel] = {
     ("GET", "/api/v1/extraction-runs/{run_id}/fields"): Role.VIEWER,
     ("PATCH", "/api/v1/extraction-runs/{run_id}/fields/{field_id}"): Role.ANALYST,
     ("POST", "/api/v1/extraction-runs/{run_id}/confirm"): Role.ANALYST,
+    # Part matching (03-api-contract.md §4.12): "O A N" for generate/
+    # confirm/unmatch, "O A N V" for the ranked-candidates read route. See
+    # api/v1/matching.py's own module docstring for why these paths follow
+    # the contract's literal route table rather than this task's own
+    # paraphrase (POST/GET .../match-candidates, POST
+    # /match-candidates/{id}/confirm|reject).
+    ("POST", "/api/v1/quotes/{quote_id}/match"): Role.ANALYST,
+    ("GET", "/api/v1/quotes/{quote_id}/matches"): Role.VIEWER,
+    ("POST", "/api/v1/quote-lines/{quote_line_id}/match"): Role.ANALYST,
+    ("DELETE", "/api/v1/quote-lines/{quote_line_id}/match"): Role.ANALYST,
     # Landed cost (03-api-contract.md §4.15). Preview is the contract's own
     # literal "O A N V" — a stateless calculator, no audit row, viewer-
     # readable (§6 gap #2), NOT the analyst+ this task's own paraphrase
@@ -174,6 +184,7 @@ ORG_SCOPED_RESOURCES: list[str] = [
     "quote_documents",
     "extraction_runs",
     "extraction_fields",
+    "part_match_candidates",
     "landed_cost_results",
     "scoring_configurations",
 ]

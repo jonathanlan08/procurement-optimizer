@@ -79,37 +79,32 @@ or re-deriving it minimally:
    `QuoteService._build_line`/`_build_price_break`/`_build_terms`'s field-by-
    field mapping and `quantize_*` usage), for the same reason as point 2.
 
-## A genuine FROZEN-schema conflict: `QuoteCorrection.quote_id` is `NOT NULL`
+## RESOLVED: `QuoteCorrection.quote_id` is now nullable (migration 0012)
 
 This task's OBJECTIVE instructs `correct_field` to "write a `QuoteCorrection`
 with before/after." 04-document-pipeline.md's own pipeline diagram places
 Stage 10 (Corrections) *before* Stage 11 (Materialize) — i.e. corrections are
 meant to happen on `extraction_fields` before any `Quote` row exists at all.
-But `app/models/documents.py`'s `QuoteCorrection.quote_id` is a **required**
-composite FK to `quotes` (only `extraction_field_id` is nullable — see that
-model's own module docstring point 8, which reasons about a *manual* quote
-correction having no extraction field, never the reverse: an extraction-field
-correction having no quote). `QuoteCorrection` is a FROZEN model; this
-service cannot write a row with `quote_id=NULL`, and nothing in this schema
-records a stored, queryable link from an `ExtractionRun` back to the `Quote`
-`materialize()` eventually builds from it (`Quote` carries no
-`source_extraction_run_id` at all — app/models/quotes.py module docstring
-point 1).
+Previously, `app/models/documents.py`'s `QuoteCorrection.quote_id` was a
+**required** composite FK to `quotes`, so a pre-materialization correction
+could not produce a `QuoteCorrection` row at all — only the audit event
+recorded it (see git history for the full original account of that
+conflict).
 
-Resolution actually implemented: `correct_field` **always** applies the
-correction to the `ExtractionField` itself and **always** writes a full
-`extraction.field_corrected` audit event (before/after, satisfying the
-auditability goal regardless). It **additionally** writes a `QuoteCorrection`
-row whenever a materialized quote for this run can be found —
-`ExtractionRepository.find_materialized_quote_id` recovers that link from the
-one place it durably exists: the `extraction.materialized` audit event's own
-`after_state["extraction_run_id"]`. For a correction made *before*
-materialization (no quote exists yet — the literal Stage-10-before-Stage-11
-case), no `QuoteCorrection` row can be written and none is; the audit event
-is the complete record of that edit. This is flagged here, prominently, as a
-genuine conflict between the task's literal instruction and a FROZEN model
-constraint rather than something silently worked around — see this task's
-final report for the same note.
+A later, narrowly-scoped part-matching phase revisited this: migration 0012
+drops `quote_id`'s `NOT NULL` (module docstring point 8a,
+`app/models/documents.py`) and adds a new `extraction_run_id` composite org
+FK to `extraction_runs`, giving every correction — pre- or
+post-materialization — a durable, directly queryable link back to the run
+that produced the field it corrects. `correct_field` below now **always**
+writes a `QuoteCorrection` row: `quote_id` is `ExtractionRepository.
+find_materialized_quote_id(run_id)` (still recovered from the
+`extraction.materialized` audit event's `after_state`, since `Quote` itself
+still carries no `source_extraction_run_id` — app/models/quotes.py module
+docstring point 1 — that gap is unaffected) and is `None` when no quote has
+been materialized yet; `extraction_run_id` is always `run_id`. The
+`extraction.field_corrected` audit event is unchanged (still the complete
+record of every edit regardless).
 
 ## Other deliberate scope boundaries
 
@@ -989,28 +984,28 @@ class ExtractionService:
         field.confirmed_at = self._clock.now()
         self._db.flush()
 
-        # See module docstring "A genuine FROZEN-schema conflict": a
-        # QuoteCorrection row is only possible once a Quote exists.
+        # See module docstring "RESOLVED: QuoteCorrection.quote_id is now
+        # nullable": a QuoteCorrection row is now always written, whether or
+        # not a quote has been materialized from this run yet.
         quote_id = self._repo.find_materialized_quote_id(run_id)
-        correction_written = False
-        if quote_id is not None:
-            correction = QuoteCorrection(
-                id=self._ids.new_id(),
-                organization_id=self._organization_id,
-                quote_id=quote_id,
-                extraction_field_id=field.id,
-                target_table="extraction_fields",
-                target_row_id=field.id,
-                field_name=field.field_name,
-                before_value=before_normalized,
-                after_value=normalized,
-                reason=reason,
-                corrected_by_id=actor_id,
-                corrected_at=self._clock.now(),
-            )
-            self._repo.add_correction(correction)
-            self._db.flush()
-            correction_written = True
+        correction = QuoteCorrection(
+            id=self._ids.new_id(),
+            organization_id=self._organization_id,
+            quote_id=quote_id,
+            extraction_field_id=field.id,
+            extraction_run_id=run_id,
+            target_table="extraction_fields",
+            target_row_id=field.id,
+            field_name=field.field_name,
+            before_value=before_normalized,
+            after_value=normalized,
+            reason=reason,
+            corrected_by_id=actor_id,
+            corrected_at=self._clock.now(),
+        )
+        self._repo.add_correction(correction)
+        self._db.flush()
+        correction_written = True
 
         self._audit.record(
             "extraction.field_corrected",

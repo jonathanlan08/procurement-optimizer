@@ -21,6 +21,7 @@ from app.api.v1.documents import router as documents_router
 from app.api.v1.extractions import document_extractions_router
 from app.api.v1.extractions import router as extractions_router
 from app.api.v1.fx import router as fx_router
+from app.api.v1.matching import quote_lines_match_router, quotes_match_router
 from app.api.v1.part_imports import router as part_imports_router
 from app.api.v1.parts import router as parts_router
 from app.api.v1.quotes import rfq_quotes_router
@@ -135,6 +136,8 @@ def create_app(
     app.include_router(documents_router, prefix=API_PREFIX)
     app.include_router(document_extractions_router, prefix=API_PREFIX)
     app.include_router(extractions_router, prefix=API_PREFIX)
+    app.include_router(quotes_match_router, prefix=API_PREFIX)
+    app.include_router(quote_lines_match_router, prefix=API_PREFIX)
     app.include_router(landed_cost_router, prefix=API_PREFIX)
     app.include_router(scoring_config_router, prefix=API_PREFIX)
 

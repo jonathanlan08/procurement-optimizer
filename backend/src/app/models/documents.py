@@ -89,6 +89,30 @@ shape.
    every other optional composite FK in this schema) so the same correction
    log serves both origins; documented here as a judgment call rather than
    silently assumed.
+
+8a. **`QuoteCorrection.quote_id` is now nullable, and `QuoteCorrection`
+    gains a new nullable `extraction_run_id` composite org FK to
+    `extraction_runs`** (migration 0012, part-matching phase). This resolves
+    a genuine conflict `services/extraction_service.py`'s own module
+    docstring previously flagged in detail: 04-document-pipeline.md's
+    pipeline places Stage 10 (Corrections) *before* Stage 11 (Materialize),
+    i.e. a correction can legitimately happen while only an `ExtractionRun`/
+    `ExtractionField` exist and no `Quote` row has been built yet — but
+    `quote_id` was originally `NOT NULL`, so `correct_field` could not write
+    a `QuoteCorrection` row at all in that case (only the audit event
+    recorded the edit). With `quote_id` nullable (same `MATCH SIMPLE`
+    NULL-exempts-the-row pattern as point 8's `extraction_field_id`) and a
+    new `extraction_run_id` giving every correction — pre- or
+    post-materialization — a durable, directly queryable link back to the
+    run that produced the field it corrects (previously the *only* place
+    that link existed at all was buried in the `extraction.materialized`
+    audit event's `after_state`, per `ExtractionRepository.
+    find_materialized_quote_id`'s own docstring), `correct_field` can now
+    always write a `QuoteCorrection` row: `quote_id` is populated once a
+    quote has been materialized, `extraction_run_id` is always populated,
+    and a pre-materialization correction simply has `quote_id IS NULL`. This
+    is the one deliberate, narrowly-scoped edit this phase makes to an
+    otherwise-FROZEN model.
 9. **Every non-cascade FK introduced by this module is `RESTRICT`.**
    02-erd.md §11's cascade whitelist names exactly four pairs; the only one
    relevant to this module is `extraction_runs` → `extraction_fields`
@@ -530,7 +554,8 @@ class QuoteCorrection(OrgOwnedBase):
     __tablename__ = "quote_corrections"
     __table_args__ = (
         org_identity_constraint("quote_corrections"),
-        # composite org FK: the quote this correction was made against.
+        # composite org FK, nullable: module docstring point 8a — a
+        # correction made before materialization has no quote yet.
         ForeignKeyConstraint(
             ["organization_id", "quote_id"],
             ["quotes.organization_id", "quotes.id"],
@@ -544,12 +569,23 @@ class QuoteCorrection(OrgOwnedBase):
             ondelete="RESTRICT",
             name="fk_quote_corrections_organization_id_extraction_field_id",
         ),
+        # composite org FK, nullable: module docstring point 8a.
+        ForeignKeyConstraint(
+            ["organization_id", "extraction_run_id"],
+            ["extraction_runs.organization_id", "extraction_runs.id"],
+            ondelete="RESTRICT",
+            name="fk_quote_corrections_organization_id_extraction_run_id",
+        ),
     )
 
-    # part of composite FK #1 above, not a single-column ForeignKey
-    quote_id: Mapped[uuid.UUID] = mapped_column()
+    # part of composite FK #1 above, not a single-column ForeignKey; nullable
+    # per module docstring point 8a
+    quote_id: Mapped[uuid.UUID | None] = mapped_column(default=None)
     # part of composite FK #2 above, not a single-column ForeignKey; nullable
     extraction_field_id: Mapped[uuid.UUID | None] = mapped_column(default=None)
+    # part of composite FK #3 above, not a single-column ForeignKey; nullable
+    # per module docstring point 8a
+    extraction_run_id: Mapped[uuid.UUID | None] = mapped_column(default=None)
     target_table: Mapped[str] = mapped_column(Text())
     target_row_id: Mapped[uuid.UUID] = mapped_column()
     field_name: Mapped[str] = mapped_column(Text())
@@ -719,6 +755,12 @@ QuoteCorrection.extraction_field = relationship(
     foreign_keys=[QuoteCorrection.organization_id, QuoteCorrection.extraction_field_id],
     lazy="select",
     overlaps="organization,quote",
+)
+QuoteCorrection.extraction_run = relationship(
+    "ExtractionRun",
+    foreign_keys=[QuoteCorrection.organization_id, QuoteCorrection.extraction_run_id],
+    lazy="select",
+    overlaps="organization,quote,extraction_field",
 )
 QuoteCorrection.corrected_by = relationship(
     "User", foreign_keys=[QuoteCorrection.corrected_by_id], lazy="select"

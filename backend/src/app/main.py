@@ -16,6 +16,7 @@ from app.api.middleware import (
 from app.api.v1.analysis import landed_cost_router, scoring_config_router
 from app.api.v1.auth import router as auth_router
 from app.api.v1.boms import router as boms_router
+from app.api.v1.briefs import briefs_router, rfq_briefs_router, scenario_briefs_router
 from app.api.v1.documents import rfq_documents_router
 from app.api.v1.documents import router as documents_router
 from app.api.v1.extractions import document_extractions_router
@@ -143,5 +144,8 @@ def create_app(
     app.include_router(scoring_config_router, prefix=API_PREFIX)
     app.include_router(rfq_scenarios_router, prefix=API_PREFIX)
     app.include_router(scenarios_router, prefix=API_PREFIX)
+    app.include_router(scenario_briefs_router, prefix=API_PREFIX)
+    app.include_router(rfq_briefs_router, prefix=API_PREFIX)
+    app.include_router(briefs_router, prefix=API_PREFIX)
 
     return app

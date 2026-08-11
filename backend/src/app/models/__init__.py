@@ -15,6 +15,12 @@ from app.models.base import (
     org_identity_constraint,
 )
 from app.models.boms import BOM_STATUS_ENUM, BillOfMaterialLine, BillOfMaterials, BomStatus
+from app.models.briefs import (
+    BRIEF_STATE_ENUM,
+    BriefState,
+    NegotiationBrief,
+    SectionProvenance,
+)
 from app.models.documents import (
     ALLOWED_EXTRACTION_RUN_TRANSITIONS,
     CONFIDENCE_BAND_ENUM,
@@ -89,6 +95,7 @@ __all__ = [
     "ALLOWED_EXTRACTION_RUN_TRANSITIONS",
     "ALLOWED_RFQ_TRANSITIONS",
     "BOM_STATUS_ENUM",
+    "BRIEF_STATE_ENUM",
     "COMPARISON_STRATEGY_ENUM",
     "CONFIDENCE_BAND_ENUM",
     "DIMENSION_ENUM",
@@ -112,6 +119,7 @@ __all__ = [
     "BillOfMaterialLine",
     "BillOfMaterials",
     "BomStatus",
+    "BriefState",
     "ComparisonScenario",
     "ComparisonStrategy",
     "DocumentPage",
@@ -125,6 +133,7 @@ __all__ = [
     "LandedCostComponent",
     "LandedCostResult",
     "MatchStrategy",
+    "NegotiationBrief",
     "OrgOwnedMixin",
     "Organization",
     "OrganizationMembership",
@@ -154,6 +163,7 @@ __all__ = [
     "ScenarioResult",
     "ScenarioState",
     "ScoringConfiguration",
+    "SectionProvenance",
     "Session",
     "Supplier",
     "SupplierContact",

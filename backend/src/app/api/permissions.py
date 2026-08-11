@@ -180,6 +180,21 @@ PERMISSIONS: dict[tuple[str, str], PermissionLevel] = {
     ("POST", "/api/v1/comparison-scenarios/{scenario_id}/optimize"): Role.ANALYST,
     ("POST", "/api/v1/comparison-scenarios/{scenario_id}/clone"): Role.ANALYST,
     ("POST", "/api/v1/comparison-scenarios/{scenario_id}/archive"): Role.ADMINISTRATOR,
+    # Negotiation briefs (03-api-contract.md §4.17). Generate/review are
+    # "O A N" per the contract's literal table; list routes (both nestings)
+    # follow every other resource's "O A N V" read gate; archive is this
+    # task's own explicit addition, gated administrator+ like every other
+    # archivable resource's archive route — see api/v1/briefs.py's own
+    # module docstring for why there is no PATCH edit route and no
+    # `/email-draft` route in this build (the latter deliberately: SPEC
+    # "never auto-send", and this task's own test requirement is "assert no
+    # such route exists").
+    ("POST", "/api/v1/comparison-scenarios/{scenario_id}/negotiation-briefs"): Role.ANALYST,
+    ("GET", "/api/v1/comparison-scenarios/{scenario_id}/negotiation-briefs"): Role.VIEWER,
+    ("GET", "/api/v1/rfqs/{rfq_id}/negotiation-briefs"): Role.VIEWER,
+    ("GET", "/api/v1/negotiation-briefs/{brief_id}"): Role.VIEWER,
+    ("POST", "/api/v1/negotiation-briefs/{brief_id}/review"): Role.ANALYST,
+    ("POST", "/api/v1/negotiation-briefs/{brief_id}/archive"): Role.ADMINISTRATOR,
 }
 
 # Routes that are org-scoped resources (subject to the 404 cross-org matrix
@@ -202,4 +217,5 @@ ORG_SCOPED_RESOURCES: list[str] = [
     "landed_cost_results",
     "scoring_configurations",
     "comparison_scenarios",
+    "negotiation_briefs",
 ]

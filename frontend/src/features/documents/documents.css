@@ -1,0 +1,122 @@
+/* Documents-specific chrome layered on top of components/workspace.css +
+   components/badges.css (both imported by DocumentsSection.tsx). Kept in its
+   own file rather than editing either shared stylesheet — same rationale as
+   every other feature's own css file (see features/quotes/quotes.css's own
+   header). */
+
+.document-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.document-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+}
+
+.document-row.is-archived {
+  opacity: 0.6;
+}
+
+.document-row-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.document-row-filename {
+  font-size: 13px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.document-row-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.document-row-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-shrink: 0;
+}
+
+.document-quarantine-note {
+  color: var(--color-destructive);
+  font-size: 12px;
+}
+
+/* Type badge — quiet, neutral (identifies the file kind, not a status). */
+.badge--doc-type {
+  background: var(--color-muted);
+  color: var(--color-secondary);
+  border-color: var(--color-border);
+}
+
+/* State badges — one per DocumentState. Never color-alone (MASTER.md); every
+   badge keeps its own text label from statusLabel(). */
+.badge--doc-uploaded,
+.badge--doc-validated,
+.badge--doc-stored,
+.badge--doc-processing,
+.badge--doc-extracted {
+  background: rgba(3, 105, 161, 0.1);
+  color: var(--color-info);
+  border-color: rgba(3, 105, 161, 0.28);
+}
+
+.badge--doc-in_review {
+  background: rgba(180, 83, 9, 0.1);
+  color: var(--color-warning);
+  border-color: rgba(180, 83, 9, 0.28);
+}
+
+.badge--doc-confirmed {
+  background: rgba(21, 128, 61, 0.1);
+  color: var(--color-positive);
+  border-color: rgba(21, 128, 61, 0.28);
+}
+
+.badge--doc-quarantined {
+  background: rgba(220, 38, 38, 0.08);
+  color: var(--color-destructive);
+  border-color: rgba(220, 38, 38, 0.28);
+}
+
+.badge--doc-archived {
+  background: var(--color-muted);
+  color: var(--color-secondary);
+  border-color: var(--color-border);
+  border-style: dashed;
+}
+
+.document-upload-form {
+  margin-bottom: var(--space-xl);
+  padding: var(--space-lg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-background);
+}
+
+.document-upload-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-lg);
+}

@@ -1,0 +1,348 @@
+/* Extraction-review chrome. ReviewPane.tsx is a full-screen surface (the
+   task brief's own words), deliberately NOT built on components/Drawer.tsx
+   (a fixed-width side panel, and FORBIDDEN to edit) — this file implements
+   its own overlay/panel/focus styles, self-contained, the same way every
+   other feature keeps its own css rather than reaching into a shared file. */
+
+.review-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 60;
+}
+
+.review-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 61;
+  background: var(--color-background);
+  display: flex;
+  flex-direction: column;
+  transform: translateY(12px);
+  opacity: 0;
+  transition: transform var(--transition-medium), opacity var(--transition-medium);
+}
+
+.review-panel[data-state="open"] {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .review-panel {
+    transition: none;
+    transform: none;
+  }
+}
+
+.review-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-lg);
+  padding: var(--space-lg) var(--space-2xl);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.review-title {
+  font-size: 16px;
+}
+
+.review-close-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: none;
+  color: var(--color-secondary);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.review-close-btn:hover {
+  background: var(--color-muted);
+  color: var(--color-foreground);
+}
+
+.review-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-2xl);
+  max-width: 960px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* run header ------------------------------------------------------------ */
+
+.run-header-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+.badge--simulated {
+  background: rgba(3, 105, 161, 0.1);
+  color: var(--color-info);
+  border-color: rgba(3, 105, 161, 0.28);
+}
+
+.run-confidence {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+/* run-state badges */
+.badge--run-queued,
+.badge--run-running,
+.badge--run-extracted {
+  background: rgba(3, 105, 161, 0.1);
+  color: var(--color-info);
+  border-color: rgba(3, 105, 161, 0.28);
+}
+
+.badge--run-needs_review {
+  background: rgba(180, 83, 9, 0.1);
+  color: var(--color-warning);
+  border-color: rgba(180, 83, 9, 0.28);
+}
+
+.badge--run-ready,
+.badge--run-materialized {
+  background: rgba(21, 128, 61, 0.1);
+  color: var(--color-positive);
+  border-color: rgba(21, 128, 61, 0.28);
+}
+
+.badge--run-failed,
+.badge--run-failed_transient {
+  background: rgba(220, 38, 38, 0.08);
+  color: var(--color-destructive);
+  border-color: rgba(220, 38, 38, 0.28);
+}
+
+.badge--run-superseded {
+  background: var(--color-muted);
+  color: var(--color-secondary);
+  border-color: var(--color-border);
+  border-style: dashed;
+}
+
+.injection-banner {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: rgba(180, 83, 9, 0.1);
+  border: 1px solid rgba(180, 83, 9, 0.3);
+  color: var(--color-warning);
+  border-radius: var(--radius-sm);
+  padding: var(--space-md) var(--space-lg);
+  font-size: 13px;
+  margin-bottom: var(--space-xl);
+}
+
+.injection-banner strong {
+  font-size: 13px;
+}
+
+/* confidence badges — MASTER.md thresholds 0.95 / 0.60 */
+.badge--conf-high {
+  background: rgba(21, 128, 61, 0.1);
+  color: var(--color-conf-high);
+  border-color: rgba(21, 128, 61, 0.28);
+}
+
+.badge--conf-medium {
+  background: rgba(180, 83, 9, 0.1);
+  color: var(--color-conf-med);
+  border-color: rgba(180, 83, 9, 0.28);
+}
+
+.badge--conf-low {
+  background: rgba(220, 38, 38, 0.08);
+  color: var(--color-conf-low);
+  border-color: rgba(220, 38, 38, 0.28);
+}
+
+/* field-status badges */
+.badge--field-confirmed {
+  background: rgba(21, 128, 61, 0.1);
+  color: var(--color-positive);
+  border-color: rgba(21, 128, 61, 0.28);
+}
+
+.badge--field-needs_review {
+  background: rgba(180, 83, 9, 0.1);
+  color: var(--color-warning);
+  border-color: rgba(180, 83, 9, 0.28);
+}
+
+.badge--field-invalid {
+  background: rgba(220, 38, 38, 0.08);
+  color: var(--color-destructive);
+  border-color: rgba(220, 38, 38, 0.28);
+}
+
+.badge--field-accepted {
+  background: var(--color-muted);
+  color: var(--color-secondary);
+  border-color: var(--color-border);
+}
+
+/* field groups / table --------------------------------------------------- */
+
+.field-group {
+  margin-bottom: var(--space-2xl);
+}
+
+.field-group-title {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-muted-foreground);
+  margin-bottom: var(--space-md);
+}
+
+.field-table-wrap {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.field-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.field-table th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: var(--color-background);
+  border-bottom: 1px solid var(--color-border);
+  padding: var(--space-sm) var(--space-md);
+  white-space: nowrap;
+}
+
+.field-table td {
+  padding: var(--space-sm) var(--space-md);
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: top;
+}
+
+.field-table tr:last-child td {
+  border-bottom: none;
+}
+
+.field-table tr:hover td {
+  background: var(--color-background);
+}
+
+.field-path {
+  font-size: 12px;
+  color: var(--color-muted-foreground);
+}
+
+.field-value {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 13px;
+}
+
+.field-value.is-missing {
+  color: var(--color-muted-foreground);
+  font-style: italic;
+}
+
+.field-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.field-correct-form {
+  margin-top: var(--space-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  min-width: 220px;
+}
+
+.field-correct-form input,
+.field-correct-form textarea {
+  font: inherit;
+  font-size: 13px;
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+/* materialize panel ------------------------------------------------------- */
+
+.materialize-panel {
+  padding: var(--space-lg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-lg);
+  margin-bottom: var(--space-2xl);
+}
+
+/* match section ------------------------------------------------------------ */
+
+.match-line {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-lg);
+  background: var(--color-surface);
+}
+
+.match-candidate-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-sm) 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.match-candidate-row:first-of-type {
+  border-top: none;
+}
+
+.match-candidate-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.match-candidate-explanation {
+  font-size: 12px;
+  color: var(--color-muted-foreground);
+}
+
+.badge--auto-matched {
+  background: var(--color-muted);
+  color: var(--color-secondary);
+  border-color: var(--color-border);
+  border-style: dashed;
+}

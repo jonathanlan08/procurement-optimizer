@@ -1,6 +1,7 @@
 import { Route, Routes } from "react-router-dom";
 import { RequireAuth } from "./auth/session";
 import { BomsPage } from "./features/boms/BomsPage";
+import { ComparisonPage } from "./features/comparison/ComparisonPage"; // ALLOWED insertion: /scenarios route
 import { FxPanel } from "./features/fx/FxPanel"; // ALLOWED insertion: /fx route
 import { PartsPage } from "./features/parts/PartsPage";
 import { RfqsPage } from "./features/rfqs/RfqsPage";
@@ -26,7 +27,7 @@ export function App() {
         <Route path="boms" element={<BomsPage />} />
         <Route path="rfqs" element={<RfqsPage />} />
         <Route path="fx" element={<FxPanel />} /> {/* ALLOWED insertion */}
-        <Route path="scenarios" element={<PlaceholderPage title="Scenarios" />} />
+        <Route path="scenarios" element={<ComparisonPage />} /> {/* ALLOWED insertion */}
         <Route path="reports" element={<PlaceholderPage title="Reports" />} />
         <Route path="audit" element={<PlaceholderPage title="Audit log" />} />
         <Route path="*" element={<PlaceholderPage title="Not found" />} />

@@ -1,0 +1,394 @@
+/* Comparison-workspace chrome layered on top of components/workspace.css +
+   components/badges.css + components/DataTable.css (imported by
+   ComparisonPage.tsx). Kept in its own file — same rationale as every other
+   feature's own css file (see features/quotes/quotes.css's own header). */
+
+.comparison-page {
+  max-width: 1180px;
+}
+
+.comparison-picker-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-lg);
+  align-items: flex-end;
+  margin-bottom: var(--space-2xl);
+}
+
+.comparison-picker-row .field {
+  min-width: 220px;
+}
+
+/* completeness badges — same warning/positive/destructive split MASTER.md
+   uses for confidence bands, applied to a different concept (per the
+   product's own "assumption-dependent results" example in its Warning row). */
+.badge--completeness-complete {
+  background: rgba(21, 128, 61, 0.1);
+  color: var(--color-positive);
+  border-color: rgba(21, 128, 61, 0.28);
+}
+
+.badge--completeness-assumption_dependent {
+  background: rgba(180, 83, 9, 0.1);
+  color: var(--color-warning);
+  border-color: rgba(180, 83, 9, 0.28);
+}
+
+.badge--completeness-incomplete {
+  background: rgba(220, 38, 38, 0.08);
+  color: var(--color-destructive);
+  border-color: rgba(220, 38, 38, 0.28);
+}
+
+/* provenance badges — MASTER.md "Data-source provenance labels... each get
+   a distinct badge style; never rely on color alone." */
+.badge--provenance-supplier {
+  background: rgba(3, 105, 161, 0.1);
+  color: var(--color-info);
+  border-color: rgba(3, 105, 161, 0.28);
+}
+
+.badge--provenance-user_input {
+  background: var(--color-muted);
+  color: var(--color-secondary);
+  border-color: var(--color-border);
+}
+
+.badge--provenance-user_assumption {
+  background: rgba(180, 83, 9, 0.1);
+  color: var(--color-warning);
+  border-color: rgba(180, 83, 9, 0.28);
+}
+
+.badge--provenance-calculated {
+  background: rgba(3, 105, 161, 0.1);
+  color: var(--color-info);
+  border-color: rgba(3, 105, 161, 0.28);
+}
+
+.badge--provenance-default {
+  background: var(--color-muted);
+  color: var(--color-secondary);
+  border-color: var(--color-border);
+  border-style: dashed;
+}
+
+.badge--provenance-missing {
+  background: var(--color-muted);
+  color: var(--color-muted-foreground);
+  border-color: var(--color-border);
+  border-style: dashed;
+}
+
+/* comparison table --------------------------------------------------------- */
+
+.comparison-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-2xl);
+}
+
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.comparison-table th,
+.comparison-table td {
+  padding: var(--space-md) var(--space-lg);
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+.comparison-table thead th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: var(--color-background);
+  position: sticky;
+  top: 0;
+}
+
+.comparison-table th.comparison-row-label {
+  position: sticky;
+  left: 0;
+  background: var(--color-surface);
+  z-index: 1;
+}
+
+.comparison-table tbody th {
+  text-align: left;
+  font-weight: 600;
+  color: var(--color-secondary);
+  background: var(--color-surface);
+  position: sticky;
+  left: 0;
+}
+
+.comparison-table tbody tr:last-child td,
+.comparison-table tbody tr:last-child th {
+  border-bottom: none;
+}
+
+.comparison-cell-btn {
+  display: block;
+  width: 100%;
+  font: inherit;
+  font-size: 13px;
+  text-align: right;
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--color-foreground);
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+}
+
+.comparison-cell-btn:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--color-accent);
+}
+
+.comparison-cell-btn:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+td.is-winning {
+  background: rgba(21, 128, 61, 0.08);
+  font-weight: 700;
+}
+
+.comparison-not-like-for-like {
+  background: rgba(180, 83, 9, 0.08);
+  color: var(--color-warning);
+  font-size: 12px;
+  white-space: normal;
+}
+
+/* assumptions form ---------------------------------------------------------- */
+
+.assumptions-advanced-toggle {
+  margin: var(--space-md) 0;
+}
+
+.assumptions-advanced-grid {
+  margin-top: var(--space-lg);
+  padding-top: var(--space-lg);
+  border-top: 1px dashed var(--color-border);
+}
+
+/* explainability drawer content -------------------------------------------- */
+
+.explain-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  align-items: center;
+  margin-bottom: var(--space-lg);
+}
+
+.explain-component-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  margin-bottom: var(--space-2xl);
+}
+
+.explain-component-row {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-lg);
+  background: var(--color-surface);
+}
+
+.explain-component-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin-bottom: var(--space-sm);
+}
+
+.explain-component-title {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.explain-component-amount {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.explain-formula {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 12px;
+  color: var(--color-secondary);
+  margin: var(--space-sm) 0;
+  word-break: break-word;
+}
+
+.explain-chips {
+  display: flex;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+  margin-top: var(--space-sm);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px var(--space-sm);
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  color: var(--color-secondary);
+  background: var(--color-muted);
+}
+
+.chip--assumed {
+  color: var(--color-warning);
+  background: rgba(180, 83, 9, 0.1);
+  border-color: rgba(180, 83, 9, 0.28);
+}
+
+.chip--missing {
+  color: var(--color-destructive);
+  background: rgba(220, 38, 38, 0.08);
+  border-color: rgba(220, 38, 38, 0.28);
+}
+
+.explain-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.explain-list-item {
+  font-size: 12px;
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-background);
+}
+
+/* scoring section ------------------------------------------------------------ */
+
+.scoring-config-select-row {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-lg);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-lg);
+}
+
+.badge--sample-weights {
+  background: rgba(3, 105, 161, 0.1);
+  color: var(--color-info);
+  border-color: rgba(3, 105, 161, 0.28);
+}
+
+.score-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.score-row {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-lg);
+  background: var(--color-surface);
+}
+
+.score-row.is-excluded {
+  opacity: 0.6;
+}
+
+.score-row-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+.score-rank {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  color: var(--color-muted-foreground);
+  font-size: 12px;
+}
+
+.score-total {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.score-criterion-row {
+  display: grid;
+  grid-template-columns: 140px 1fr 60px;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-sm) 0;
+  cursor: pointer;
+}
+
+.score-criterion-label {
+  font-size: 12px;
+  color: var(--color-secondary);
+}
+
+.score-bar-track {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--color-muted);
+  overflow: hidden;
+}
+
+.score-bar-fill {
+  height: 100%;
+  background: var(--color-accent);
+  border-radius: 999px;
+  transition: width var(--transition-medium);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .score-bar-fill {
+    transition: none;
+  }
+}
+
+.score-criterion-value {
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  text-align: right;
+}
+
+.score-criterion-reason {
+  grid-column: 1 / -1;
+  font-size: 12px;
+  color: var(--color-muted-foreground);
+  padding: 0 0 var(--space-sm) 0;
+}
+
+.score-missing-note,
+.score-renormalized-note {
+  font-size: 12px;
+  color: var(--color-warning);
+  margin-top: var(--space-sm);
+}
+
+.scoring-gap-note {
+  font-size: 12px;
+  color: var(--color-muted-foreground);
+  margin-top: var(--space-sm);
+}

@@ -98,7 +98,10 @@ function toPercentDisplay(raw: string): string {
   const [intPart, fracPart = ""] = body.split(".");
   const padded = fracPart.padEnd(2, "0");
   const moved = padded.slice(0, 2);
-  const remaining = padded.slice(2).replace(/0+$/, "");
+  // Scores cross the wire at full precision by design (see the scorer's
+  // no-quantize note); a bar label is presentation, so truncate the display
+  // to 2 decimals — "0.8899954446…" renders "88.99%", not a 14-digit tail.
+  const remaining = padded.slice(2, 4).replace(/0+$/, "");
   let newInt = (intPart + moved).replace(/^0+(?=\d)/, "");
   if (newInt === "") newInt = "0";
   const result = remaining ? `${newInt}.${remaining}` : newInt;
@@ -239,21 +242,34 @@ function AssumptionsForm({
   busy,
   disabled,
   onCalculate,
+  onAssumptionsChange,
 }: {
   canWrite: boolean;
   busy: boolean;
   disabled: boolean;
   onCalculate: (a: LandedCostAssumptionsInput) => void;
+  /** Fires on every edit with the serialized current values, so the scenario
+   * form can include the SAME assumptions in a run (2026-08 acceptance
+   * finding: scenario creation used to hardcode empty assumptions). */
+  onAssumptionsChange?: (a: LandedCostAssumptionsInput) => void;
 }) {
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<AssumptionsFormValues>({
     resolver: zodResolver(assumptionsFormSchema),
     defaultValues: emptyAssumptionsForm,
   });
+
+  useEffect(() => {
+    const subscription = watch((values) => {
+      onAssumptionsChange?.(toAssumptionsInput(values as AssumptionsFormValues));
+    });
+    return () => subscription.unsubscribe();
+  }, [watch, onAssumptionsChange]);
 
   function onValid(values: AssumptionsFormValues) {
     onCalculate(toAssumptionsInput(values));
@@ -728,6 +744,10 @@ export function ComparisonPage() {
 
   const calculateMutation = useCalculateLandedCost();
   const [calcError, setCalcError] = useState<string | null>(null);
+  // Mirrors the AssumptionsForm's live values so scenario runs carry them
+  // (2026-08 acceptance finding — see CreateScenarioVars.assumptions).
+  const [scenarioAssumptions, setScenarioAssumptions] =
+    useState<LandedCostAssumptionsInput | null>(null);
 
   async function handleCalculate(assumptions: LandedCostAssumptionsInput) {
     if (!rfqId || columns.length === 0) return;
@@ -855,6 +875,7 @@ export function ComparisonPage() {
             busy={calculateMutation.isPending}
             disabled={columns.length === 0}
             onCalculate={(a) => void handleCalculate(a)}
+            onAssumptionsChange={setScenarioAssumptions}
           />
           {calcError && (
             <div className="banner-error" role="alert">
@@ -868,7 +889,12 @@ export function ComparisonPage() {
             <ComparisonTable columns={columns} resultFor={resultFor} onOpenExplain={setExplainLineId} />
           )}
 
-          <ScenarioControls rfqId={rfqId} canWrite={canWrite} onCreated={handleScenarioCreated} />
+          <ScenarioControls
+            rfqId={rfqId}
+            canWrite={canWrite}
+            onCreated={handleScenarioCreated}
+            assumptions={scenarioAssumptions}
+          />
 
           {scenario && (
             <>

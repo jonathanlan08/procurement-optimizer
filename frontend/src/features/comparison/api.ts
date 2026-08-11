@@ -535,17 +535,31 @@ export interface CreateScenarioVars {
   strategy: ComparisonStrategyValue;
   scoringConfigurationId: string | null;
   constraints: ScenarioConstraintsInput;
+  /** The workspace's assumption panel values at run time (null = untouched
+   * panel, sent as EMPTY_ASSUMPTIONS). Hardcoding this to empty — the
+   * pre-2026-08 behaviour — meant every from-scratch UI scenario on quotes
+   * with any missing cost input was honestly-but-confusingly
+   * presolve-infeasible; the seeded demo scenarios only worked because the
+   * seed passes assumptions service-side (principal acceptance finding). */
+  assumptions: LandedCostAssumptionsInput | null;
 }
 
 export function useCreateScenario() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ rfqId, name, strategy, scoringConfigurationId, constraints }: CreateScenarioVars) =>
+    mutationFn: ({
+      rfqId,
+      name,
+      strategy,
+      scoringConfigurationId,
+      constraints,
+      assumptions,
+    }: CreateScenarioVars) =>
       post<ScenarioResponse>(`/api/v1/rfqs/${rfqId}/comparison-scenarios`, {
         name,
         strategy,
         scoring_configuration_id: scoringConfigurationId,
-        assumptions: EMPTY_ASSUMPTIONS,
+        assumptions: assumptions ?? EMPTY_ASSUMPTIONS,
         constraints: {
           max_supplier_count: constraints.max_supplier_count,
           max_concentration: constraints.max_concentration,

@@ -48,6 +48,7 @@ import {
   useCreateScenario,
   useScoringConfigurations,
   type ComparisonStrategyValue,
+  type LandedCostAssumptionsInput,
   type ScenarioResponse,
 } from "./api";
 import "./comparison.css";
@@ -161,10 +162,17 @@ export function ScenarioControls({
   rfqId,
   canWrite,
   onCreated,
+  assumptions = null,
 }: {
   rfqId: string;
   canWrite: boolean;
   onCreated: (scenario: ScenarioResponse) => void;
+  /** Live values of the workspace's assumption panel (ComparisonPage's
+   * AssumptionsForm), included in the create request so a from-scratch UI
+   * scenario computes landed costs under the same assumptions the metric
+   * table shows — previously hardcoded empty, which made every UI run on
+   * incomplete quotes presolve-infeasible (2026-08 acceptance finding). */
+  assumptions?: LandedCostAssumptionsInput | null;
 }) {
   const configsQuery = useScoringConfigurations();
   const rfqSuppliersQuery = useRfqSuppliers(rfqId);
@@ -207,6 +215,7 @@ export function ScenarioControls({
         rfqId,
         name: values.name.trim(),
         strategy: values.strategy as ComparisonStrategyValue,
+        assumptions,
         scoringConfigurationId:
           values.scoringConfigurationId.trim() === "" ? null : values.scoringConfigurationId,
         constraints: {

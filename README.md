@@ -33,6 +33,8 @@ the highest landed effective unit cost of the four bidders, and a test asserts i
 <!-- TODO(principal): capture -->
 ![Comparison workspace: supplier scores, landed-cost breakdown, and explainability drawer](docs/images/comparison-workspace.png)
 
+![Overview: hue-coded workspace summary](docs/images/overview.png)
+
 <!-- TODO(principal): capture -->
 ![Extraction review: confidence badges, the Simulated chip, and the prompt-injection banner](docs/images/extraction-review.png)
 

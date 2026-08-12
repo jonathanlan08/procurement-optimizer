@@ -24,6 +24,7 @@ import {
 } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../auth/session";
+import { useRouteEntrance } from "../lib/motion";
 import "./app-shell.css";
 
 // `hue` (v2 functional hue extension, 2026-08 — see tokens.css's own "v2"
@@ -118,6 +119,10 @@ function SidebarNav({ identity }: { identity?: ReactNode }) {
 export function AppShell() {
   const { session, logout } = useAuth();
   const location = useLocation();
+  // Sanctioned motion pattern 1 (lib/motion.ts): opacity-only fade of the
+  // routed content on every navigation. Never a transform here — <main>
+  // contains the position:fixed drawers.
+  const contentRef = useRouteEntrance<HTMLElement>(location.pathname);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const menuBtnRef = useRef<HTMLButtonElement>(null);
   const drawerPanelRef = useRef<HTMLDivElement>(null);
@@ -259,7 +264,7 @@ export function AppShell() {
             Sign out
           </button>
         </header>
-        <main className="shell-content">
+        <main className="shell-content" ref={contentRef}>
           <Outlet />
         </main>
       </div>

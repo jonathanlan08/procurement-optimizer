@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ApiError } from "../api/client";
 import { useAuth } from "../auth/session";
+import { useEntranceStagger } from "../lib/motion";
 import "./login.css";
 
 /** Demo credentials are intentionally public: the seed
@@ -34,6 +35,11 @@ export function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  // Sanctioned motion pattern 2 (lib/motion.ts): the brand panel's lines,
+  // the sign-in card, and the demo block fade up in sequence on arrival.
+  const pageRef = useEntranceStagger<HTMLDivElement>(
+    ".login-brand-inner > *, .login-card, .login-demo",
+  );
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -59,7 +65,7 @@ export function LoginPage() {
   }
 
   return (
-    <div className="login-page">
+    <div className="login-page" ref={pageRef}>
       <aside className="login-brand" aria-hidden="true">
         <div className="login-brand-inner">
           <span className="login-brand-mark" />

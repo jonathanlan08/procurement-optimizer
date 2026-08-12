@@ -196,8 +196,26 @@
   padding: var(--space-sm) var(--space-lg);
   cursor: pointer;
   transition: background-color var(--transition-fast), border-color var(--transition-fast),
-    color var(--transition-fast), opacity var(--transition-fast);
+    color var(--transition-fast), opacity var(--transition-fast),
+    transform var(--transition-fast);
   border: 1px solid transparent;
+}
+
+/* Sanctioned motion pattern 3 (lib/motion.ts): CSS-only press feedback. */
+.btn-primary-sm:active:not(:disabled),
+.btn-secondary-sm:active:not(:disabled),
+.btn-danger-sm:active:not(:disabled),
+.btn-ghost-sm:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-primary-sm:active:not(:disabled),
+  .btn-secondary-sm:active:not(:disabled),
+  .btn-danger-sm:active:not(:disabled),
+  .btn-ghost-sm:active:not(:disabled) {
+    transform: none;
+  }
 }
 
 .btn-primary-sm {

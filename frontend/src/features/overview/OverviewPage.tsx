@@ -26,6 +26,7 @@
 
 import { Link } from "react-router-dom";
 import { useAuth } from "../../auth/session";
+import { useEntranceStagger } from "../../lib/motion";
 import { ApiErrorBanner } from "../../components/ApiErrorBanner";
 import "../../components/badges.css";
 import { PageEyebrow, type HueName } from "../../components/PageEyebrow";
@@ -182,8 +183,15 @@ export function OverviewPage() {
   const partTotalQuery = usePartTotal();
   const openRfqTotalQuery = useOpenRfqTotal();
 
+  // Sanctioned motion pattern 2 (lib/motion.ts): KPI cards, the workflow
+  // steps, and the two lower cards fade up in sequence on arrival. Mount-time
+  // only — count refetches never re-trigger it.
+  const pageRef = useEntranceStagger<HTMLElement>(
+    ".overview-kpi-card, .overview-workflow-step, .overview-columns > .overview-card",
+  );
+
   return (
-    <section className="overview-page">
+    <section className="overview-page" ref={pageRef}>
       <header className="page-toolbar">
         <div className="page-heading">
           <PageEyebrow hue="overview">Overview</PageEyebrow>
@@ -208,7 +216,8 @@ export function OverviewPage() {
         </p>
         <ol className="overview-workflow-list">
           {WORKFLOW_STEPS.map((step, i) => (
-            <li key={step.to} className="overview-workflow-step">
+            // keyed by title: several steps deep-link to the same route
+            <li key={step.title} className="overview-workflow-step">
               <span className="overview-workflow-num" aria-hidden="true">
                 {i + 1}
               </span>

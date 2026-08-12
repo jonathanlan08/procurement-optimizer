@@ -215,11 +215,26 @@ no bottom sheets, no scroll-linked hero effects.**
 
 ## Motion (principal's approved direction)
 
-Motion budget is deliberately minimal for an analytical tool: CSS transitions only, no GSAP
-dependency. 150–200ms `ease-out` for hover/focus/expand states; 200–300ms for drawer/modal
-enter (exit faster than enter). Skeleton pulse for loading data regions. All motion behind
-`prefers-reduced-motion` guards. No scroll-reveal choreography — analytical content must be
-visible immediately, never faded in on scroll.
+Motion budget is deliberately minimal for an analytical tool: CSS transitions for all
+state changes (150–200ms `ease-out` for hover/focus/expand; 200–300ms for drawer/modal
+enter, exit faster than enter; skeleton pulse for loading regions), plus — **v2.1
+amendment (2026-08, client-requested)** — the motion.dev vanilla `animate` for exactly
+three sanctioned entrance patterns, all defined in `frontend/src/lib/motion.ts` and
+nowhere else:
+
+1. **Route entrance** — opacity-only fade (220ms) of the routed `<main>` on navigation.
+   Opacity only: a transform on `<main>` would re-anchor the `position: fixed` drawers
+   rendered inside it.
+2. **Staggered surface entrance** — card-level surfaces (login panels, Overview KPI
+   cards/workflow steps) fade up 10px, 60ms apart, 350ms, on MOUNT only. Data refetches
+   never animate; tables and rows never animate.
+3. **Button press** — CSS-only `:active { translateY(1px) }` on the button classes.
+
+All motion behind `prefers-reduced-motion` guards (`motionEnabled()` renders everything
+in its final state, instantly). No scroll-reveal choreography — analytical content must
+be visible immediately, never faded in on scroll; a brief mount fade is permitted, a
+scroll-triggered one is not. Rule of thumb: motion marks *arriving somewhere*, never
+*data changing*.
 
 ---
 

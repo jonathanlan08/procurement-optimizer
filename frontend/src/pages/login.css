@@ -138,11 +138,24 @@
   border-radius: var(--radius-sm);
   padding: var(--space-lg);
   cursor: pointer;
-  transition: opacity var(--transition-fast);
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
 }
 
 .btn-primary:hover:not(:disabled) {
   opacity: 0.92;
+}
+
+/* Sanctioned motion pattern 3 (lib/motion.ts): CSS-only press feedback. */
+.btn-primary:active:not(:disabled),
+.btn-demo:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-primary:active:not(:disabled),
+  .btn-demo:active:not(:disabled) {
+    transform: none;
+  }
 }
 
 .btn-primary:disabled {
@@ -229,7 +242,8 @@
   border-radius: var(--radius-sm);
   padding: var(--space-sm) var(--space-md);
   cursor: pointer;
-  transition: background-color var(--transition-fast), color var(--transition-fast);
+  transition: background-color var(--transition-fast), color var(--transition-fast),
+    transform var(--transition-fast);
 }
 
 .btn-demo:hover:not(:disabled) {

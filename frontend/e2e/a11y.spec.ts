@@ -34,7 +34,28 @@ test.use({
   reducedMotion: "reduce",
 });
 
+/** Wait for every finite animation (the motion.dev entrance staggers, any
+ * CSS transition) to finish before scanning — axe must audit the settled UI,
+ * not a mid-fade frame. Infinite animations (the skeleton pulse) are
+ * excluded: awaiting their `finished` would hang forever. This is the
+ * deterministic settle signal; `reducedMotion: "reduce"` in `test.use` above
+ * proved unreliable in this @playwright/test version (verified: pages under
+ * this spec report `prefers-reduced-motion: reduce` as NOT matching, while
+ * the same option via `browser.newContext()` works), so it is no longer the
+ * layer this suite depends on. */
+async function settleAnimations(page: Page): Promise<void> {
+  await page.evaluate(() =>
+    Promise.all(
+      document
+        .getAnimations()
+        .filter((a) => a.effect?.getTiming().iterations !== Infinity)
+        .map((a) => a.finished.catch(() => undefined)),
+    ),
+  );
+}
+
 async function expectNoViolations(page: Page): Promise<void> {
+  await settleAnimations(page);
   const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
   expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([]);
 }

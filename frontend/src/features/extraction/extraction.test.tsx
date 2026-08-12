@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AuthProvider, type SessionInfo } from "../../auth/session";
 import { ReviewPane } from "./ReviewPane";
@@ -329,5 +329,113 @@ describe("ReviewPane", () => {
     ).toBeInTheDocument();
     expect(within(alert).getByText(/low-confidence field is not confirmed/i)).toBeInTheDocument();
     expect(within(alert).getByText(/lines\[0\]\.quantity/i)).toBeInTheDocument();
+  });
+
+  // -- "Confirm all remaining" bulk-confirm button (2026-08 audit
+  // remediation, wave B) -----------------------------------------------
+
+  describe("Confirm all remaining", () => {
+    it("shows the button with the live unconfirmed-requires-confirmation count, for an analyst", async () => {
+      installFetchMock([
+        AUTH_HANDLER("analyst"),
+        DOCUMENT_HANDLER,
+        runHandler(runFixture()),
+        FIELDS_HANDLER,
+      ]);
+
+      renderPane("analyst");
+
+      // FIELDS fixture: f-medium and f-low both requires_confirmation +
+      // !is_confirmed; f-high requires_confirmation is false. Count is 2.
+      const button = await screen.findByRole("button", { name: /confirm all remaining \(2\)/i });
+      expect(button).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          /confirms every remaining flagged field at once — review the values above first/i,
+        ),
+      ).toBeInTheDocument();
+    });
+
+    it("hides the button for a viewer even though fields remain unconfirmed", async () => {
+      installFetchMock([
+        AUTH_HANDLER("viewer"),
+        DOCUMENT_HANDLER,
+        runHandler(runFixture()),
+        FIELDS_HANDLER,
+      ]);
+
+      renderPane("viewer");
+
+      await screen.findByText("Q-100");
+      expect(
+        screen.queryByRole("button", { name: /confirm all remaining/i }),
+      ).not.toBeInTheDocument();
+    });
+
+    it("hides the button once nothing remains requiring confirmation", async () => {
+      const allConfirmed = FIELDS.map((f) => ({ ...f, is_confirmed: true }));
+      installFetchMock([
+        AUTH_HANDLER("analyst"),
+        DOCUMENT_HANDLER,
+        runHandler(runFixture({ state: "ready", fields_requiring_review: 0 })),
+        {
+          test: (url: string, method: string) =>
+            url === "/api/v1/extraction-runs/run-1/fields" && method === "GET",
+          respond: () => jsonResponse(200, { items: allConfirmed }),
+        },
+      ]);
+
+      renderPane("analyst");
+
+      await screen.findByText("Q-100");
+      expect(
+        screen.queryByRole("button", { name: /confirm all remaining/i }),
+      ).not.toBeInTheDocument();
+    });
+
+    it("posts to fields/confirm-all and reflects the returned Ready run state on success", async () => {
+      const readyRun = runFixture({ state: "ready", fields_requiring_review: 0 });
+      let confirmAllCalled = false;
+      installFetchMock([
+        AUTH_HANDLER("analyst"),
+        DOCUMENT_HANDLER,
+        runHandler(runFixture()),
+        {
+          // Stateful: mirrors the real API's `is_confirmed` flip so the
+          // fields-list invalidation this mutation triggers (./api.ts) is
+          // observable here too, not just the run-cache seed.
+          test: (url: string, method: string) =>
+            url === "/api/v1/extraction-runs/run-1/fields" && method === "GET",
+          respond: () =>
+            jsonResponse(200, {
+              items: confirmAllCalled ? FIELDS.map((f) => ({ ...f, is_confirmed: true })) : FIELDS,
+            }),
+        },
+        {
+          test: (url: string, method: string) =>
+            url === "/api/v1/extraction-runs/run-1/fields/confirm-all" && method === "POST",
+          respond: () => {
+            confirmAllCalled = true;
+            return jsonResponse(200, readyRun);
+          },
+        },
+      ]);
+
+      renderPane("analyst");
+
+      const button = await screen.findByRole("button", { name: /confirm all remaining \(2\)/i });
+      fireEvent.click(button);
+
+      // Pane refreshes to the returned run state (run-state badge flips to
+      // Ready) and the fields-list invalidation this mutation triggers
+      // eventually removes the now-zero-count bar too.
+      expect(await screen.findByText("Ready")).toHaveClass("badge--run-ready");
+      expect(confirmAllCalled).toBe(true);
+      await waitFor(() => {
+        expect(
+          screen.queryByRole("button", { name: /confirm all remaining/i }),
+        ).not.toBeInTheDocument();
+      });
+    });
   });
 });

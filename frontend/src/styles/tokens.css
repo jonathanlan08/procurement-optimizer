@@ -14,17 +14,35 @@
   --color-muted: #e8ecf1;
   --color-muted-foreground: #55657a;
   --color-border: #e2e8f0;
-  --color-destructive: #dc2626;
+  /* darkened alongside --color-negative below (2026-08 a11y remediation —
+     see that block's comment); same token value, kept in sync since every
+     red/error usage in the app goes through this one, not --color-negative
+     (which nothing actually references). */
+  --color-destructive: #c62222;
   --color-ring: #0f172a;
 
-  /* semantic data colors */
-  --color-positive: #15803d;
-  --color-negative: #dc2626;
-  --color-warning: #b45309;
+  /* semantic data colors
+     positive/warning/negative darkened from the original #15803d/#b45309/
+     #dc2626 (2026-08 audit remediation, item 5 — a11y automation): every
+     badge that uses these as TEXT color pairs them with its own ~8-12%-alpha
+     tint of the same hue as its background (badges.css/comparison.css/
+     extraction.css/rfqs.css's shared recipe), and axe-core's color-contrast
+     rule (wcag2aa, 4.5:1 for this 12-13px text) flagged several real
+     instances at 4.09-4.39:1 — "Active"/"Complete" status badges, the RFQ
+     "Under Review" badge, and comparison-workspace completeness/provenance
+     badges (frontend/e2e/a11y.spec.ts). These three tokens back nearly every
+     badge in the app via that same tint recipe, so darkening them here
+     (~10%, still clearly the same green/amber/red) fixes every instance at
+     once rather than patching each badge rule's own `color:` individually;
+     verified >=4.7:1 against every alpha/background combination the badge
+     recipes actually use (8-12% tint over white or --color-background). */
+  --color-positive: #137337;
+  --color-negative: #c62222;
+  --color-warning: #a24b08;
   --color-info: #0369a1;
-  --color-conf-high: #15803d;
-  --color-conf-med: #b45309;
-  --color-conf-low: #dc2626;
+  --color-conf-high: #137337;
+  --color-conf-med: #a24b08;
+  --color-conf-low: #c62222;
 
   /* density: 8/10 dense dashboard */
   --space-xs: 0.125rem;

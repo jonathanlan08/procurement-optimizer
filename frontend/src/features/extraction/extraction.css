@@ -291,6 +291,20 @@
   border-radius: var(--radius-sm);
 }
 
+/* confirm-all bar (2026-08 audit remediation, wave B) --------------------- */
+
+.confirm-all-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-2xl);
+}
+
+.confirm-all-caution {
+  margin: 0;
+}
+
 /* materialize panel ------------------------------------------------------- */
 
 .materialize-panel {

@@ -7,37 +7,33 @@
  * nordic_fastener_quote.csv). The extraction schema has no `notes` field
  * for a quote line at all, so the injected text has no slot to land in even
  * in principle — this spec proves the UI shows the REAL price (0.024), not
- * the attacker's, then confirms every remaining low-confidence field and
- * materializes the reviewed run into a real quote.
+ * the attacker's, then confirms every remaining low-confidence field via
+ * the bulk "Confirm all remaining" button and materializes the reviewed run
+ * into a real quote.
+ *
+ * 2026-08 audit remediation, wave B: this used to drive the per-field
+ * "Confirm" button one at a time in a up-to-200-iteration loop (~45 real
+ * low-confidence fields on this fixture). That one-at-a-time path is still
+ * real and still covered — by the backend's own
+ * `TestBulkConfirmFields.test_confirm_all_reaches_ready_matching_field_by_field`
+ * (backend/tests/integration/test_extraction_api.py, which drives one run
+ * field-by-field and a second via the bulk route and asserts they land in
+ * the identical state) and by the button's own gating/wiring in
+ * ReviewPane.test.tsx via extraction.test.tsx's "Confirm all remaining"
+ * describe block — so this E2E spec now exercises the bulk button itself,
+ * the one real user-facing path this specific run's ~45 fields would
+ * actually take in the product today.
  */
 
-import { expect, test, type Locator, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 import { ANALYST_STORAGE } from "./helpers/roles";
 import { selectByLabel, selectOptionContaining } from "./helpers/select";
 
 test.use({ storageState: ANALYST_STORAGE });
 
-/** Repeatedly clicks the first remaining per-field "Confirm" button in the
- * extraction review panel until none are left, i.e. until every field that
- * `requires_confirmation` has been either auto-accepted (HIGH band, never
- * shown here) or explicitly confirmed by a reviewer — the same tedious,
- * real path a human reviewer takes; there is no bulk-confirm control. */
-async function confirmEveryField(page: Page, dialog: Locator): Promise<void> {
-  const confirmButtons = dialog.getByRole("button", { name: "Confirm", exact: true });
-  for (let i = 0; i < 200; i++) {
-    const remaining = await confirmButtons.count();
-    if (remaining === 0) return;
-    await confirmButtons.first().click();
-    await expect(confirmButtons).toHaveCount(remaining - 1, { timeout: 10_000 });
-  }
-  throw new Error("confirmEveryField: did not converge to zero remaining Confirm buttons");
-}
-
 test("extraction review: injection flag visible, real price preserved, confirm-all, and materialize", async ({
   page,
 }) => {
-  test.slow(); // ~45 low-confidence fields to confirm one at a time, by design
-
   await page.goto("/rfqs");
   await expect(page.getByRole("navigation", { name: "Primary" })).toBeVisible();
 
@@ -71,9 +67,15 @@ test("extraction review: injection flag visible, real price preserved, confirm-a
   await expect(injectedPriceRow).toBeVisible();
   await expect(injectedPriceRow.locator(".field-value")).toHaveText("0.024");
 
-  // -- confirm every remaining low/medium-confidence field ----------------
-  await confirmEveryField(page, reviewDialog);
+  // -- confirm every remaining low/medium-confidence field in one bulk
+  // action (POST .../fields/confirm-all, ReviewPane.tsx's "Confirm all
+  // remaining" button) rather than the old one-at-a-time loop -----------
+  const confirmAllButton = reviewDialog.getByRole("button", { name: /confirm all remaining \(\d+\)/i });
+  await expect(confirmAllButton).toBeVisible();
+  await confirmAllButton.click();
   await expect(reviewDialog.getByText("Ready", { exact: true })).toBeVisible();
+  // the bulk-confirm bar itself is gone now that nothing remains pending
+  await expect(reviewDialog.getByRole("button", { name: /confirm all remaining/i })).toHaveCount(0);
 
   // -- materialize into a real quote ---------------------------------------
   await selectOptionContaining(selectByLabel(reviewDialog, "Supplier"), "NORDIC-FASTENER");

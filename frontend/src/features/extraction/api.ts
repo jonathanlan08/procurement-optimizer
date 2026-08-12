@@ -242,6 +242,28 @@ export function usePatchExtractionField() {
   });
 }
 
+/** `POST /extraction-runs/{id}/fields/confirm-all` (2026-08 audit
+ * remediation, wave B) — bulk counterpart to `usePatchExtractionField`'s
+ * per-field confirm. No request body; the response is the run detail
+ * itself (`ExtractionRunResponse`, not a field — see
+ * `extractions.py::confirm_all_extraction_fields`'s own docstring for why),
+ * so on success this both seeds the run query cache directly with that
+ * response (the same "already have the fresh value, skip a refetch"
+ * shortcut `useStartExtractionRun` uses above) and invalidates the fields
+ * list, whose individual `is_confirmed` flags the run response doesn't
+ * carry. */
+export function useConfirmAllExtractionFields() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (runId: string) =>
+      post<ExtractionRunResponse>(`/api/v1/extraction-runs/${runId}/fields/confirm-all`),
+    onSuccess: (run, runId) => {
+      queryClient.setQueryData(extractionKeys.run(runId), run);
+      void queryClient.invalidateQueries({ queryKey: extractionKeys.fields(runId) });
+    },
+  });
+}
+
 export interface MaterializeExtractionRunVars {
   runId: string;
   data: ExtractionMaterializeInput;

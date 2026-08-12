@@ -80,6 +80,7 @@ import {
   type ExtractionRunState,
   type MatchCandidateResponse,
   type MatchStrategy,
+  useConfirmAllExtractionFields,
   useConfirmQuoteLineMatch,
   useExtractionFields,
   useExtractionRun,
@@ -420,6 +421,49 @@ function FieldsSection({
   );
 }
 
+/** Bulk counterpart to each `FieldRow`'s own per-field Confirm button
+ * (2026-08 audit remediation, wave B — "46 field-level actions create a
+ * slow exception-review workflow"). Rendered below the field tables so
+ * "the values above" in its caution line literally means the table rows a
+ * reviewer just scrolled past. Gated on the same `canAct` the per-field
+ * actions use (viewer role + non-terminal run state) and on there being
+ * anything left to confirm — `./api.ts`'s `useConfirmAllExtractionFields`
+ * both seeds the run cache with the returned (now `ready`, or unchanged)
+ * run and invalidates the fields list, so this bar disappears on its own
+ * once the count drops to zero. */
+function ConfirmAllBar({ runId, remainingCount }: { runId: string; remainingCount: number }) {
+  const confirmAllMutation = useConfirmAllExtractionFields();
+
+  async function handleConfirmAll() {
+    try {
+      await confirmAllMutation.mutateAsync(runId);
+    } catch {
+      // surfaced via ApiErrorBanner below
+    }
+  }
+
+  if (remainingCount === 0) return null;
+
+  return (
+    <div className="confirm-all-bar">
+      <button
+        type="button"
+        className="btn-secondary-sm"
+        disabled={confirmAllMutation.isPending}
+        onClick={() => void handleConfirmAll()}
+      >
+        {confirmAllMutation.isPending
+          ? "Confirming…"
+          : `Confirm all remaining (${remainingCount})`}
+      </button>
+      <p className="detail-label confirm-all-caution">
+        Confirms every remaining flagged field at once — review the values above first.
+      </p>
+      <ApiErrorBanner error={confirmAllMutation.error} />
+    </div>
+  );
+}
+
 // --- materialize -------------------------------------------------------
 
 function SupplierOption({ supplierId }: { supplierId: string }) {
@@ -668,6 +712,9 @@ export function ReviewPane({ runId, onClose }: { runId: string; onClose: () => v
 
   const run = runQuery.data;
   const canActOnFields = canWrite && run !== undefined && run.state !== "materialized" && run.state !== "superseded";
+  const remainingConfirmCount = (fieldsQuery.data?.items ?? []).filter(
+    (f) => f.requires_confirmation && !f.is_confirmed,
+  ).length;
 
   return (
     <>
@@ -702,11 +749,16 @@ export function ReviewPane({ runId, onClose }: { runId: string; onClose: () => v
                 ) : fieldsQuery.isError ? (
                   <ApiErrorBanner error={fieldsQuery.error} />
                 ) : (
-                  <FieldsSection
-                    runId={runId}
-                    fields={fieldsQuery.data?.items ?? []}
-                    canAct={canActOnFields}
-                  />
+                  <>
+                    <FieldsSection
+                      runId={runId}
+                      fields={fieldsQuery.data?.items ?? []}
+                      canAct={canActOnFields}
+                    />
+                    {canActOnFields && (
+                      <ConfirmAllBar runId={runId} remainingCount={remainingConfirmCount} />
+                    )}
+                  </>
                 )}
               </section>
 

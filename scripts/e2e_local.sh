@@ -160,8 +160,12 @@ if [[ ! -x "$FRONTEND_DIR/node_modules/.bin/playwright" ]]; then
   log "installing frontend dependencies (npm install)..."
   (cd "$FRONTEND_DIR" && npm install)
 fi
-log "ensuring Playwright's Chromium is installed (no-op if already cached)..."
-(cd "$FRONTEND_DIR" && npx playwright install chromium)
+log "ensuring Playwright's browsers are installed (chromium, firefox, webkit — no-op if already cached)..."
+# 2026-08 audit remediation, item 5: playwright.config.ts now defines
+# firefox/webkit projects (a chromium-full + firefox/webkit-smoke matrix —
+# see that file's own header) alongside chromium, so a local run of "every
+# project" needs all three engines present, not just chromium.
+(cd "$FRONTEND_DIR" && npx playwright install chromium firefox webkit)
 
 # -- frontend dev server on :5173 -------------------------------------------
 log "starting the frontend dev server on :$FRONTEND_PORT..."

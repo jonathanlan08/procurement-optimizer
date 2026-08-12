@@ -26,7 +26,13 @@ test.describe("authentication", () => {
     await expect(page.getByRole("navigation", { name: "Primary" })).toBeVisible();
     // demo_mode banner (Settings.demo_mode, true by default per seed) —
     // confirms the app knows it's running against synthetic data only.
-    await expect(page.getByText("Demo — synthetic data")).toBeVisible();
+    // `exact: true`: OverviewPage.tsx's own workspace-summary paragraph
+    // separately echoes "Demo — synthetic data throughout." — a DIFFERENT
+    // exact string that a substring match would ambiguously also catch
+    // (OverviewPage.tsx's own file header documents this as deliberate,
+    // non-duplicated phrasing, not a bug), so this asserts on the header
+    // badge's own exact text specifically.
+    await expect(page.getByText("Demo — synthetic data", { exact: true })).toBeVisible();
     await expect(page.locator(".shell-user")).toContainText("Ada Chen");
     await expect(page.locator(".shell-user")).toContainText("analyst");
 
@@ -56,7 +62,14 @@ test.describe("authentication", () => {
     await expect(page).toHaveURL(/\/$/);
     await expect(page.locator(".shell-user")).toContainText("viewer");
 
-    await page.getByRole("link", { name: "RFQs" }).click();
+    // Scoped to the primary nav landmark: the Overview page (still current
+    // at this point) also has a KPI card "View RFQs →" and a link card
+    // whose accessible name contains "RFQs" — an unscoped substring match
+    // on "RFQs" is ambiguous across all three.
+    await page
+      .getByRole("navigation", { name: "Primary" })
+      .getByRole("link", { name: "RFQs", exact: true })
+      .click();
     await expect(page).toHaveURL(/\/rfqs$/);
 
     // real seeded data is still visible read-only...

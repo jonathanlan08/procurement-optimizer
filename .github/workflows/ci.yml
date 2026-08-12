@@ -132,9 +132,9 @@ jobs:
       - name: Install frontend dependencies
         working-directory: frontend
         run: npm ci
-      - name: Install Playwright's Chromium (+ OS deps)
+      - name: Install Playwright's browsers (chromium, firefox, webkit + OS deps)
         working-directory: frontend
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install --with-deps chromium firefox webkit
       - name: Start frontend dev server and wait for it
         working-directory: frontend
         run: |

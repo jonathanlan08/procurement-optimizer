@@ -23,12 +23,14 @@
  *    control (the brief's toolbar list is search + status filter + New RFQ
  *    only), so this derives the flag from the chip selection instead of
  *    adding an unrequested fourth control.
- *  - **List column "Lines" is always "—".** `RfqSummaryResponse` (the list
- *    row shape) carries no `line_count` — only `RfqResponse` (single-
- *    resource GET) does, to keep the list query from becoming an N+1 (see
- *    ./api.ts's file header). This is a genuine API-shape gap, flagged here
- *    rather than faked, the same judgement call PartsPage.tsx/BomsPage.tsx
- *    already make for their own shape gaps.
+ *  - **List column "Lines" renders `RfqSummaryResponse.line_count` when
+ *    present, "—" otherwise.** The field was added to the list route
+ *    concurrently by a backend agent (P2 audit finding — this column used
+ *    to always render "—"; see ./api.ts's file header for why it's typed
+ *    optional rather than required). "—" is kept as the fallback for
+ *    backward compatibility with any stale cached row shape, not removed
+ *    outright — the same defensive posture PartsPage.tsx/BomsPage.tsx apply
+ *    to their own genuine API-shape gaps.
  *  - **Edit gating mirrors the server rule exactly**: `RfqService.
  *    _ensure_draft_or_override` (backend/src/app/services/rfq_service.py)
  *    blocks metadata *and* line edits once status isn't `draft`, with an
@@ -145,8 +147,15 @@ function formatQuantity(raw: string): string {
   return trimmed === "" ? "0" : trimmed;
 }
 
-function specsCount(specs: Record<string, unknown> | null): number {
-  return specs ? Object.keys(specs).length : 0;
+/** Renders the line's spec-key count, or the app's standard missing-data
+ * string when there is nothing recorded (`null` or an empty object) — a
+ * fabricated `0` there would read as "confirmed zero specifications
+ * required," which is not what an absent/empty value means (P2 audit
+ * finding). A non-empty object's real count still renders as a plain
+ * number: that IS supplied data. */
+function formatSpecsCell(specs: Record<string, unknown> | null): string {
+  const count = specs ? Object.keys(specs).length : 0;
+  return count > 0 ? String(count) : "— not stated";
 }
 
 function RfqStatusBadge({ status }: { status: RfqStatus }) {
@@ -1202,7 +1211,7 @@ function RfqLineRow({
         {formatQuantity(line.required_quantity)}
       </td>
       <td className="mono">{unit ? unit.code : line.unit_definition_id}</td>
-      <td data-align="right">{specsCount(line.required_specifications)}</td>
+      <td data-align="right">{formatSpecsCell(line.required_specifications)}</td>
       <td>{line.notes ?? "—"}</td>
       {editable && (
         <td>
@@ -1652,8 +1661,12 @@ export function RfqsPage() {
         header: "Lines",
         enableSorting: false,
         meta: { align: "right" },
-        // RfqSummaryResponse carries no line_count — see this file's header.
-        cell: () => "—",
+        // Present once the backend's widened list contract lands for a given
+        // row; "—" for backward compat otherwise — see this file's header.
+        cell: (ctx) => {
+          const v = ctx.row.original.line_count;
+          return typeof v === "number" ? v : "—";
+        },
       },
       {
         id: "updated",

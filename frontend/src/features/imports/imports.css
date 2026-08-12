@@ -1,0 +1,146 @@
+/* Part-import wizard — dense preview table + disposition badges, layered on
+   components/workspace.css (toolbar buttons, form-actions) the same way
+   every other feature's own css file is (see ../briefs/briefs.css's header). */
+
+.import-step {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.import-pick-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+  flex-wrap: wrap;
+}
+
+.import-summary-row {
+  display: flex;
+  gap: var(--space-xl);
+  flex-wrap: wrap;
+  padding: var(--space-md) var(--space-lg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-background);
+}
+
+.import-summary-stat {
+  font-size: 13px;
+  color: var(--color-muted-foreground);
+}
+
+.import-summary-stat strong {
+  font-size: 15px;
+  color: var(--color-foreground);
+  font-variant-numeric: tabular-nums;
+  margin-right: var(--space-sm);
+}
+
+.import-summary-stat--valid strong {
+  color: var(--color-positive);
+}
+
+.import-summary-stat--duplicate strong {
+  color: var(--color-warning);
+}
+
+.import-summary-stat--error strong {
+  color: var(--color-destructive);
+}
+
+.import-sample-caveat {
+  margin: 0;
+}
+
+.import-table-wrap {
+  max-height: 360px;
+}
+
+.import-rows-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.import-rows-table th {
+  position: sticky;
+  top: 0;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  padding: var(--space-sm) var(--space-md);
+  white-space: nowrap;
+}
+
+.import-rows-table td {
+  padding: var(--space-sm) var(--space-md);
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: top;
+}
+
+.import-rows-table th[data-align="right"],
+.import-rows-table td[data-align="right"] {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.import-rows-table tr:last-child td {
+  border-bottom: none;
+}
+
+.import-rows-table tr.is-error {
+  background: rgba(220, 38, 38, 0.04);
+}
+
+.import-row-errors {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: var(--color-destructive);
+  font-size: 12px;
+}
+
+.import-commit-hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-destructive);
+}
+
+.import-success-banner {
+  background: rgba(21, 128, 61, 0.1);
+  border: 1px solid rgba(21, 128, 61, 0.3);
+  color: var(--color-positive);
+  border-radius: var(--radius-sm);
+  padding: var(--space-md) var(--space-lg);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* disposition badges — never rely on color alone, same MASTER.md rule
+   ../briefs/briefs.css's provenance badges follow */
+.badge--import-create {
+  background: rgba(21, 128, 61, 0.1);
+  color: var(--color-positive);
+  border-color: rgba(21, 128, 61, 0.28);
+}
+
+.badge--import-skip_duplicate {
+  background: rgba(180, 83, 9, 0.1);
+  color: var(--color-warning);
+  border-color: rgba(180, 83, 9, 0.28);
+}
+
+.badge--import-error {
+  background: rgba(220, 38, 38, 0.08);
+  color: var(--color-destructive);
+  border-color: rgba(220, 38, 38, 0.3);
+}

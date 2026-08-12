@@ -3,14 +3,18 @@
  *
  * Design decisions mirror SuppliersPage.tsx (see its file-level comment for
  * the drawer-vs-route and client-side-sort rationale) plus:
- *  - The "Unit" column and the create/edit form's "Unit definition ID" field
- *    show the raw `unit_definition_id` UUID rather than a resolved code/name.
- *    backend/src/app/main.py only mounts auth/suppliers/supplier_contacts/
- *    supplier_performance/parts — there is no `/units` (or similar) list
- *    endpoint to resolve it against, even though `UnitDefinition` exists as
- *    a model (backend/src/app/models/units.py). Adding that endpoint is
- *    backend work outside this task's frontend-only scope, so this is
- *    flagged rather than faked with a hardcoded unit list.
+ *  - **Unit resolution** (P1 audit finding: "creating and editing require a
+ *    raw unit-definition UUID... list rows display UUID fragments, and
+ *    units ha[ve] no frontend workflow"). `GET /api/v1/units` IS mounted
+ *    (backend/src/app/api/v1/units.py) and already has a typed hook —
+ *    `useUnits()` in ../boms/api.ts, the same one RfqsPage.tsx/BomsPage.tsx
+ *    use to resolve their own `unit_definition_id` columns/pickers. The
+ *    create/edit form's "Unit" field is a `<select>` of `"code — name"`
+ *    options (mirrors RfqLineFormRow's line-unit `<select>`); the list's
+ *    "Unit" column and the detail drawer's "Unit" row resolve the id
+ *    through a `unitsById` map the same way BomLineViewRow/RfqLineRow do,
+ *    falling back to the raw id (mono) only if a part somehow references a
+ *    unit this org's catalogue no longer returns.
  *  - Alternatives (internal-by-search / external-by-MPN) live in their own
  *    section of the detail view, using the same `useParts` search hook the
  *    table itself uses for the internal picker.
@@ -35,6 +39,8 @@ import { formatMoney, isDecimalString } from "../../lib/money";
 import { isAdministratorOrAbove, isAnalystOrAbove } from "../../lib/roles";
 import { useDebouncedValue } from "../../lib/useDebouncedValue";
 import { zodResolver } from "../../lib/zodResolver";
+import { useUnits } from "../boms/api";
+import { PartImportPanel } from "../imports/PartImportPanel"; // ALLOWED insertion: part-import workflow
 import {
   type ApprovalStatus,
   type PartResponse,
@@ -51,7 +57,6 @@ import {
 } from "./api";
 
 const LIMIT = 50;
-const UUID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 
 const decimalField = z
   .string()
@@ -71,10 +76,7 @@ const partFormSchema = z
     name: z.string().trim().min(1, "Name is required").max(200, "Max 200 characters"),
     description: z.string().trim().max(4000, "Max 4000 characters"),
     category: z.string().trim().max(100, "Max 100 characters"),
-    unit_definition_id: z
-      .string()
-      .trim()
-      .regex(UUID_RE, "Must be a unit definition UUID (no unit picker is available — see code comment)"),
+    unit_definition_id: z.string().trim().min(1, "Select a unit"),
     target_price: decimalField,
     target_price_currency: z
       .string()
@@ -151,6 +153,8 @@ function PartForm({
 }) {
   const createMutation = useCreatePart();
   const updateMutation = useUpdatePart();
+  const unitsQuery = useUnits();
+  const units = unitsQuery.data?.items ?? [];
   const busy = createMutation.isPending || updateMutation.isPending;
   const mutationError = createMutation.error ?? updateMutation.error;
 
@@ -201,12 +205,15 @@ function PartForm({
         <FormField label="Category" hint="optional" error={errors.category?.message}>
           <input {...register("category")} aria-invalid={!!errors.category} />
         </FormField>
-        <FormField
-          label="Unit definition ID"
-          hint="UUID — no unit picker available, see code comment"
-          error={errors.unit_definition_id?.message}
-        >
-          <input {...register("unit_definition_id")} aria-invalid={!!errors.unit_definition_id} />
+        <FormField label="Unit" error={errors.unit_definition_id?.message}>
+          <select {...register("unit_definition_id")} aria-invalid={!!errors.unit_definition_id}>
+            <option value="">Select unit…</option>
+            {units.map((u) => (
+              <option key={u.id} value={u.id}>
+                {u.code} — {u.name}
+              </option>
+            ))}
+          </select>
         </FormField>
         <FormField label="Target price" hint="optional, decimal" error={errors.target_price?.message}>
           <input {...register("target_price")} aria-invalid={!!errors.target_price} inputMode="decimal" />
@@ -454,6 +461,11 @@ function PartDetail({
   onClosed: () => void;
 }) {
   const { data: part, isLoading, isError, error, refetch } = usePart(id);
+  const unitsQuery = useUnits();
+  const unitsById = useMemo(
+    () => new Map((unitsQuery.data?.items ?? []).map((u) => [u.id, u] as const)),
+    [unitsQuery.data],
+  );
   const [editing, setEditing] = useState(false);
   const [archiving, setArchiving] = useState(false);
   const [archiveReason, setArchiveReason] = useState("");
@@ -506,6 +518,8 @@ function PartDetail({
     }
   }
 
+  const unit = unitsById.get(part.unit_definition_id);
+
   return (
     <div>
       <div className="detail-header-row">
@@ -544,7 +558,11 @@ function PartDetail({
           <DetailRow label="Name" value={part.name} />
           <DetailRow label="Manufacturer" value={part.manufacturer ?? "—"} />
           <DetailRow label="Category" value={part.category ?? "—"} />
-          <DetailRow label="Unit definition ID" value={part.unit_definition_id} mono />
+          <DetailRow
+            label="Unit"
+            value={unit ? `${unit.code} — ${unit.name}` : part.unit_definition_id}
+            mono={!unit}
+          />
           <DetailRow
             label="Target price"
             value={
@@ -642,6 +660,12 @@ export function PartsPage() {
   const partsQuery = useParts(listParams);
   const items = partsQuery.data?.items ?? [];
 
+  const unitsQuery = useUnits();
+  const unitsById = useMemo(
+    () => new Map((unitsQuery.data?.items ?? []).map((u) => [u.id, u] as const)),
+    [unitsQuery.data],
+  );
+
   const columns = useMemo<ColumnDef<PartResponse>[]>(
     () => [
       {
@@ -674,11 +698,10 @@ export function PartsPage() {
         header: "Unit",
         enableSorting: false,
         meta: { mono: true },
-        // No `/units` endpoint is mounted (see file header) — show a
-        // truncated id with the full UUID as a title tooltip.
         cell: (ctx) => {
           const v = ctx.getValue<string>();
-          return <span title={v}>{v.slice(0, 8)}…</span>;
+          const unit = unitsById.get(v);
+          return unit ? <span title={unit.name}>{unit.code}</span> : <span title={v}>{v.slice(0, 8)}…</span>;
         },
       },
       {
@@ -703,7 +726,7 @@ export function PartsPage() {
         ),
       },
     ],
-    [],
+    [unitsById],
   );
 
   function closeDrawer() {
@@ -747,6 +770,7 @@ export function PartsPage() {
             />
             Include archived
           </label>
+          <PartImportPanel /> {/* ALLOWED insertion: part-import workflow, self-gated */}
           {canWrite && (
             <button
               type="button"

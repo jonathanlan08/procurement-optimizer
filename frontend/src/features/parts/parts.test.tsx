@@ -25,6 +25,13 @@ function sessionFor(role: string): SessionInfo {
   };
 }
 
+const UNIT_EACH = { id: "33333333-3333-3333-3333-333333333333", code: "EA", name: "Each", dimension: "count", is_global: true };
+
+const UNITS_HANDLER = {
+  test: (url: string, method: string) => url.startsWith("/api/v1/units") && method === "GET",
+  respond: () => jsonResponse(200, { items: [UNIT_EACH] }),
+};
+
 const BOLT: Record<string, unknown> = {
   id: "22222222-2222-2222-2222-222222222222",
   internal_part_number: "PN-100",
@@ -87,7 +94,7 @@ describe("PartsPage", () => {
     vi.unstubAllGlobals();
   });
 
-  it("renders part rows from the mocked list response", async () => {
+  it("renders part rows from the mocked list response, resolving the unit to its code", async () => {
     installFetchMock([
       {
         test: (url, method) => url.startsWith("/api/v1/auth/me") && method === "GET",
@@ -97,6 +104,7 @@ describe("PartsPage", () => {
         test: (url, method) => url.startsWith("/api/v1/parts?") && method === "GET",
         respond: () => jsonResponse(200, { items: [BOLT], page: { limit: 50, offset: 0, total: 1 } }),
       },
+      UNITS_HANDLER,
     ]);
 
     renderPage();
@@ -107,6 +115,10 @@ describe("PartsPage", () => {
     expect(screen.getByText("Fasteners")).toBeInTheDocument();
     // "0.12500000" rounds half-even at 2dp: 12 is already even, so it stays "0.12".
     expect(screen.getByText("$0.12")).toBeInTheDocument();
+    // Unit column resolves the raw UUID to its code via useUnits(), not a
+    // truncated UUID fragment (P1 audit finding).
+    expect(screen.getByText("EA")).toBeInTheDocument();
+    expect(screen.queryByText(/33333333…/)).not.toBeInTheDocument();
   });
 
   it("hides mutation buttons for a viewer", async () => {
@@ -119,6 +131,7 @@ describe("PartsPage", () => {
         test: (url, method) => url.startsWith("/api/v1/parts?") && method === "GET",
         respond: () => jsonResponse(200, { items: [BOLT], page: { limit: 50, offset: 0, total: 1 } }),
       },
+      UNITS_HANDLER,
     ]);
 
     renderPage();
@@ -154,6 +167,7 @@ describe("PartsPage", () => {
           });
         },
       },
+      UNITS_HANDLER,
     ]);
 
     renderPage();
@@ -173,8 +187,13 @@ describe("PartsPage", () => {
     // "Name" + the error message concatenated, not "Name" alone.
     fireEvent.change(screen.getByLabelText(/Internal part number/i), { target: { value: "PN-200" } });
     fireEvent.change(screen.getByLabelText(/^Name/i), { target: { value: "Test Part" } });
-    fireEvent.change(screen.getByLabelText(/Unit definition ID/i), {
-      target: { value: "33333333-3333-3333-3333-333333333333" },
+    // Unit is now a <select> populated from GET /api/v1/units — not a raw
+    // UUID text input (P1 audit finding). Anchored to the *start* only, same
+    // reason as "Internal part number"/"Name" above: this field also has a
+    // validation error at this point, so its accessible name is "Unit" plus
+    // the concatenated error text, not "Unit" alone.
+    fireEvent.change(await screen.findByLabelText(/^Unit/i), {
+      target: { value: UNIT_EACH.id },
     });
     fireEvent.change(priceInput, { target: { value: "10.50" } });
     fireEvent.change(screen.getByLabelText(/Target price currency/i), { target: { value: "USD" } });

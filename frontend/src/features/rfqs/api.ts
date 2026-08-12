@@ -3,12 +3,17 @@
  * Shapes mirror backend/src/app/schemas/rfqs.py exactly:
  *  - list envelope is `{ items, page: { limit, offset, total } }`
  *    (`RfqListResponse`); `RfqSummaryResponse` (list rows) carries no
- *    `lines`/`line_count`/`invited_supplier_count` — those only exist on
+ *    `lines`/`invited_supplier_count` — those still only exist on
  *    `RfqResponse` (single-resource GET), to keep the list query from
  *    turning into an N+1 (rfqs.py schema module docstring, `RfqSummaryResponse`).
- *    RfqsPage.tsx's list column for "line count" is therefore always "—"
- *    for a list row; flagged there too, mirroring how BomsPage/PartsPage
- *    already flag their own genuine API-shape gaps rather than faking data.
+ *  - **`RfqSummaryResponse.line_count` is a widened-contract exception to
+ *    that N+1 guard.** A backend agent added a cheap aggregate count column
+ *    to the list query concurrently with this task (P2 audit finding: the
+ *    list "Lines" column previously always rendered "—"). It's typed
+ *    optional (`line_count?: number`) rather than required, so a stale
+ *    cached response or an older server build that hasn't shipped the field
+ *    yet degrades to RfqsPage.tsx's previous "—" rendering instead of
+ *    `undefined` leaking into the table — see that file's own header.
  *  - `required_quantity` is a NUMERIC(18,6) wire string (QTY_SCALE) — never
  *    run through Number()/parseFloat, same rule as `quantity_per_assembly`
  *    in ../boms/api.ts.
@@ -103,8 +108,8 @@ export interface RfqResponse {
   lines: RfqLineResponse[];
 }
 
-/** `GET /rfqs` items — no `lines`/`line_count`/`invited_supplier_count`, see
- * this file's header. */
+/** `GET /rfqs` items — no `lines`/`invited_supplier_count`; `line_count` is
+ * present but optional, see this file's header. */
 export interface RfqSummaryResponse {
   id: string;
   name: string;
@@ -118,6 +123,7 @@ export interface RfqSummaryResponse {
   version: number;
   created_at: string;
   updated_at: string;
+  line_count?: number;
 }
 
 export interface RfqSupplierResponse {

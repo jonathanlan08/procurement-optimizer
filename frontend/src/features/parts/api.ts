@@ -5,15 +5,15 @@
  *  - `target_price` is a NUMERIC(18,8) wire string (UNIT_PRICE_SCALE) and is
  *    always paired with `target_price_currency` — both null or both set
  *    (DB check `ck_parts_target_price_currency_paired`).
- *  - `unit_definition_id` is a bare UUID with no accompanying label: there is
- *    no `/units` (or similar) endpoint mounted in backend/src/app/main.py —
- *    only auth/suppliers/supplier_contacts/supplier_performance/parts are
- *    registered — so the frontend cannot resolve it to a human-readable unit
- *    code/name. This is flagged in PartsPage.tsx (see the comment above the
- *    "Unit" column and the create/edit form's `unit_definition_id` field)
- *    rather than silently faked; it is a genuine API-shape gap, not an
- *    oversight, since adding a units endpoint is backend/ work outside this
- *    task's frontend-only scope.
+ *  - `unit_definition_id` is a bare UUID on the wire, with no accompanying
+ *    label — but `GET /api/v1/units` (backend/src/app/api/v1/units.py) IS
+ *    mounted and resolves it to `{code, name, dimension, is_global}`.
+ *    PartsPage.tsx resolves this the same way RfqsPage.tsx/BomsPage.tsx
+ *    already do, via `useUnits()` (../boms/api.ts) — the "no /units
+ *    endpoint" note that used to live here was stale by the time this task
+ *    landed (a units-catalog audit finding fixed elsewhere added the
+ *    route); Parts was simply the one workspace that hadn't been wired to
+ *    it yet.
  *  - `PATCH /parts/{id}` requires `If-Match: "<version>"`, same mechanics as
  *    suppliers (see features/suppliers/api.ts's file-level comment for why
  *    the CSRF token is threaded in from `session.csrf_token` instead of

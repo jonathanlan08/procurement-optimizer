@@ -1,0 +1,159 @@
+/* Overview workspace — dense KPI row + a two-column "recent activity /
+   quick links" section. No gradients, no charts, per MASTER.md +this task's
+   own "lean and dense" instruction. */
+
+.overview-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-lg);
+  margin-bottom: var(--space-2xl);
+}
+
+.overview-kpi-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding: var(--space-lg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.overview-kpi-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-muted-foreground);
+}
+
+.overview-kpi-value {
+  font-family: var(--font-heading);
+  font-size: 30px;
+  font-weight: 600;
+  color: var(--color-primary);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.overview-kpi-link {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-accent);
+  text-decoration: none;
+  width: fit-content;
+  transition: opacity var(--transition-fast);
+}
+
+.overview-kpi-link:hover {
+  opacity: 0.75;
+  text-decoration: underline;
+}
+
+.overview-columns {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: var(--space-2xl);
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .overview-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+.overview-card {
+  padding: var(--space-lg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 0;
+}
+
+.overview-recent-context {
+  margin: 0 0 var(--space-lg);
+}
+
+.overview-scenario-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.overview-scenario-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  flex-wrap: wrap;
+}
+
+.overview-scenario-name {
+  font-weight: 600;
+  color: var(--color-foreground);
+  flex: 1;
+  min-width: 120px;
+}
+
+.badge--overview-scenario-draft {
+  background: var(--color-muted);
+  color: var(--color-secondary);
+  border-color: var(--color-border);
+}
+
+.badge--overview-scenario-running {
+  background: rgba(3, 105, 161, 0.1);
+  color: var(--color-info);
+  border-color: rgba(3, 105, 161, 0.28);
+}
+
+.badge--overview-scenario-complete {
+  background: rgba(21, 128, 61, 0.1);
+  color: var(--color-positive);
+  border-color: rgba(21, 128, 61, 0.28);
+}
+
+.badge--overview-scenario-failed {
+  background: rgba(220, 38, 38, 0.08);
+  color: var(--color-destructive);
+  border-color: rgba(220, 38, 38, 0.3);
+}
+
+.overview-links {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.overview-link-card {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-md) var(--space-lg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.overview-link-card:hover {
+  border-color: var(--color-accent);
+  background: var(--color-background);
+}
+
+.overview-link-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-foreground);
+}

@@ -253,6 +253,151 @@ describe("RfqsPage", () => {
     expect(createCalls).toBe(0);
   });
 
+  it("renders the list 'Lines' column from line_count when present, and the Specs cell honestly (missing vs supplied)", async () => {
+    const RFQ_WITH_LINE_COUNT = { ...RFQ_DRAFT_SUMMARY, line_count: 3 };
+    const RFQ_DETAIL_WITH_LINES = {
+      ...RFQ_DRAFT_DETAIL,
+      line_count: 2,
+      lines: [
+        {
+          id: "line-1",
+          line_number: 1,
+          part_id: "part-1",
+          required_quantity: "10.000000",
+          unit_definition_id: "unit-1",
+          required_specifications: null,
+          notes: null,
+        },
+        {
+          id: "line-2",
+          line_number: 2,
+          part_id: "part-2",
+          required_quantity: "5.000000",
+          unit_definition_id: "unit-1",
+          required_specifications: { length_mm: "25", tolerance: "0.1" },
+          notes: null,
+        },
+      ],
+    };
+
+    installFetchMock([
+      {
+        test: (url, method) => url.startsWith("/api/v1/auth/me") && method === "GET",
+        respond: () => jsonResponse(200, sessionFor("analyst")),
+      },
+      {
+        test: (url, method) => url.startsWith("/api/v1/rfqs?") && method === "GET",
+        respond: () =>
+          jsonResponse(200, { items: [RFQ_WITH_LINE_COUNT], page: { limit: 50, offset: 0, total: 1 } }),
+      },
+      {
+        test: (url, method) =>
+          url === "/api/v1/rfqs/11111111-1111-1111-1111-111111111111" && method === "GET",
+        respond: () => jsonResponse(200, RFQ_DETAIL_WITH_LINES),
+      },
+      {
+        test: (url, method) =>
+          url === "/api/v1/rfqs/11111111-1111-1111-1111-111111111111/status-history" && method === "GET",
+        respond: () => jsonResponse(200, { items: [] }),
+      },
+      {
+        test: (url, method) =>
+          url === "/api/v1/rfqs/11111111-1111-1111-1111-111111111111/suppliers" && method === "GET",
+        respond: () => jsonResponse(200, { items: [] }),
+      },
+      {
+        test: (url, method) => url.startsWith("/api/v1/units") && method === "GET",
+        respond: () =>
+          jsonResponse(200, {
+            items: [{ id: "unit-1", code: "EA", name: "Each", dimension: "count", is_global: true }],
+          }),
+      },
+      {
+        test: (url, method) => url === "/api/v1/parts/part-1" && method === "GET",
+        respond: () =>
+          jsonResponse(200, {
+            id: "part-1",
+            internal_part_number: "PN-001",
+            manufacturer_part_number: null,
+            manufacturer: null,
+            name: "Widget A",
+            description: null,
+            category: null,
+            unit_definition_id: "unit-1",
+            required_specifications: null,
+            target_price: null,
+            target_price_currency: null,
+            is_active: true,
+            is_archived: false,
+            archived_at: null,
+            archive_reason: null,
+            version: 1,
+            created_at: "2026-01-01T00:00:00Z",
+            updated_at: "2026-01-01T00:00:00Z",
+          }),
+      },
+      {
+        test: (url, method) => url === "/api/v1/parts/part-2" && method === "GET",
+        respond: () =>
+          jsonResponse(200, {
+            id: "part-2",
+            internal_part_number: "PN-002",
+            manufacturer_part_number: null,
+            manufacturer: null,
+            name: "Widget B",
+            description: null,
+            category: null,
+            unit_definition_id: "unit-1",
+            required_specifications: null,
+            target_price: null,
+            target_price_currency: null,
+            is_active: true,
+            is_archived: false,
+            archived_at: null,
+            archive_reason: null,
+            version: 1,
+            created_at: "2026-01-01T00:00:00Z",
+            updated_at: "2026-01-01T00:00:00Z",
+          }),
+      },
+    ]);
+
+    renderPage();
+
+    const table = await screen.findByRole("table", { name: /requests for quotation/i });
+    expect(within(table).getByText("3")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText("Q3 Connector Sourcing"));
+    await screen.findByText("Status timeline");
+
+    // line-1 has no required_specifications: honest "— not stated", never a
+    // fabricated "0" (P2 audit finding).
+    expect(await screen.findByText("— not stated")).toBeInTheDocument();
+    // line-2 has two real spec keys: a plain count, since that IS supplied data.
+    expect(screen.getByText("2")).toBeInTheDocument();
+  });
+
+  it("renders '—' in the list 'Lines' column when line_count is absent (backward compat)", async () => {
+    installFetchMock([
+      {
+        test: (url, method) => url.startsWith("/api/v1/auth/me") && method === "GET",
+        respond: () => jsonResponse(200, sessionFor("analyst")),
+      },
+      {
+        test: (url, method) => url.startsWith("/api/v1/rfqs?") && method === "GET",
+        respond: () =>
+          jsonResponse(200, { items: [RFQ_DRAFT_SUMMARY], page: { limit: 50, offset: 0, total: 1 } }),
+      },
+    ]);
+
+    renderPage();
+
+    const table = await screen.findByRole("table", { name: /requests for quotation/i });
+    const row = within(table).getByText("Q3 Connector Sourcing").closest("tr");
+    expect(row).not.toBeNull();
+    expect(within(row as HTMLElement).getByText("—")).toBeInTheDocument();
+  });
+
   it("switches to 'From BOM' mode and requires a BOM to be selected instead of lines", async () => {
     installFetchMock([
       {

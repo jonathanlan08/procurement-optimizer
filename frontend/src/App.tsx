@@ -4,6 +4,7 @@ import { AuditPage } from "./features/audit/AuditPage"; // ALLOWED insertion: /a
 import { BomsPage } from "./features/boms/BomsPage";
 import { ComparisonPage } from "./features/comparison/ComparisonPage"; // ALLOWED insertion: /scenarios route
 import { FxPanel } from "./features/fx/FxPanel"; // ALLOWED insertion: /fx route
+import { OverviewPage } from "./features/overview/OverviewPage";
 import { PartsPage } from "./features/parts/PartsPage";
 import { ReportsPage } from "./features/reports/ReportsPage"; // ALLOWED insertion: /reports route
 import { RfqsPage } from "./features/rfqs/RfqsPage";
@@ -23,7 +24,7 @@ export function App() {
           </RequireAuth>
         }
       >
-        <Route index element={<PlaceholderPage title="Overview" />} />
+        <Route index element={<OverviewPage />} />
         <Route path="suppliers" element={<SuppliersPage />} />
         <Route path="parts" element={<PartsPage />} />
         <Route path="boms" element={<BomsPage />} />

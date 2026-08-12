@@ -251,8 +251,13 @@ class PartService:
             if field not in changes:
                 continue
             value = changes[field]
-            if field == "target_price" and value is not None:
-                value = quantize_unit_price(value)
+            if field == "target_price" and body.target_price is not None:
+                # `body.target_price`, not `changes["target_price"]`:
+                # `model_dump()` runs the price type's `PlainSerializer`
+                # unconditionally (`when_used` defaults to "always"), so
+                # `changes` holds the *wire* string form — `quantize_unit_price()`
+                # needs the parsed `Decimal` from the model attribute.
+                value = quantize_unit_price(body.target_price)
             setattr(part, field, value)
 
         part.version += 1

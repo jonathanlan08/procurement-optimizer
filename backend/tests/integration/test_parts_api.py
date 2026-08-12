@@ -252,6 +252,27 @@ class TestPartCrudRoundTrip:
         assert unarchive_resp.json()["is_archived"] is False
         assert unarchive_resp.json()["archive_reason"] is None
 
+    def test_patch_target_price_round_trip(
+        self, client: TestClient, org_a: dict[str, Any], migrated_engine: Engine
+    ) -> None:
+        """Regression: PATCHing `target_price` 500'd — the service's
+        `model_dump()` re-serialized the parsed Decimal back to its wire string
+        (PlainSerializer's `when_used` defaults to "always"), and
+        `quantize_unit_price()` then blew up on the str."""
+        unit_id = _seed_unit(migrated_engine, organization_id=org_a["org_id"])
+        headers = _headers(_login_as(client, org_a, Role.ANALYST))
+        created = _create_part(client, headers, unit_id)
+
+        update_resp = client.patch(
+            f"/api/v1/parts/{created['id']}",
+            json={"target_price": "12.75", "target_price_currency": "USD"},
+            headers={**headers, "If-Match": '"1"'},
+        )
+        assert update_resp.status_code == 200, update_resp.text
+        updated = update_resp.json()
+        assert updated["target_price"] == "12.75000000"
+        assert updated["version"] == 2
+
     def test_search_matches_normalized_key(
         self, client: TestClient, org_a: dict[str, Any], migrated_engine: Engine
     ) -> None:

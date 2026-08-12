@@ -196,6 +196,30 @@ class TestSupplierCrudRoundTrip:
         assert unarchive_resp.json()["archive_reason"] is None
 
 
+    def test_patch_decimal_fields_round_trip(
+        self, client: TestClient, org_a: dict[str, Any]
+    ) -> None:
+        """Regression: PATCHing a `DecimalString` field 500'd — the service's
+        `model_dump()` re-serialized the parsed Decimal back to its wire string
+        (PlainSerializer's `when_used` defaults to "always"), and
+        `quantize_qty()` then blew up on the str."""
+        headers = _headers(_login_as(client, org_a, Role.ANALYST))
+        create_resp = client.post("/api/v1/suppliers", json=_supplier_payload(), headers=headers)
+        assert create_resp.status_code == 201, create_resp.text
+        supplier_id = create_resp.json()["id"]
+
+        update_resp = client.patch(
+            f"/api/v1/suppliers/{supplier_id}",
+            json={"default_moq": "100.5", "capacity_units_per_month": "2500"},
+            headers={**headers, "If-Match": '"1"'},
+        )
+        assert update_resp.status_code == 200, update_resp.text
+        updated = update_resp.json()
+        assert updated["default_moq"] == "100.500000"
+        assert updated["capacity_units_per_month"] == "2500.000000"
+        assert updated["version"] == 2
+
+
 class TestOrgIsolation:
     def test_cross_org_access_is_404_for_every_mutation(
         self, client: TestClient, org_a: dict[str, Any], org_b: dict[str, Any]

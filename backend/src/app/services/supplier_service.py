@@ -173,7 +173,12 @@ class SupplierService:
                 continue
             value = changes[field]
             if field in _QUANTIZED_FIELDS and value is not None:
-                value = quantize_qty(value)
+                # `getattr(body, field)`, not `changes[field]`: `model_dump()`
+                # runs `DecimalString`'s `PlainSerializer` unconditionally (its
+                # `when_used` defaults to "always", not "json"), so `changes`
+                # holds the *wire* string form — `quantize_qty()` needs the
+                # parsed `Decimal` from the model attribute.
+                value = quantize_qty(getattr(body, field))
             setattr(supplier, field, value)
 
         supplier.version += 1

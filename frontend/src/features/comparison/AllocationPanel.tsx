@@ -223,8 +223,10 @@ function AllocationTable({
         <section className="detail-section">
           <h4 className="detail-section-title">Binding constraints</h4>
           <div className="chip-row">
-            {allocation.binding_constraints.map((bc) => (
-              <span key={bc.name} className="chip chip--binding" title={bc.detail}>
+            {allocation.binding_constraints.map((bc, i) => (
+              // Several constraints can share a name (e.g. one "capacity" per
+              // bound supplier), so the name alone is not a unique key.
+              <span key={`${bc.name}-${i}`} className="chip chip--binding" title={bc.detail}>
                 {statusLabel(bc.name)}
               </span>
             ))}

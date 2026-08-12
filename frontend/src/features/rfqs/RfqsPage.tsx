@@ -68,6 +68,7 @@ import { DataTable } from "../../components/DataTable";
 import { DetailRow } from "../../components/DetailRow";
 import { Drawer } from "../../components/Drawer";
 import { FormField } from "../../components/FormField";
+import { PageEyebrow } from "../../components/PageEyebrow";
 import { PaginationBar } from "../../components/PaginationBar";
 import { PlusIcon, SearchIcon, XIcon } from "../../components/icons";
 import "../../components/workspace.css";
@@ -1689,6 +1690,7 @@ export function RfqsPage() {
     <section className="rfqs-page">
       <header className="page-toolbar">
         <div className="page-heading">
+          <PageEyebrow hue="rfqs">RFQs</PageEyebrow>
           <h1>Requests for quotation</h1>
           <p>Track supplier outreach from draft through award.</p>
         </div>
@@ -1754,7 +1756,12 @@ export function RfqsPage() {
         onOffsetChange={setOffset}
       />
 
-      <Drawer open={drawerState !== null} onClose={closeDrawer} title={drawerTitle}>
+      <Drawer
+        open={drawerState !== null}
+        onClose={closeDrawer}
+        title={drawerTitle}
+        panelClassName="hue-panel-top hue-panel-top--rfqs"
+      >
         {drawerState?.mode === "create" && (
           <RfqForm
             onSaved={(created) => setDrawerState({ mode: "view", id: created.id })}

@@ -78,8 +78,10 @@ export interface QuoteLineInput {
   moq: string | null;
   tooling_cost: string | null;
   setup_cost: string | null;
+  documentation_cost: string | null;
   packaging_cost: string | null;
   shipping_cost: string | null;
+  handling_cost: string | null;
   insurance_cost: string | null;
   other_fixed_cost: string | null;
   tariff_amount: string | null;

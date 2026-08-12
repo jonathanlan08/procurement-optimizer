@@ -30,6 +30,7 @@ import { useAuth } from "../../auth/session";
 import { ApiErrorBanner } from "../../components/ApiErrorBanner";
 import { DataTable } from "../../components/DataTable";
 import { FormField } from "../../components/FormField";
+import { PageEyebrow } from "../../components/PageEyebrow";
 import { PaginationBar } from "../../components/PaginationBar";
 import "../../components/workspace.css";
 import { isAnalystOrAbove } from "../../lib/roles";
@@ -290,6 +291,7 @@ export function ReportsPage() {
     <section className="reports-page">
       <header className="page-toolbar">
         <div className="page-heading">
+          <PageEyebrow hue="reports">Reports</PageEyebrow>
           <h1>Reports</h1>
           <p>
             Generate and download exports — supplier comparisons, CFO recommendations,
@@ -299,7 +301,12 @@ export function ReportsPage() {
       </header>
 
       {canWrite && (
-        <section className="detail-section">
+        // v2 hue extension: this page has no Drawer and no full "card"
+        // chrome element (unlike Suppliers/Parts/RFQs/Audit) — "Generate
+        // report" is the page's one write-oriented primary section (the
+        // history table below is read-only), so it's the target for the 3px
+        // hue border-top rather than inventing new card chrome.
+        <section className="detail-section hue-panel-top hue-panel-top--reports">
           <h3 className="detail-section-title">Generate report</h3>
           <div className="form-grid">
             <FormField label="RFQ">

@@ -23,6 +23,11 @@
   display: flex;
   align-items: center;
   gap: var(--space-md);
+  /* v2 hue extension: the one permitted gradient in the app (MASTER.md's
+     own rule — no gradients on CTAs/cards/anything else). White brand text
+     (--color-on-primary) keeps ample contrast against both navy and indigo
+     stops, so no separate a11y check was needed for this one. */
+  background: linear-gradient(135deg, #0f172a, #312e81);
 }
 
 .shell-brand-mark {
@@ -53,6 +58,48 @@
   color: var(--color-on-primary);
   border-left-color: var(--color-accent);
   font-weight: 600;
+}
+
+/* v2 hue extension: workspace identity on the active nav item — a 3px hue
+   left bar plus hue-colored text (MASTER.md's own list). The border uses
+   the base hue token (decorative, not text, so the hex given in the spec
+   applies as-is); the text uses the `-on-dark` derivative (tokens.css's own
+   comment on why) since the base hues fall well short of 4.5:1 against this
+   navy sidebar. Items with no `data-hue` (BOMs, FX — no hue assigned) fall
+   through to the plain accent-blue rule above, unchanged. */
+.shell-nav-link.is-active[data-hue="overview"] {
+  border-left-color: var(--hue-overview);
+  color: var(--hue-overview-on-dark);
+}
+
+.shell-nav-link.is-active[data-hue="suppliers"] {
+  border-left-color: var(--hue-suppliers);
+  color: var(--hue-suppliers-on-dark);
+}
+
+.shell-nav-link.is-active[data-hue="parts"] {
+  border-left-color: var(--hue-parts);
+  color: var(--hue-parts-on-dark);
+}
+
+.shell-nav-link.is-active[data-hue="rfqs"] {
+  border-left-color: var(--hue-rfqs);
+  color: var(--hue-rfqs-on-dark);
+}
+
+.shell-nav-link.is-active[data-hue="compare"] {
+  border-left-color: var(--hue-compare);
+  color: var(--hue-compare-on-dark);
+}
+
+.shell-nav-link.is-active[data-hue="reports"] {
+  border-left-color: var(--hue-reports);
+  color: var(--hue-reports-on-dark);
+}
+
+.shell-nav-link.is-active[data-hue="audit"] {
+  border-left-color: var(--hue-audit);
+  color: var(--hue-audit-on-dark);
 }
 
 /* Mobile nav: hamburger button (top app bar) + slide-in drawer that reuses
@@ -144,6 +191,30 @@
   background: rgba(255, 255, 255, 0.08);
 }
 
+/* Drawer-only identity block (audit P2): the header's name/role chip is
+   `display:none` at <=768px (below) to keep the header a single row, so this
+   is where that same information lives on mobile instead — top of the
+   drawer, below the brand. `.shell-role`'s own pill styling (workspace.css-
+   adjacent, defined below) already carries its own light background, so it
+   reads fine sitting on this dark sidebar surface unchanged. */
+.shell-drawer-identity {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-xl) var(--space-lg);
+  margin-bottom: var(--space-sm);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.shell-drawer-identity-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-on-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .shell-nav-overlay,
   .shell-sidebar.shell-drawer-panel {
@@ -195,6 +266,13 @@
   border: 1px solid currentcolor;
   border-radius: var(--radius-sm);
   padding: 1px var(--space-md);
+  white-space: nowrap;
+}
+
+/* Audit P2 fix: both spans always render (see AppShell.tsx's comment) — only
+   one is ever visible at a time, per breakpoint below. */
+.demo-badge-compact {
+  display: none;
 }
 
 .shell-content {
@@ -249,5 +327,35 @@
 
   .shell-sidebar.shell-drawer-panel {
     display: flex;
+  }
+
+  /* Audit P2 fix: "demo badge, username, role, and Sign out wrap awkwardly"
+     — the header is a single flex row with no wrap, so at narrow widths
+     those four items used to overflow instead. Below 768px: the demo badge
+     collapses to its compact "Demo" chip, the name/role chip moves into the
+     drawer (.shell-drawer-identity above) instead of sharing the row, and
+     Sign out shrinks to a compact button — leaving just the hamburger, the
+     compact badge, and Sign out in one row. Desktop (>768px) is untouched:
+     none of this block applies above the breakpoint. */
+  .shell-header {
+    gap: var(--space-md);
+    padding: 0 var(--space-lg);
+  }
+
+  .demo-badge-full {
+    display: none;
+  }
+
+  .demo-badge-compact {
+    display: inline;
+  }
+
+  .shell-user {
+    display: none;
+  }
+
+  .shell-header .btn-ghost {
+    padding: var(--space-xs) var(--space-md);
+    font-size: 12px;
   }
 }

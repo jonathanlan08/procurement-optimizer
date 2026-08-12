@@ -28,6 +28,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../../auth/session";
 import { ApiErrorBanner } from "../../components/ApiErrorBanner";
 import "../../components/badges.css";
+import { PageEyebrow, type HueName } from "../../components/PageEyebrow";
 import "../../components/workspace.css";
 import { COMPARISON_STRATEGIES, useRfqScenarios, type ScenarioState } from "../comparison/api";
 import "./overview.css";
@@ -35,15 +36,18 @@ import { useMostRecentRfq, useOpenRfqTotal, usePartTotal, useSupplierTotal } fro
 
 const RECENT_SCENARIOS_LIMIT = 5;
 
-const WORKSPACE_LINKS: { to: string; label: string; description: string }[] = [
-  { to: "/suppliers", label: "Suppliers", description: "Master data, performance, and contacts." },
-  { to: "/parts", label: "Parts", description: "Catalogue master data and approved alternatives." },
+// `hue` (v2 extension) mirrors AppShell's own NAV list — see that file's
+// comment: only the seven design-director-assigned workspaces get one, BOMs
+// and FX rates render as before (no `overview-link-card--*` modifier applied).
+const WORKSPACE_LINKS: { to: string; label: string; description: string; hue?: HueName }[] = [
+  { to: "/suppliers", label: "Suppliers", description: "Master data, performance, and contacts.", hue: "suppliers" },
+  { to: "/parts", label: "Parts", description: "Catalogue master data and approved alternatives.", hue: "parts" },
   { to: "/boms", label: "BOMs", description: "Bills of materials and version history." },
-  { to: "/rfqs", label: "RFQs", description: "Supplier outreach, from draft through award." },
+  { to: "/rfqs", label: "RFQs", description: "Supplier outreach, from draft through award.", hue: "rfqs" },
   { to: "/fx", label: "FX rates", description: "Foreign-exchange rates used in landed cost." },
-  { to: "/scenarios", label: "Compare", description: "Score and allocate supplier quotes." },
-  { to: "/reports", label: "Reports", description: "Generate and download exports." },
-  { to: "/audit", label: "Audit log", description: "Full change history across the workspace." },
+  { to: "/scenarios", label: "Compare", description: "Score and allocate supplier quotes.", hue: "compare" },
+  { to: "/reports", label: "Reports", description: "Generate and download exports.", hue: "reports" },
+  { to: "/audit", label: "Audit log", description: "Full change history across the workspace.", hue: "audit" },
 ];
 
 const SCENARIO_STATE_LABELS: Record<ScenarioState, string> = {
@@ -81,16 +85,21 @@ function KpiCard({
   query,
   to,
   linkLabel,
+  hue,
 }: {
   label: string;
   query: TotalQuery;
   to: string;
   linkLabel: string;
+  hue: HueName;
 }) {
   return (
-    <div className="overview-kpi-card">
+    <div className={`overview-kpi-card overview-kpi-card--${hue}`}>
       <span className="overview-kpi-label">{label}</span>
-      <span className="overview-kpi-value" title={query.isError ? "Failed to load — try refreshing." : undefined}>
+      <span
+        className={`overview-kpi-value overview-kpi-value--${hue}`}
+        title={query.isError ? "Failed to load — try refreshing." : undefined}
+      >
         {totalDisplay(query)}
       </span>
       <Link className="overview-kpi-link" to={to}>
@@ -107,7 +116,10 @@ function RecentScenariosCard() {
   const scenarios = (scenariosQuery.data?.items ?? []).slice(0, RECENT_SCENARIOS_LIMIT);
 
   return (
-    <section className="detail-section overview-card">
+    // v2 hue extension: this is the page's PRIMARY card (the "Workspaces"
+    // quick-link card beside it is secondary), so it's the one that gets
+    // the 3px hue border-top — "one per page, not every card".
+    <section className="detail-section overview-card hue-panel-top hue-panel-top--overview">
       <div className="detail-header-row">
         <h3 className="detail-section-title">Recent scenarios</h3>
         <Link className="btn-ghost-sm" to="/scenarios">
@@ -163,6 +175,7 @@ export function OverviewPage() {
     <section className="overview-page">
       <header className="page-toolbar">
         <div className="page-heading">
+          <PageEyebrow hue="overview">Overview</PageEyebrow>
           <h1>Overview</h1>
           <p>
             Workspace summary for {session?.organization_name ?? "your organization"}.
@@ -172,9 +185,9 @@ export function OverviewPage() {
       </header>
 
       <div className="overview-kpi-row">
-        <KpiCard label="Suppliers" query={supplierTotalQuery} to="/suppliers" linkLabel="View suppliers" />
-        <KpiCard label="Parts" query={partTotalQuery} to="/parts" linkLabel="View parts" />
-        <KpiCard label="Open RFQs" query={openRfqTotalQuery} to="/rfqs" linkLabel="View RFQs" />
+        <KpiCard label="Suppliers" query={supplierTotalQuery} to="/suppliers" linkLabel="View suppliers" hue="suppliers" />
+        <KpiCard label="Parts" query={partTotalQuery} to="/parts" linkLabel="View parts" hue="parts" />
+        <KpiCard label="Open RFQs" query={openRfqTotalQuery} to="/rfqs" linkLabel="View RFQs" hue="rfqs" />
       </div>
 
       <div className="overview-columns">
@@ -184,7 +197,11 @@ export function OverviewPage() {
           <h3 className="detail-section-title">Workspaces</h3>
           <nav className="overview-links" aria-label="Workspace quick links">
             {WORKSPACE_LINKS.map((l) => (
-              <Link key={l.to} to={l.to} className="overview-link-card">
+              <Link
+                key={l.to}
+                to={l.to}
+                className={l.hue ? `overview-link-card overview-link-card--${l.hue}` : "overview-link-card"}
+              >
                 <span className="overview-link-label">{l.label}</span>
                 <span className="detail-label">{l.description}</span>
               </Link>

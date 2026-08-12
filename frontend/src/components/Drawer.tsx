@@ -28,9 +28,16 @@ export interface DrawerProps {
   title: string;
   children: ReactNode;
   footer?: ReactNode;
+  /** v2 hue extension (2026-08): extra class(es) appended to the panel's own
+   * className, e.g. `"hue-panel-top hue-panel-top--suppliers"` — see
+   * components/workspace.css's `.hue-panel-top` comment. Optional and
+   * additive only, so every existing `<Drawer>` caller that doesn't pass it
+   * (nested/generic drawers with no page-level hue context) renders exactly
+   * as before. */
+  panelClassName?: string;
 }
 
-export function Drawer({ open, onClose, title, children, footer }: DrawerProps) {
+export function Drawer({ open, onClose, title, children, footer, panelClassName }: DrawerProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const previouslyFocused = useRef<HTMLElement | null>(null);
   const drawerId = useRef<symbol>(Symbol("drawer"));
@@ -93,7 +100,7 @@ export function Drawer({ open, onClose, title, children, footer }: DrawerProps) 
         aria-hidden="true"
       />
       <div
-        className="drawer-panel"
+        className={panelClassName ? `drawer-panel ${panelClassName}` : "drawer-panel"}
         data-state={open ? "open" : "closed"}
         role="dialog"
         aria-modal="true"

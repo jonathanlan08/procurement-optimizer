@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AuthProvider, type SessionInfo } from "../../auth/session";
 import type { RfqResponse } from "../rfqs/api";
@@ -265,8 +265,77 @@ describe("QuotesSection", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /add costs/i }));
 
-    for (const label of [/^Tooling/i, /^Setup/i, /^Packaging/i, /^Shipping/i, /^Insurance/i, /^Other/i, /^Tariff/i, /^Duty/i, /^Customs/i, /^Tax/i]) {
+    for (const label of [
+      /^Tooling/i,
+      /^Setup/i,
+      /^Documentation/i,
+      /^Packaging/i,
+      /^Shipping/i,
+      /^Handling/i,
+      /^Insurance/i,
+      /^Other/i,
+      /^Tariff/i,
+      /^Duty/i,
+      /^Customs/i,
+      /^Tax/i,
+    ]) {
       expect(screen.getByLabelText(label)).toHaveValue("");
     }
+  });
+
+  it("sends documentation_cost/handling_cost when filled, and null when left blank (audit P1 follow-up)", async () => {
+    let capturedBody: { lines: Array<Record<string, unknown>> } | null = null;
+    installFetchMock([
+      ...baseHandlers("analyst"),
+      {
+        test: (url, method) =>
+          url.startsWith(`/api/v1/rfqs/${RFQ_ID}/quotes?`) && method === "GET",
+        respond: () => jsonResponse(200, { items: [] }),
+      },
+      {
+        test: (url, method) => url === `/api/v1/rfqs/${RFQ_ID}/quotes` && method === "POST",
+        respond: (_url, init) => {
+          capturedBody = JSON.parse(init?.body as string);
+          return jsonResponse(201, { ...QUOTE_SUMMARY, lines: [], terms: null });
+        },
+      },
+    ]);
+
+    renderSection(rfqFixture());
+
+    fireEvent.click(await screen.findByRole("button", { name: /enter quote/i }));
+    await screen.findByText("Line 1");
+
+    const dialog = screen.getByRole("dialog");
+    // Both the supplier and unit <select>s only get their real <option>s once
+    // useRfqSuppliers()/useUnits() resolve — wait for those options to exist
+    // before selecting, or fireEvent.change on a not-yet-populated <select>
+    // silently no-ops and the form fails superRefine validation instead of
+    // submitting (supplier_id/unit_definition_id both required).
+    await within(dialog).findByRole("option", { name: /Acme Components/i });
+    fireEvent.change(within(dialog).getByLabelText("Supplier"), { target: { value: SUPPLIER_ID } });
+    fireEvent.change(within(dialog).getByLabelText("Quote date"), { target: { value: "2026-03-01" } });
+    fireEvent.change(within(dialog).getByLabelText(/^Description/i), {
+      target: { value: "As-quoted connector line" },
+    });
+    fireEvent.change(within(dialog).getByLabelText(/^Quantity/i), { target: { value: "100" } });
+    await within(dialog).findByRole("option", { name: /EA — Each/i });
+    fireEvent.change(within(dialog).getByLabelText(/^Unit$/i), { target: { value: "unit-1" } });
+
+    fireEvent.click(within(dialog).getByRole("button", { name: /add costs/i }));
+    fireEvent.change(within(dialog).getByLabelText(/^Documentation/i), { target: { value: "12.50" } });
+    fireEvent.change(within(dialog).getByLabelText(/^Handling/i), { target: { value: "7.25" } });
+    // Packaging/shipping (the fields these sit beside) are left blank —
+    // must round-trip as null, never a false "0" (./api.ts's "Missing stays
+    // missing" rule, same as every other optional cost).
+
+    fireEvent.click(within(dialog).getByRole("button", { name: "Enter quote" }));
+
+    await waitFor(() => expect(capturedBody).not.toBeNull());
+    const line = capturedBody!.lines[0]!;
+    expect(line["documentation_cost"]).toBe("12.50");
+    expect(line["handling_cost"]).toBe("7.25");
+    expect(line["packaging_cost"]).toBeNull();
+    expect(line["shipping_cost"]).toBeNull();
   });
 });

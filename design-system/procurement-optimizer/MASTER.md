@@ -254,3 +254,88 @@ Before delivering any UI code, verify:
 - [ ] Responsive: 375px, 768px, 1024px, 1440px
 - [ ] No content hidden behind fixed navbars
 - [ ] No horizontal scroll on mobile
+
+---
+
+## v2 — functional hue extension (2026-08)
+
+Client feedback asked for "a more colorful UI." The design director's response is a
+**functional hue system**, not a decorative palette: seven workspace-identity colors, one per
+top-level section of the app, used only to help a user recognize *which workspace they're in* at
+a glance. This section is additive to everything above — the v1 rules (semantic data colors,
+buttons, tables, motion, anti-patterns) are unchanged and take precedence wherever the two could
+conflict.
+
+### The rule
+
+> **Hues identify PLACES. Semantic colors identify STATES. The two never swap roles.**
+
+A hue (`--hue-suppliers`, `--hue-rfqs`, …) never carries meaning like "this failed" or "this is a
+warning" — that's still exclusively `--color-positive`/`--color-negative`/`--color-warning`/
+`--color-info` (v1, above). A semantic color never gets reused to imply "you're in the Suppliers
+workspace." Badges, buttons, tables, money figures, charts, and score bars are v1-only territory
+and stay untouched by hues — this is enforced by omission: hues were only ever wired into the six
+element categories below.
+
+### The seven hues
+
+| Workspace | Hex | CSS variable | 10%-tint variable |
+|-----------|-----|---------------|--------------------|
+| Overview | `#4338CA` | `--hue-overview` | `--hue-overview-tint` |
+| Suppliers | `#0F766E` | `--hue-suppliers` | `--hue-suppliers-tint` |
+| Parts | `#6D28D9` | `--hue-parts` | `--hue-parts-tint` |
+| RFQs | `#A24B08` | `--hue-rfqs` | `--hue-rfqs-tint` |
+| Compare | `#0369A1` | `--hue-compare` | `--hue-compare-tint` |
+| Reports | `#137337` | `--hue-reports` | `--hue-reports-tint` |
+| Audit | `#BE123C` | `--hue-audit` | `--hue-audit-tint` |
+
+Each hue is >=4.5:1 as text against white and against its own 10%-alpha tint pill (verified
+per-pair; see frontend/e2e/a11y.spec.ts's zero-violation gate). **BOMs and FX rates have no
+assigned hue** — the design director scoped this to seven workspaces, not all nine NAV entries,
+so those two keep their plain accent-blue treatment everywhere below rather than this task
+inventing colors the spec never defined.
+
+A second set, `--hue-<name>-on-dark`, exists purely as an accessibility derivative: the seven
+hues above are calibrated for light surfaces, and the one dark surface in the app (the sidebar,
+`--color-primary` navy) fails 4.5:1 for several of them as text. Each `-on-dark` token is the same
+hue lightened just enough to clear 4.5:1 against navy specifically — used only for the active
+sidebar nav-link *text* color; the nav-link's left border uses the base hue unchanged (a
+decorative, non-text element).
+
+### Where hues may appear (and nowhere else)
+
+a. **Sidebar nav** (`layout/AppShell.tsx` + `app-shell.css`) — the active item gets a 3px
+   left border in its hue plus hue-colored link text (via the `-on-dark` variant). Inactive items
+   are unchanged. The static desktop `<aside>` and the mobile drawer render the same
+   `<SidebarNav>` markup, so this is one CSS change applied in both presentations.
+b. **Page header eyebrow chip** (`components/PageEyebrow.tsx`, styled in
+   `components/workspace.css`) — a small uppercase chip (hue text on its own 10%-tint pill)
+   above each hued workspace's `<h1>`, added to the shared `.page-toolbar > .page-heading`
+   pattern every page already uses.
+c. **Overview KPI cards** (`features/overview/overview.css`) — the Suppliers/Parts/Open-RFQs
+   cards each get their hue as: a 10%-tint background, a 3px hue border-top, and hue-colored
+   count text. The Workspaces quick-link cards get a 3px hue left border (six of the eight links
+   that have an assigned hue; BOMs/FX keep a plain gray left border).
+d. **One primary card/panel per workspace page** — a 3px hue border-top, via the shared
+   `.hue-panel-top` / `.hue-panel-top--<hue>` classes in `components/workspace.css`:
+   - Suppliers, Parts, RFQs, Audit: their one `<Drawer>` (via its new optional `panelClassName`
+     prop — every other `Drawer` call site that doesn't pass one is unaffected).
+   - Compare: its one `<Drawer>` (the per-line landed-cost "explain" panel).
+   - Overview: the "Recent scenarios" card (the page's primary card; the "Workspaces" quick-link
+     card beside it is secondary and unmarked).
+   - Reports: the "Generate report" section (the page's one write-oriented primary panel; the
+     report history table below it is read-only and untouched).
+e. **Sidebar brand block** (`.shell-brand`, `app-shell.css`) — `linear-gradient(135deg, #0F172A,
+   #312E81)`, navy to indigo. This is the **only** gradient anywhere in the app; the v1
+   "no gradients on CTAs" rule is unaffected because this isn't a CTA.
+f. **Page background token** — checked, not changed. The instruction was to shift
+   `--color-background` to `#F7F8FB` *if it is currently pure white*; it's `#F8FAFC`, not
+   `#FFFFFF`, so that condition doesn't hold and the token is untouched. Surfaces
+   (`--color-surface`) stay pure white as before.
+
+### Explicitly not recolored
+
+Semantic badges (positive/warning/negative/info), buttons (primary stays `--color-accent` blue),
+`DataTable`/`.data-table-wrap` (tables — including the outer wrap that gives them their card-like
+border, deliberately left alone since it's part of "the table," not a standalone card),
+money figures, charts, and score bars. Density, spacing, and typography are unchanged.

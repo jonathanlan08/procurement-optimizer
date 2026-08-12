@@ -22,6 +22,7 @@ import { DataTable } from "../../components/DataTable";
 import { DetailRow } from "../../components/DetailRow";
 import { Drawer } from "../../components/Drawer";
 import { FormField } from "../../components/FormField";
+import { PageEyebrow } from "../../components/PageEyebrow";
 import { PaginationBar } from "../../components/PaginationBar";
 import { PlusIcon, SearchIcon } from "../../components/icons";
 import { StatusBadge } from "../../components/StatusBadge";
@@ -516,6 +517,7 @@ export function SuppliersPage() {
     <section className="suppliers-page">
       <header className="page-toolbar">
         <div className="page-heading">
+          <PageEyebrow hue="suppliers">Suppliers</PageEyebrow>
           <h1>Suppliers</h1>
           <p>Vendor master data: currencies, lead times, and order minimums.</p>
         </div>
@@ -578,7 +580,12 @@ export function SuppliersPage() {
         onOffsetChange={setOffset}
       />
 
-      <Drawer open={drawerState !== null} onClose={closeDrawer} title={drawerTitle}>
+      <Drawer
+        open={drawerState !== null}
+        onClose={closeDrawer}
+        title={drawerTitle}
+        panelClassName="hue-panel-top hue-panel-top--suppliers"
+      >
         {drawerState?.mode === "create" && (
           <SupplierForm
             mode="create"

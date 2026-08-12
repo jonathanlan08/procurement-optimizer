@@ -105,8 +105,10 @@ const CURRENCY_OPTIONS = ["USD", "EUR", "GBP", "JPY", "CNY", "MXN"] as const;
 type CostFieldKey =
   | "tooling_cost"
   | "setup_cost"
+  | "documentation_cost"
   | "packaging_cost"
   | "shipping_cost"
+  | "handling_cost"
   | "insurance_cost"
   | "other_fixed_cost"
   | "tariff_amount"
@@ -114,11 +116,22 @@ type CostFieldKey =
   | "customs_fee"
   | "tax_amount";
 
+// `documentation_cost`/`handling_cost` (migration 0016, 2026-08 audit
+// remediation P1 — see ./api.ts's `QuoteLineInput` and backend/src/app/
+// schemas/quotes.py's module docstring) are placed beside packaging/shipping
+// here since that's their real-world grouping (freight-adjacent fixed
+// costs), same "not stated" placeholder/validation convention as every
+// other optional cost in this array — COST_FIELDS drives both the entry
+// form and the read-only detail view generically (see QuoteLineFormRow /
+// QuoteLineViewRow below), so adding a key here is the only wiring needed
+// for both surfaces.
 const COST_FIELDS: { key: CostFieldKey; label: string }[] = [
   { key: "tooling_cost", label: "Tooling" },
   { key: "setup_cost", label: "Setup" },
+  { key: "documentation_cost", label: "Documentation" },
   { key: "packaging_cost", label: "Packaging" },
   { key: "shipping_cost", label: "Shipping" },
+  { key: "handling_cost", label: "Handling" },
   { key: "insurance_cost", label: "Insurance" },
   { key: "other_fixed_cost", label: "Other" },
   { key: "tariff_amount", label: "Tariff" },
@@ -265,8 +278,10 @@ const quoteLineFormSchema = z.object({
   country_of_origin: z.string(),
   tooling_cost: z.string(),
   setup_cost: z.string(),
+  documentation_cost: z.string(),
   packaging_cost: z.string(),
   shipping_cost: z.string(),
+  handling_cost: z.string(),
   insurance_cost: z.string(),
   other_fixed_cost: z.string(),
   tariff_amount: z.string(),
@@ -444,8 +459,10 @@ const emptyLine: QuoteLineFormValues = {
   country_of_origin: "",
   tooling_cost: "",
   setup_cost: "",
+  documentation_cost: "",
   packaging_cost: "",
   shipping_cost: "",
+  handling_cost: "",
   insurance_cost: "",
   other_fixed_cost: "",
   tariff_amount: "",
@@ -501,8 +518,10 @@ function toFormValues(q: QuoteResponse): QuoteFormValues {
             country_of_origin: l.country_of_origin ?? "",
             tooling_cost: l.tooling_cost ?? "",
             setup_cost: l.setup_cost ?? "",
+            documentation_cost: l.documentation_cost ?? "",
             packaging_cost: l.packaging_cost ?? "",
             shipping_cost: l.shipping_cost ?? "",
+            handling_cost: l.handling_cost ?? "",
             insurance_cost: l.insurance_cost ?? "",
             other_fixed_cost: l.other_fixed_cost ?? "",
             tariff_amount: l.tariff_amount ?? "",
@@ -543,8 +562,10 @@ function toLineInput(l: QuoteLineFormValues): QuoteLineInput {
     moq: emptyToNull(l.moq),
     tooling_cost: emptyToNull(l.tooling_cost),
     setup_cost: emptyToNull(l.setup_cost),
+    documentation_cost: emptyToNull(l.documentation_cost),
     packaging_cost: emptyToNull(l.packaging_cost),
     shipping_cost: emptyToNull(l.shipping_cost),
+    handling_cost: emptyToNull(l.handling_cost),
     insurance_cost: emptyToNull(l.insurance_cost),
     other_fixed_cost: emptyToNull(l.other_fixed_cost),
     tariff_amount: emptyToNull(l.tariff_amount),

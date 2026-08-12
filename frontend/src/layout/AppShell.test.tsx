@@ -164,4 +164,54 @@ describe("AppShell mobile nav drawer", () => {
     // One in the static <aside>, one in the drawer panel — "one nav, two presentations".
     expect(links).toHaveLength(2);
   });
+
+  // Audit P2 fix: "demo badge, username, role, and Sign out wrap awkwardly"
+  // at <=768px. jsdom doesn't evaluate CSS media queries (see this file's own
+  // header), so the single-row header/compact-badge/compact-button changes
+  // are visual-only and aren't asserted here — instead, per the task's own
+  // documented fallback, this covers the one piece of new DOM structure the
+  // fix adds: the header's name/role chip is hidden (not removed) at that
+  // breakpoint, relocated into an identity block at the top of the drawer
+  // panel so that information isn't lost on mobile.
+  it("renders a name+role identity block at the top of the mobile nav drawer", async () => {
+    renderShell();
+    const menuBtn = await screen.findByRole("button", { name: "Open navigation" });
+    fireEvent.click(menuBtn);
+    const dialog = getDrawerPanel();
+
+    // Session loads asynchronously (the `/api/v1/auth/me` fetch above) — the
+    // identity block only renders once `session` is populated, so this must
+    // be a `findBy` (retries), not a synchronous `getBy`.
+    const identityName = await within(dialog).findByText("Test User");
+    expect(identityName).toHaveClass("shell-drawer-identity-name");
+
+    const identityRole = within(dialog).getByText("analyst");
+    expect(identityRole).toHaveClass("shell-role");
+
+    // It sits above the nav links, not buried below them. (Drawer is open
+    // now, so its subtree is out of `aria-hidden` and `getByRole` can see it.)
+    const suppliersLink = within(dialog).getByRole("link", { name: "Suppliers" });
+    expect(
+      identityName.compareDocumentPosition(suppliersLink) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
+  it("renders both the full and compact demo-badge text when in demo mode", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = typeof input === "string" ? input : input.toString();
+      if (url.endsWith("/api/v1/auth/me")) {
+        return jsonResponse(200, { ...sessionFor(), demo_mode: true });
+      }
+      throw new Error(`Unhandled fetch in AppShell test: ${url}`);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    renderShell();
+
+    // Both spans are always in the DOM (see app-shell.css: exactly one is
+    // ever visible per viewport via `display:none`, jsdom can't evaluate
+    // that part, but the structural swap itself is what's under test here).
+    expect(await screen.findByText("Demo — synthetic data")).toHaveClass("demo-badge-full");
+    expect(screen.getByText("Demo", { selector: ".demo-badge-compact" })).toBeInTheDocument();
+  });
 });

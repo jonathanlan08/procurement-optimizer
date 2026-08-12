@@ -15,9 +15,29 @@
   gap: var(--space-sm);
   padding: var(--space-lg);
   border: 1px solid var(--color-border);
+  border-top: 3px solid transparent;
   border-radius: var(--radius-md);
   background: var(--color-surface);
   box-shadow: var(--shadow-sm);
+}
+
+/* v2 hue extension: each KPI card gets its workspace hue — tint background,
+   hue border-top (3px), hue-colored count (below, `.overview-kpi-value--*`).
+   Tint values already verified >=4.5:1 for the count text against them
+   (this task's own report). */
+.overview-kpi-card--suppliers {
+  background: var(--hue-suppliers-tint);
+  border-top-color: var(--hue-suppliers);
+}
+
+.overview-kpi-card--parts {
+  background: var(--hue-parts-tint);
+  border-top-color: var(--hue-parts);
+}
+
+.overview-kpi-card--rfqs {
+  background: var(--hue-rfqs-tint);
+  border-top-color: var(--hue-rfqs);
 }
 
 .overview-kpi-label {
@@ -35,6 +55,18 @@
   color: var(--color-primary);
   font-variant-numeric: tabular-nums;
   line-height: 1.1;
+}
+
+.overview-kpi-value--suppliers {
+  color: var(--hue-suppliers);
+}
+
+.overview-kpi-value--parts {
+  color: var(--hue-parts);
+}
+
+.overview-kpi-value--rfqs {
+  color: var(--hue-rfqs);
 }
 
 .overview-kpi-link {
@@ -140,6 +172,7 @@
   gap: 2px;
   padding: var(--space-md) var(--space-lg);
   border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-border);
   border-radius: var(--radius-sm);
   text-decoration: none;
   color: inherit;
@@ -150,6 +183,33 @@
 .overview-link-card:hover {
   border-color: var(--color-accent);
   background: var(--color-background);
+}
+
+/* v2 hue extension: quick-link cards get a hue left border (only the six
+   workspaces with an assigned hue — BOMs/FX keep the plain gray left
+   border above). */
+.overview-link-card--suppliers {
+  border-left-color: var(--hue-suppliers);
+}
+
+.overview-link-card--parts {
+  border-left-color: var(--hue-parts);
+}
+
+.overview-link-card--rfqs {
+  border-left-color: var(--hue-rfqs);
+}
+
+.overview-link-card--compare {
+  border-left-color: var(--hue-compare);
+}
+
+.overview-link-card--reports {
+  border-left-color: var(--hue-reports);
+}
+
+.overview-link-card--audit {
+  border-left-color: var(--hue-audit);
 }
 
 .overview-link-label {

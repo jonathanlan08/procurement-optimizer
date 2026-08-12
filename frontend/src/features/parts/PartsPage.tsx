@@ -30,6 +30,7 @@ import { DataTable } from "../../components/DataTable";
 import { DetailRow } from "../../components/DetailRow";
 import { Drawer } from "../../components/Drawer";
 import { FormField } from "../../components/FormField";
+import { PageEyebrow } from "../../components/PageEyebrow";
 import { PaginationBar } from "../../components/PaginationBar";
 import { PlusIcon, SearchIcon, XIcon } from "../../components/icons";
 import { StatusBadge } from "../../components/StatusBadge";
@@ -740,6 +741,7 @@ export function PartsPage() {
     <section className="parts-page">
       <header className="page-toolbar">
         <div className="page-heading">
+          <PageEyebrow hue="parts">Parts</PageEyebrow>
           <h1>Parts</h1>
           <p>Catalogue master data: identifiers, target pricing, and approved alternatives.</p>
         </div>
@@ -809,7 +811,12 @@ export function PartsPage() {
         onOffsetChange={setOffset}
       />
 
-      <Drawer open={drawerState !== null} onClose={closeDrawer} title={drawerTitle}>
+      <Drawer
+        open={drawerState !== null}
+        onClose={closeDrawer}
+        title={drawerTitle}
+        panelClassName="hue-panel-top hue-panel-top--parts"
+      >
         {drawerState?.mode === "create" && (
           <PartForm
             mode="create"

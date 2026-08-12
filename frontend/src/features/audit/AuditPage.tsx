@@ -39,6 +39,7 @@ import { DataTable } from "../../components/DataTable";
 import { DetailRow } from "../../components/DetailRow";
 import { Drawer } from "../../components/Drawer";
 import { FormField } from "../../components/FormField";
+import { PageEyebrow } from "../../components/PageEyebrow";
 import "../../components/workspace.css";
 import { useDebouncedValue } from "../../lib/useDebouncedValue";
 import { type AuditEventListParams, type AuditEventResponse, useAuditEvents } from "./api";
@@ -74,7 +75,12 @@ function AuditDrawer({
   onClose: () => void;
 }) {
   return (
-    <Drawer open={open} onClose={onClose} title="Audit event">
+    <Drawer
+      open={open}
+      onClose={onClose}
+      title="Audit event"
+      panelClassName="hue-panel-top hue-panel-top--audit"
+    >
       {event && (
         <div>
           <div className="detail-grid">
@@ -217,6 +223,7 @@ export function AuditPage() {
     <section className="audit-page">
       <header className="page-toolbar">
         <div className="page-heading">
+          <PageEyebrow hue="audit">Audit</PageEyebrow>
           <h1>Audit log</h1>
           <p>Every recorded change across the workspace, with before/after state.</p>
         </div>

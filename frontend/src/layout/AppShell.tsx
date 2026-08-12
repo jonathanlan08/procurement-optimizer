@@ -15,21 +15,33 @@
  * shell layer with a fixed link list, not a generic content slot.
  */
 
-import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type ReactNode,
+} from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../auth/session";
 import "./app-shell.css";
 
-const NAV = [
-  { to: "/", label: "Overview", end: true },
-  { to: "/suppliers", label: "Suppliers" },
-  { to: "/parts", label: "Parts" },
+// `hue` (v2 functional hue extension, 2026-08 — see tokens.css's own "v2"
+// comment + design-system/procurement-optimizer/MASTER.md) is only set for
+// the seven workspaces the design director actually assigned a hue to.
+// BOMs and FX rates have none — they keep today's plain accent-blue active
+// state unchanged (app-shell.css's base `.shell-nav-link.is-active` rule),
+// rather than this task inventing colors the design spec doesn't define.
+const NAV: { to: string; label: string; end?: boolean; hue?: string }[] = [
+  { to: "/", label: "Overview", end: true, hue: "overview" },
+  { to: "/suppliers", label: "Suppliers", hue: "suppliers" },
+  { to: "/parts", label: "Parts", hue: "parts" },
   { to: "/boms", label: "BOMs" },
-  { to: "/rfqs", label: "RFQs" },
+  { to: "/rfqs", label: "RFQs", hue: "rfqs" },
   { to: "/fx", label: "FX rates" }, // ALLOWED insertion: one NAV entry
-  { to: "/scenarios", label: "Compare" }, // ALLOWED insertion: clarifies this is the comparison workspace
-  { to: "/reports", label: "Reports" },
-  { to: "/audit", label: "Audit log" },
+  { to: "/scenarios", label: "Compare", hue: "compare" }, // ALLOWED insertion: clarifies this is the comparison workspace
+  { to: "/reports", label: "Reports", hue: "reports" },
+  { to: "/audit", label: "Audit log", hue: "audit" },
 ];
 
 const FOCUSABLE_SELECTOR =
@@ -70,20 +82,27 @@ function CloseIcon() {
 }
 
 /** The sidebar's brand + link list — shared markup for the static desktop
- * column and the mobile drawer panel (see file header). */
-function SidebarNav() {
+ * column and the mobile drawer panel (see file header). `identity` is an
+ * optional slot between the brand and the nav list: the static desktop
+ * <aside> never passes one (the header already shows name/role there), but
+ * the mobile drawer does (audit P2 — see AppShell's own render below), since
+ * hiding the header's name/role chip at <=768px would otherwise drop that
+ * information entirely on mobile rather than relocating it. */
+function SidebarNav({ identity }: { identity?: ReactNode }) {
   return (
     <>
       <div className="shell-brand">
         <span className="shell-brand-mark" aria-hidden="true" />
         Procurement Optimizer
       </div>
+      {identity}
       <nav aria-label="Primary">
         {NAV.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
             end={item.end ?? false}
+            data-hue={item.hue}
             className={({ isActive }) =>
               isActive ? "shell-nav-link is-active" : "shell-nav-link"
             }
@@ -191,7 +210,16 @@ export function AppShell() {
         >
           <CloseIcon />
         </button>
-        <SidebarNav />
+        <SidebarNav
+          identity={
+            session && (
+              <div className="shell-drawer-identity">
+                <span className="shell-drawer-identity-name">{session.full_name}</span>
+                <span className="shell-role">{session.role}</span>
+              </div>
+            )
+          }
+        />
       </div>
 
       <div className="shell-main">
@@ -208,10 +236,21 @@ export function AppShell() {
           </button>
           {session?.demo_mode && (
             <span className="demo-badge" title="All data in this workspace is synthetic">
-              Demo — synthetic data
+              {/* Audit P2 fix: at <=768px the full label collapsed the header
+                  into multiple wrapped rows alongside the username/role chip
+                  and Sign out button. Both spans render always — CSS (the
+                  <=768px block at the bottom of app-shell.css) shows exactly
+                  one per viewport, the same "one nav, two presentations"
+                  display:none swap AppShell already uses for the sidebar. */}
+              <span className="demo-badge-full">Demo — synthetic data</span>
+              <span className="demo-badge-compact">Demo</span>
             </span>
           )}
           <div className="shell-header-spacer" />
+          {/* Hidden at <=768px (app-shell.css) — the name/role chip is what
+              made the mobile header wrap; it's not lost, just relocated: see
+              .shell-drawer-identity below, rendered at the top of the mobile
+              nav drawer instead. */}
           <span className="shell-user">
             {session?.full_name}
             <span className="shell-role">{session?.role}</span>

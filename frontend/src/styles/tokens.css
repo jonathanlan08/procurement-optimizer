@@ -8,6 +8,11 @@
   --color-on-primary: #ffffff;
   --color-secondary: #334155;
   --color-accent: #0369a1;
+  /* v2 hue task checked this against its own instruction ("shifts to
+     #F7F8FB if it is currently pure white") — #F8FAFC is not pure white, so
+     per that instruction's own condition this token is intentionally left
+     unchanged; surfaces (--color-surface) are the ones that stay pure
+     white, and already do. */
   --color-background: #f8fafc;
   --color-surface: #ffffff;
   --color-foreground: #020617;
@@ -69,6 +74,57 @@
 
   --transition-fast: 150ms ease;
   --transition-medium: 200ms ease;
+
+  /* v2 — functional hue extension (2026-08). See design-system/
+     procurement-optimizer/MASTER.md's own "v2" section for the full rule:
+     these identify WORKSPACES (places), not states — semantic colors above
+     (--color-positive/negative/warning/info) still own every state meaning
+     (savings/cost-increase/low-confidence/informational) and the two never
+     swap roles. Each hue is design-director-chosen and independently
+     verified >=4.5:1 as text on white and on its own 10%-tint pill
+     background (contrast pairs listed in this task's final report). */
+  --hue-overview: #4338ca;
+  --hue-overview-tint: rgba(67, 56, 202, 0.1);
+  --hue-suppliers: #0f766e;
+  --hue-suppliers-tint: rgba(15, 118, 110, 0.1);
+  --hue-parts: #6d28d9;
+  --hue-parts-tint: rgba(109, 40, 217, 0.1);
+  --hue-rfqs: #a24b08;
+  --hue-rfqs-tint: rgba(162, 75, 8, 0.1);
+  --hue-compare: #0369a1;
+  --hue-compare-tint: rgba(3, 105, 161, 0.1);
+  --hue-reports: #137337;
+  --hue-reports-tint: rgba(19, 115, 55, 0.1);
+  --hue-audit: #be123c;
+  --hue-audit-tint: rgba(190, 18, 60, 0.1);
+
+  /* Sidebar-only derivatives: the seven hues above are calibrated (per
+     MASTER.md) for TEXT on white/light-tint surfaces, not for the sidebar's
+     dark navy (--color-primary, #0F172A) — measured contrast of the base
+     hues against navy ranges ~1.8:1-2.6:1, well under the 4.5:1 text
+     minimum. Rather than pick sidebar colors that don't match the spec's
+     own hex values, each of these is the same hue lightened (blended
+     toward white) by just enough to clear 4.5:1 against the sidebar's
+     ACTIVE-item background specifically — used ONLY for the active
+     nav-link text color in AppShell (app-shell.css); the border-left bar
+     there uses the base hue above (decorative, not text, so the base hex
+     applies unchanged).
+     First pass here used plain navy (#0F172A) as the contrast backdrop and
+     failed axe's real sweep at ~4.1:1 (audit) — the active `.shell-nav-
+     link.is-active` rule layers `background: rgba(255,255,255,0.08)` OVER
+     the navy sidebar, which lightens the actual rendered backdrop to
+     #222A3B (axe's own measured `bgColor`), a materially easier-to-fail
+     target since a lighter background sits closer to these already-light
+     derivative colors. Recomputed against #222A3B with a safety margin
+     (verified >=5.0:1 each, real axe-measured contrast for suppliers came
+     back at ~5.05:1). */
+  --hue-overview-on-dark: #9690e1;
+  --hue-suppliers-on-dark: #61a59f;
+  --hue-parts-on-dark: #ad87ea;
+  --hue-rfqs-on-dark: #c48e63;
+  --hue-compare-on-dark: #60a0c4;
+  --hue-reports-on-dark: #6aa781;
+  --hue-audit-on-dark: #db7d94;
 }
 
 * {

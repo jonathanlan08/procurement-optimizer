@@ -53,6 +53,7 @@ import { ApiErrorBanner } from "../../components/ApiErrorBanner";
 import "../../components/badges.css";
 import { Drawer } from "../../components/Drawer";
 import { FormField } from "../../components/FormField";
+import { PageEyebrow } from "../../components/PageEyebrow";
 import "../../components/workspace.css";
 import { compareDecimalStrings } from "../../lib/decimalSort";
 import { formatMoney, isDecimalString } from "../../lib/money";
@@ -532,7 +533,12 @@ function ExplainDrawer({
   onClose: () => void;
 }) {
   return (
-    <Drawer open={open} onClose={onClose} title={`Landed cost — ${supplierLabel}`}>
+    <Drawer
+      open={open}
+      onClose={onClose}
+      title={`Landed cost — ${supplierLabel}`}
+      panelClassName="hue-panel-top hue-panel-top--compare"
+    >
       {result && (
         <div>
           <div className="explain-meta">
@@ -825,6 +831,7 @@ export function ComparisonPage() {
     <section className="comparison-page">
       <header className="page-toolbar">
         <div className="page-heading">
+          <PageEyebrow hue="compare">Compare</PageEyebrow>
           <h1>Compare quotes</h1>
           <p>Landed-cost comparison and vendor scoring across an RFQ&apos;s live quotes.</p>
         </div>

@@ -11,6 +11,95 @@
   flex-wrap: wrap;
 }
 
+/* v2 hue extension (2026-08): workspace-identity chip above the <h1>. Each
+   modifier below pairs one hue's text color with its own 10%-alpha tint as
+   the pill background — both tokens defined in tokens.css, contrast
+   verified >=4.5:1 for every pair (this task's own report). */
+.page-eyebrow {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px var(--space-md);
+  border-radius: 999px;
+  margin-bottom: var(--space-sm);
+}
+
+.page-eyebrow--overview {
+  background: var(--hue-overview-tint);
+  color: var(--hue-overview);
+}
+
+.page-eyebrow--suppliers {
+  background: var(--hue-suppliers-tint);
+  color: var(--hue-suppliers);
+}
+
+.page-eyebrow--parts {
+  background: var(--hue-parts-tint);
+  color: var(--hue-parts);
+}
+
+.page-eyebrow--rfqs {
+  background: var(--hue-rfqs-tint);
+  color: var(--hue-rfqs);
+}
+
+.page-eyebrow--compare {
+  background: var(--hue-compare-tint);
+  color: var(--hue-compare);
+}
+
+.page-eyebrow--reports {
+  background: var(--hue-reports-tint);
+  color: var(--hue-reports);
+}
+
+.page-eyebrow--audit {
+  background: var(--hue-audit-tint);
+  color: var(--hue-audit);
+}
+
+/* v2 hue extension: 3px hue border-top for a page's PRIMARY card/panel —
+   one per page, not every card (MASTER.md's own rule). Shared here since
+   it's applied to different element types per page: an `.overview-card`
+   (OverviewPage.tsx), a `.drawer-panel` via Drawer's `panelClassName` prop
+   (Suppliers/Parts/RFQs/Audit), or a plain `.detail-section` (Reports/
+   Compare, neither of which has another card wrapper to reuse). */
+.hue-panel-top {
+  border-top: 3px solid transparent;
+  padding-top: var(--space-lg);
+}
+
+.hue-panel-top--overview {
+  border-top-color: var(--hue-overview);
+}
+
+.hue-panel-top--suppliers {
+  border-top-color: var(--hue-suppliers);
+}
+
+.hue-panel-top--parts {
+  border-top-color: var(--hue-parts);
+}
+
+.hue-panel-top--rfqs {
+  border-top-color: var(--hue-rfqs);
+}
+
+.hue-panel-top--compare {
+  border-top-color: var(--hue-compare);
+}
+
+.hue-panel-top--reports {
+  border-top-color: var(--hue-reports);
+}
+
+.hue-panel-top--audit {
+  border-top-color: var(--hue-audit);
+}
+
 .page-heading h1 {
   font-size: 18px;
   margin-bottom: var(--space-xs);

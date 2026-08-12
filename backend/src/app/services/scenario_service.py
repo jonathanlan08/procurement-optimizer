@@ -76,22 +76,28 @@ RFQ, forever). This module instead treats any quote returned by
 ## Deviation 4 — `Offer.incomplete_landed_cost` = INCOMPLETE, not "!= COMPLETE"
 
 `app.domain.optimization.contracts.Offer`'s own docstring says
-"completeness != COMPLETE -> excluded unless overridden." Followed literally,
-every offer in every scenario would always be flagged incomplete:
-`services/landed_cost_service.py`'s own module docstring establishes that
-`documentation`/`handling` costs have **no source column anywhere in this
-schema, ever** — not even `assume_missing_costs_zero` reaches them via an
-assumption field — so `Completeness.COMPLETE` is structurally unreachable in
-this codebase's current build (the best any result can do is
-`ASSUMPTION_DEPENDENT`, per that same module's worked-example test). Literal
-adherence would force `allow_incomplete_offers=True` on every real-world
-scenario by default, which is not "honest uncertainty reporting" (the
+"completeness != COMPLETE -> excluded unless overridden." Followed literally
+at the time this deviation was first written, every offer in every scenario
+would always have been flagged incomplete: `documentation`/`handling` costs
+had no source column anywhere in this schema at all, so `Completeness.
+COMPLETE` was structurally unreachable through the service path (the best
+any result could do was `ASSUMPTION_DEPENDENT`). Migration 0016 (2026-08
+product-audit remediation) closed that gap — `quote_lines.documentation_cost`
+/`handling_cost` are now real columns, and `Completeness.COMPLETE` is
+reachable end to end (a fully-specified quote line under full assumptions
+produces it; see `tests/integration/test_landed_cost_api.py`). The mapping
+below is unchanged regardless: literal adherence would still force
+`allow_incomplete_offers=True` on every scenario whose quotes simply don't
+carry every optional cost field (documentation/handling remain manual-entry-
+only, rarely populated in practice — see `services/landed_cost_service.py`'s
+module docstring), which is not "honest uncertainty reporting" (the
 product's stated ethos), it is a UX trap. This module maps
 `incomplete_landed_cost = (completeness is Completeness.INCOMPLETE)`:
-`ASSUMPTION_DEPENDENT` (every input present, either supplier-stated or a
-recorded, human-visible assumption) is treated as usable by default;
-`INCOMPLETE` (a required input has no value AND no assumption covers it) is
-the only case requiring the explicit `allow_incomplete_offers` override.
+`COMPLETE` and `ASSUMPTION_DEPENDENT` (every input present, either supplier-
+stated, a real value, or a recorded, human-visible assumption) are both
+treated as usable by default; `INCOMPLETE` (a required input has no value
+AND no assumption covers it) is the only case requiring the explicit
+`allow_incomplete_offers` override.
 
 ## Strategy weighting (module constants below, `is_sample_weight=False`)
 

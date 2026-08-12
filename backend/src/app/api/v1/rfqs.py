@@ -143,7 +143,10 @@ def list_rfqs(
         offset=offset,
     )
     return RfqListResponse(
-        items=[RfqSummaryResponse.from_model(r) for r in items],
+        items=[
+            RfqSummaryResponse.from_model(rfq, line_count=line_count)
+            for rfq, line_count in items
+        ],
         page=RfqPageInfo(limit=limit, offset=offset, total=total),
     )
 

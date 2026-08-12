@@ -234,39 +234,65 @@ Every applied conversion produces a `conversion_note` spelling out the exact rat
 assumption rather than the catalogue. Prices are never compared until quantities and units
 have compatible normalized meanings.
 
-## 7. Why `COMPLETE` completeness is structurally unreachable in v0.1
+## 7. `COMPLETE` completeness: how it went from structurally unreachable to reachable
 
-This is an honest limitation, not a defect to be talked around.
+This section was originally titled "Why `COMPLETE` completeness is structurally unreachable
+in v0.1" — kept below as history, because the *reason* `COMPLETE` was rare (most real quotes
+don't state every cost field) is still true even though the *structural* blocker is gone.
 
-`FixedCosts` requires a `documentation` cost and `LogisticsCosts` requires a `handling`
-cost. **Neither has a source column anywhere in the schema** — `quote_lines` has
-`tooling_cost`, `setup_cost`, `packaging_cost`, `shipping_cost`, `insurance_cost`,
-`other_fixed_cost`, and the import charges, but no documentation and no handling column
-(see [DATA_DICTIONARY.md](DATA_DICTIONARY.md)). `LandedCostService` therefore always passes:
+**Original gap (through migration 0015).** `FixedCosts` requires a `documentation` cost and
+`LogisticsCosts` requires a `handling` cost. Neither had a source column anywhere in the
+schema — `quote_lines` had `tooling_cost`, `setup_cost`, `packaging_cost`, `shipping_cost`,
+`insurance_cost`, `other_fixed_cost`, and the import charges, but no documentation and no
+handling column. `LandedCostService` therefore always passed:
 
 ```python
 documentation=Quantified.missing(note="documentation cost has no source column on quote_lines"),
 handling=Quantified.missing(note="handling cost has no source column on quote_lines"),
 ```
 
-Consequence: every persisted landed-cost result is either `INCOMPLETE` (default) or
-`ASSUMPTION_DEPENDENT` (when the caller sets `assume_missing_costs_zero`, which turns those
-two into recorded, human-visible assumptions). `COMPLETE` cannot be produced through the
-service path at all — only by calling the pure calculator directly with those fields
-supplied, which the unit tests do.
+regardless of what the quote line actually said, so every persisted result was either
+`INCOMPLETE` (default) or `ASSUMPTION_DEPENDENT` (with `assume_missing_costs_zero`) — never
+`COMPLETE` through the service path, only by calling the pure calculator directly with those
+fields supplied, which the unit tests did.
+
+**Closed in migration 0016 (2026-08 product-audit remediation).** `quote_lines` gained real
+`documentation_cost`/`handling_cost` columns — `NUMERIC(18,6)`, nullable, `>= 0`, same shape
+and "missing stays missing" semantics as every sibling fixed/logistics-cost column (see
+[DATA_DICTIONARY.md](DATA_DICTIONARY.md)). `LandedCostService` now sources both the same way
+it sources `tooling_cost`/`packaging_cost`/etc.:
+
+```python
+documentation=money(line.documentation_cost, "documentation"),
+handling=money(line.handling_cost, "handling"),
+```
+
+`app.domain.landed_cost.contracts`/`calculator.py` (PRINCIPAL-OWNED) required no change at
+all — both fields were already real inputs to the formula; only the service-layer source was
+missing. `Completeness.COMPLETE` is now structurally **reachable**: a quote line with every
+commercial field populated, under a request that supplies every risk/financing assumption
+(`quality_risk_rate`, `delay_risk_per_day`, `required_lead_time_days`, `annual_rate`,
+`baseline_terms_days` — these five still have no source column of their own and must come from
+the request), produces a `complete` result end to end
+(`backend/tests/integration/test_landed_cost_api.py::TestCompleteReachable`).
+
+**Why `COMPLETE` will still be uncommon in practice.** Reachable is not the same as typical.
+`documentation_cost`/`handling_cost` are manual-entry fields (the extraction payload schema is
+versioned and intentionally not touched by this change — see
+`backend/src/app/services/extraction_service.py`'s module docstring — and documents rarely
+state either cost as a standalone line item), so most quotes still won't carry them, and most
+scenario requests won't bother supplying all five assumption-only fields. Most persisted
+results will continue to land `INCOMPLETE` or `ASSUMPTION_DEPENDENT`, honestly.
 
 `ScenarioService` accounts for this rather than pretending otherwise: it maps
-`incomplete_landed_cost = (completeness is Completeness.INCOMPLETE)`, so
+`incomplete_landed_cost = (completeness is Completeness.INCOMPLETE)`, so both `COMPLETE` and
 `ASSUMPTION_DEPENDENT` offers are usable by default and only a genuinely unsourced input
 requires the `allow_incomplete_offers` override
-(`backend/src/app/services/scenario_service.py` module docstring). The demo dataset's
-scenarios still set that override, for a *different* honest reason: Baltic Casting's quote
-states no payment terms at all, so its financing component — and hence its completeness — is
-genuinely `INCOMPLETE`, and the supplier would otherwise silently vanish from the
+(`backend/src/app/services/scenario_service.py` module docstring, Deviation 4). The demo
+dataset's scenarios still set that override, for a *different* honest reason: Baltic Casting's
+quote states no payment terms at all, so its financing component — and hence its completeness
+— is genuinely `INCOMPLETE`, and the supplier would otherwise silently vanish from the
 comparison.
-
-Adding `documentation_cost` and `handling_cost` columns (and the UI to enter them) is on the
-[roadmap](ROADMAP.md).
 
 ## 8. Vendor scoring
 

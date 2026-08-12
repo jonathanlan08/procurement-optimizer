@@ -256,7 +256,7 @@ stated), `created_by_id`, `created_at`.
 | `unit_definition_id`, `raw_unit_of_measure` | | Normalized unit + the supplier's own words |
 | `unit_price` | `NUMERIC(18,8)` | Nullable = **not stated**, never zero |
 | `moq` | `NUMERIC(18,6)` CHECK `> 0` | |
-| `tooling_cost`, `setup_cost`, `packaging_cost`, `shipping_cost`, `insurance_cost`, `other_fixed_cost` | `NUMERIC(18,6)` CHECK `>= 0` | All nullable = not stated |
+| `tooling_cost`, `setup_cost`, `packaging_cost`, `shipping_cost`, `insurance_cost`, `other_fixed_cost`, `documentation_cost`, `handling_cost` | `NUMERIC(18,6)` CHECK `>= 0` | All nullable = not stated; last two added in migration 0016 (audit remediation), making `COMPLETE` completeness reachable |
 | `tariff_amount`, `duty_amount`, `customs_fee`, `tax_amount` | `NUMERIC(18,6)` CHECK `>= 0` | |
 | `country_of_origin` | `CHAR(2)` | |
 | `lead_time_days` | `INTEGER` CHECK `>= 0` | |

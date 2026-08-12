@@ -90,6 +90,17 @@ intentional decision, not an oversight:
    the ERD's placement being "genuinely missing" (the stop condition in the
    delegating task): the ERD is unambiguous here, just different from the
    task author's shorthand description of it.
+9. **`QuoteLine.documentation_cost`/`handling_cost`, added later (migration
+   0016, 2026-08 product-audit remediation).** Not in this phase's original
+   field list, and not in the ERD's `QUOTE_LINES` box either — added because
+   `app.domain.landed_cost.contracts` (PRINCIPAL-OWNED) has always defined
+   `FixedCosts.documentation`/`LogisticsCosts.handling` as real inputs to the
+   landed-cost formula, but until this migration nothing anywhere in this
+   schema could supply either, so `LandedCostService` always passed both as
+   hardcoded-missing (see that service's module docstring and
+   `docs/METHODOLOGY.md` §7). Same shape as every sibling fixed/logistics-
+   cost column here — `NUMERIC(18,6)`, nullable, `>= 0`, missing stays
+   missing (point 7 above applies identically).
 
 **Cascades (02-erd.md §11).** The only `ON DELETE CASCADE` pair the ERD
 whitelists among these four tables is `quote_lines` → `quote_price_breaks`
@@ -336,6 +347,19 @@ class QuoteLine(OrgOwnedBase):
             "other_fixed_cost IS NULL OR other_fixed_cost >= 0",
             name="ck_quote_lines_other_fixed_cost_nonneg",
         ),
+        # migration 0016 (2026-08 product-audit remediation): documentation/
+        # handling costs, the two `app.domain.landed_cost.contracts` fields
+        # (`FixedCosts.documentation`/`LogisticsCosts.handling`) that
+        # previously had no source column anywhere in this schema — see
+        # module docstring point 9 above.
+        CheckConstraint(
+            "documentation_cost IS NULL OR documentation_cost >= 0",
+            name="ck_quote_lines_documentation_cost_nonneg",
+        ),
+        CheckConstraint(
+            "handling_cost IS NULL OR handling_cost >= 0",
+            name="ck_quote_lines_handling_cost_nonneg",
+        ),
         CheckConstraint(
             "tariff_amount IS NULL OR tariff_amount >= 0",
             name="ck_quote_lines_tariff_amount_nonneg",
@@ -372,6 +396,9 @@ class QuoteLine(OrgOwnedBase):
     shipping_cost: Mapped[Decimal | None] = mapped_column(Numeric(18, 6), default=None)
     insurance_cost: Mapped[Decimal | None] = mapped_column(Numeric(18, 6), default=None)
     other_fixed_cost: Mapped[Decimal | None] = mapped_column(Numeric(18, 6), default=None)
+    # migration 0016: module docstring point 9.
+    documentation_cost: Mapped[Decimal | None] = mapped_column(Numeric(18, 6), default=None)
+    handling_cost: Mapped[Decimal | None] = mapped_column(Numeric(18, 6), default=None)
     tariff_amount: Mapped[Decimal | None] = mapped_column(Numeric(18, 6), default=None)
     duty_amount: Mapped[Decimal | None] = mapped_column(Numeric(18, 6), default=None)
     customs_fee: Mapped[Decimal | None] = mapped_column(Numeric(18, 6), default=None)

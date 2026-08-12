@@ -155,9 +155,15 @@ _QUOTE_LINE_QUESTIONS: tuple[tuple[str, str], ...] = (
     ("moq", "What is the minimum order quantity (MOQ)?"),
     ("tooling_cost", "Is there a tooling cost, and if so how much?"),
     ("setup_cost", "Is there a setup cost, and if so how much?"),
+    # migration 0016 (2026-08 product-audit remediation): documentation_cost/
+    # handling_cost gained real columns on quote_lines, so they now belong
+    # in this missing-field question list like every other optional
+    # fixed/logistics-cost field here.
+    ("documentation_cost", "Is there a documentation cost, and if so how much?"),
     ("packaging_cost", "What is the packaging cost per unit or per order?"),
     ("shipping_cost", "What is the shipping cost for this order?"),
     ("insurance_cost", "What is the insurance cost for this shipment?"),
+    ("handling_cost", "What is the handling cost for this shipment?"),
     ("tariff_amount", "What tariff amount, if any, applies to this shipment?"),
     ("duty_amount", "What duty amount, if any, applies to this shipment?"),
     ("customs_fee", "What customs fees, if any, apply to this shipment?"),

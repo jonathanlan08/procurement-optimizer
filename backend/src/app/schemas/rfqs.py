@@ -342,10 +342,20 @@ class RfqResponse(BaseModel):
 
 class RfqSummaryResponse(BaseModel):
     """Version-free summary for `GET /rfqs` (list): no `lines` array, to
-    keep list payloads bounded — mirrors `BomSummaryResponse`. Counts are
-    intentionally omitted here (unlike `RfqResponse`): computing them per row
-    would turn a bounded list query into an N+1, and the contract only asks
-    for counts on the single-resource `GET /rfqs/{id}` (§4.8).
+    keep list payloads bounded — mirrors `BomSummaryResponse`.
+    `invited_supplier_count` is still omitted here (unlike `RfqResponse`):
+    computing it per row would turn a bounded list query into an N+1, and
+    the contract only asks for it on the single-resource `GET /rfqs/{id}`
+    (§4.8).
+
+    `line_count` IS included, unlike `invited_supplier_count` above, despite
+    that same N+1 concern — 2026-08 product-audit remediation, P2: "Lines
+    column always displays a dash because the summary API omits the count".
+    `RfqRepository.search` sources it from one `GROUP BY` subquery joined
+    onto the same paged query that fetches the rows (see that repository's
+    module docstring), so adding it here does not reintroduce the N+1 this
+    class's own docstring warns against for supplier counts — it was never
+    an N+1 to begin with. FROZEN wire name: `line_count`.
     """
 
     model_config = ConfigDict(from_attributes=True)
@@ -362,9 +372,10 @@ class RfqSummaryResponse(BaseModel):
     version: int
     created_at: datetime
     updated_at: datetime
+    line_count: int
 
     @classmethod
-    def from_model(cls, rfq: Rfq) -> RfqSummaryResponse:
+    def from_model(cls, rfq: Rfq, *, line_count: int) -> RfqSummaryResponse:
         return cls(
             id=str(rfq.id),
             name=rfq.name,
@@ -378,6 +389,7 @@ class RfqSummaryResponse(BaseModel):
             version=rfq.version,
             created_at=rfq.created_at,
             updated_at=rfq.updated_at,
+            line_count=line_count,
         )
 
 

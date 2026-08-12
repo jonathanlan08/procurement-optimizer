@@ -534,20 +534,17 @@ class LandedCostService:
         fixed = FixedCosts(
             tooling=money(line.tooling_cost, "tooling"),
             setup=money(line.setup_cost, "setup"),
-            # no source column anywhere in this schema — see module docstring.
-            documentation=Quantified.missing(
-                note="documentation cost has no source column on quote_lines"
-            ),
+            # migration 0016 (2026-08 product-audit remediation): real
+            # source column now — see module docstring.
+            documentation=money(line.documentation_cost, "documentation"),
             other_fixed=money(line.other_fixed_cost, "other_fixed"),
         )
         logistics = LogisticsCosts(
             shipping=money(line.shipping_cost, "shipping"),
             insurance=money(line.insurance_cost, "insurance"),
             packaging=money(line.packaging_cost, "packaging"),
-            # no source column anywhere in this schema — see module docstring.
-            handling=Quantified.missing(
-                note="handling cost has no source column on quote_lines"
-            ),
+            # migration 0016: real source column now — see module docstring.
+            handling=money(line.handling_cost, "handling"),
         )
 
         tariff_rate = _assumption(

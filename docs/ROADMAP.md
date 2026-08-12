@@ -72,11 +72,13 @@ than "add a route". Today a brief can be generated, read, reviewed
 configurations can be archived but not un-archived — archive is one-way for those resources
 in v0.1.
 
-**Landed-cost inputs with no home.** `documentation_cost` and `handling_cost` have no
-columns on `quote_lines`, which is why `Completeness.COMPLETE` is structurally unreachable
-([METHODOLOGY.md](METHODOLOGY.md) §7). `rfq_lines` has no `required_by_date`, which is why
-required lead time arrives as a scenario assumption and why the lead-time pre-solve
-eligibility filter of `docs/planning/00-decisions.md` §4 #12 is not implemented.
+**Landed-cost inputs with no home.** ~~`documentation_cost` and `handling_cost` have no
+columns on `quote_lines`, which is why `Completeness.COMPLETE` is structurally unreachable~~
+— done: migration 0016 (2026-08 product-audit remediation) added both columns;
+`Completeness.COMPLETE` is now reachable end to end ([METHODOLOGY.md](METHODOLOGY.md) §7).
+Still open: `rfq_lines` has no `required_by_date`, which is why required lead time arrives as
+a scenario assumption and why the lead-time pre-solve eligibility filter of
+`docs/planning/00-decisions.md` §4 #12 is not implemented.
 
 ## Calculation and optimization
 

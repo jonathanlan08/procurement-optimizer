@@ -956,6 +956,58 @@ class ExtractionService:
         self._recompute_run_state(run_id)
         return field
 
+    def confirm_all_fields(self, run_id: uuid.UUID, *, actor_id: uuid.UUID) -> ExtractionRun:
+        """Bulk counterpart to `confirm_field` (2026-08 product-audit
+        remediation, P2: "46 field-level actions create a slow
+        exception-review workflow. Bulk confirmation... [is] missing").
+
+        Every field still `requires_confirmation` and not yet `is_confirmed`
+        on this run is confirmed exactly as `confirm_field` confirms one —
+        same three fields set (`is_confirmed`/`confirmed_by_id`/
+        `confirmed_at`), same `_recompute_run_state` call afterwards, so the
+        run lands in the identical `ready`/`needs_review` state the
+        one-at-a-time path would have produced. The one deliberate
+        difference is the audit trail: **one** `extraction.
+        fields_confirmed_bulk` event carrying the confirmed count, not N
+        per-field `extraction.field_confirmed` events — mirrors
+        `PartImportService.commit`'s single summarizing event over many
+        created parts (`services/part_import_service.py`) rather than
+        `RfqService.invite_suppliers`'s one-event-per-row loop; a bulk
+        review action reads better as one line in the audit trail than as a
+        burst of duplicate-looking rows.
+
+        Idempotent, not a 409: a run with nothing left requiring
+        confirmation (already fully reviewed, or already `ready`) is a
+        clean no-op — the unchanged run is returned as-is, and no audit
+        event is recorded (an event that says "confirmed 0 fields" is noise,
+        not signal, and would misrepresent this call as having done
+        something). This is the documented choice between the two this
+        task's brief allows.
+        """
+        run = self._repo.get_or_raise(run_id)
+        pending = self._repo.list_fields(run_id, requires_confirmation=True, is_confirmed=False)
+        if not pending:
+            return run
+
+        now = self._clock.now()
+        for field in pending:
+            field.is_confirmed = True
+            field.confirmed_by_id = actor_id
+            field.confirmed_at = now
+        self._db.flush()
+
+        self._audit.record(
+            "extraction.fields_confirmed_bulk",
+            entity_type="extraction_run",
+            entity_id=run.id,
+            after_state={"confirmed_count": len(pending)},
+            explanation=(
+                f"{len(pending)} field(s) bulk-confirmed on extraction run {run_id}"
+            ),
+        )
+        self._recompute_run_state(run_id)
+        return run
+
     def correct_field(
         self,
         run_id: uuid.UUID,

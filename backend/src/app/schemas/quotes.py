@@ -51,16 +51,20 @@ relative to its own "follow the model exactly" instruction, the same
 judgement app/models/quotes.py's own docstring (point 8) already made once
 for this exact phrase.
 
-**"handling" (task prose) has no separate column — maps to
-`other_fixed_cost`.** The delegating task's per-line amount list names
-"tooling/setup/packaging/shipping/insurance/handling/tariff/duty/customs/tax";
-`QuoteLine` has no `handling_cost` column (SPEC's landed-cost formula uses
-"handling" only inside `logistics_cost`, a *computed* total, never a quoted
-input field — see docs/SPEC.md "Landed-cost engine"). `QuoteLine.
-other_fixed_cost` is the model's own general-purpose fixed-cost catch-all
-column and is what "handling" is read as shorthand for here — the model
-(read first, per the task's own instruction) is authoritative on the real
-column set, not the prose list.
+**`documentation_cost`/`handling_cost` (migration 0016, 2026-08 product-audit
+remediation) — no longer folded into `other_fixed_cost`.** This paragraph
+previously read "handling has no separate column — maps to
+`other_fixed_cost`", because at the time `QuoteLine` genuinely had no
+`handling_cost` column and `app.domain.landed_cost.contracts.LogisticsCosts.
+handling` could only ever be supplied as missing (see
+`services/landed_cost_service.py`'s module docstring and
+`docs/METHODOLOGY.md` §7). Both `QuoteLine.documentation_cost` and
+`QuoteLine.handling_cost` are now real columns (same shape as every sibling
+fixed/logistics-cost field: nullable `NUMERIC(18,6)`, `>= 0`, missing stays
+missing), so both are included below as ordinary optional fields, mirroring
+`packaging_cost`/`other_fixed_cost` exactly. `other_fixed_cost` remains this
+model's own general-purpose catch-all for anything that isn't one of the
+named fixed-cost fields — it does not "mean" handling anymore.
 
 **No `expiration_date >= quote_date` validation.** The contract's §5
 "Validation rules" section lists this as a rule, but 00-decisions.md §4
@@ -176,9 +180,11 @@ class QuoteLineCreate(BaseModel):
     moq: QuantityString | None = Field(default=None, gt=0)
     tooling_cost: QuantityString | None = Field(default=None, ge=0)
     setup_cost: QuantityString | None = Field(default=None, ge=0)
+    documentation_cost: QuantityString | None = Field(default=None, ge=0)
     packaging_cost: QuantityString | None = Field(default=None, ge=0)
     shipping_cost: QuantityString | None = Field(default=None, ge=0)
     insurance_cost: QuantityString | None = Field(default=None, ge=0)
+    handling_cost: QuantityString | None = Field(default=None, ge=0)
     other_fixed_cost: QuantityString | None = Field(default=None, ge=0)
     tariff_amount: QuantityString | None = Field(default=None, ge=0)
     duty_amount: QuantityString | None = Field(default=None, ge=0)
@@ -207,9 +213,11 @@ class QuoteLineResponse(BaseModel):
     moq: QuantityString | None
     tooling_cost: QuantityString | None
     setup_cost: QuantityString | None
+    documentation_cost: QuantityString | None
     packaging_cost: QuantityString | None
     shipping_cost: QuantityString | None
     insurance_cost: QuantityString | None
+    handling_cost: QuantityString | None
     other_fixed_cost: QuantityString | None
     tariff_amount: QuantityString | None
     duty_amount: QuantityString | None
@@ -240,9 +248,11 @@ class QuoteLineResponse(BaseModel):
             moq=line.moq,
             tooling_cost=line.tooling_cost,
             setup_cost=line.setup_cost,
+            documentation_cost=line.documentation_cost,
             packaging_cost=line.packaging_cost,
             shipping_cost=line.shipping_cost,
             insurance_cost=line.insurance_cost,
+            handling_cost=line.handling_cost,
             other_fixed_cost=line.other_fixed_cost,
             tariff_amount=line.tariff_amount,
             duty_amount=line.duty_amount,

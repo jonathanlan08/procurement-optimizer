@@ -19,6 +19,18 @@ not name `include_archived` for RFQs specifically, but §1.4's blanket rule
 `Rfq` mixes in `ArchivableMixin` exactly like every other archivable
 resource in this codebase, so the same behavior is applied here rather than
 carved out as an exception.
+
+**`search()` returns `(Rfq, line_count)` pairs, not bare `Rfq` rows**
+(2026-08 product-audit remediation, P2: "Lines column always displays a
+dash because the summary API omits the count"). `line_count` is joined on
+via `_line_count_subquery()` — one `GROUP BY rfq_id` query producing a
+`(rfq_id, line_count)` row per RFQ that has any lines, outer-joined onto the
+paged RFQ rows with `COALESCE(..., 0)` for RFQs with none — so the list
+endpoint gets every row's line count from the *same* query that fetches the
+page, not one extra `count(*)` per row (`BomRepository.
+_latest_version_subquery` is the closest existing precedent for "a
+`GROUP BY` subquery joined onto the main listing query" in this codebase,
+though that one filters rows rather than annotating them with a count).
 """
 
 from __future__ import annotations
@@ -54,6 +66,21 @@ class RfqRepository(OrgScopedRepository[Rfq]):
 
     # -- listing -----------------------------------------------------------
 
+    def _line_count_subquery(self) -> Any:
+        """One row per `rfq_id` in this org that has at least one line,
+        carrying that RFQ's line count. Mirrors `BomRepository.
+        _latest_version_subquery`'s shape (a `GROUP BY` subquery meant to be
+        joined onto a listing query), but counts rather than filters."""
+        return (
+            select(
+                RfqLine.rfq_id.label("rfq_id"),
+                func.count().label("line_count"),
+            )
+            .where(RfqLine.organization_id == self.organization_id)
+            .group_by(RfqLine.rfq_id)
+            .subquery()
+        )
+
     def search(
         self,
         *,
@@ -64,7 +91,11 @@ class RfqRepository(OrgScopedRepository[Rfq]):
         include_archived: bool = False,
         limit: int = 50,
         offset: int = 0,
-    ) -> list[Rfq]:
+    ) -> list[tuple[Rfq, int]]:
+        """Returns `(Rfq, line_count)` pairs — see module docstring. A
+        single query (outer join onto a `GROUP BY` subquery), not
+        `list_page()` + a per-row follow-up count, so this stays O(1)
+        round trips regardless of page size."""
         clauses = self._filters(
             statuses=statuses,
             q=q,
@@ -72,9 +103,18 @@ class RfqRepository(OrgScopedRepository[Rfq]):
             due_after=due_after,
             include_archived=include_archived,
         )
-        return self.list_page(
-            *clauses, order_by=Rfq.created_at.desc(), limit=limit, offset=offset
+        counts = self._line_count_subquery()
+        stmt = (
+            self._base_query()
+            .where(*clauses)
+            .add_columns(func.coalesce(counts.c.line_count, 0))
+            .outerjoin(counts, counts.c.rfq_id == Rfq.id)
+            .order_by(Rfq.created_at.desc())
+            .limit(min(limit, 200))
+            .offset(offset)
         )
+        rows = self.session.execute(stmt).all()
+        return [(row[0], int(row[1])) for row in rows]
 
     def count_matching(
         self,

@@ -709,3 +709,169 @@ class TestXlsxMissingTermsAndCorrections:
         )
         assert resp.status_code == 409, resp.text
         assert resp.json()["error"]["code"] == "conflict_state"
+
+
+# -- (e) bulk field confirmation (2026-08 product-audit remediation, P2) ----
+
+
+def _confirm_all_route(client: TestClient, headers: dict[str, str], run_id: str) -> Any:
+    return client.post(
+        f"/api/v1/extraction-runs/{run_id}/fields/confirm-all", headers=headers
+    )
+
+
+def _confirm_required_fields_one_by_one(
+    client: TestClient, headers: dict[str, str], run_id: str
+) -> int:
+    """The one-at-a-time baseline `_confirm_all_pending` above does NOT
+    reproduce: that helper confirms every field with `is_confirmed=false`
+    (including fields that never required confirmation at all, e.g. HIGH-
+    band fields), whereas the bulk route only touches fields that actually
+    `requires_confirmation`. This helper matches the bulk route's own
+    filter exactly, so it is the correct one-at-a-time baseline to compare
+    the bulk route's resulting run state against."""
+    pending = _list_fields(client, run_id, requires_confirmation="true", is_confirmed="false")
+    for item in pending:
+        resp = client.patch(
+            f"/api/v1/extraction-runs/{run_id}/fields/{item['id']}",
+            json={"is_confirmed": True},
+            headers=headers,
+        )
+        assert resp.status_code == 200, resp.text
+    return len(pending)
+
+
+class TestBulkConfirmFields:
+    def test_confirm_all_reaches_ready_matching_field_by_field(
+        self,
+        client: TestClient,
+        org_a: dict[str, Any],
+        org_b: dict[str, Any],
+        migrated_engine: Engine,
+    ) -> None:
+        """Two separate orgs upload the byte-identical Shenzhen Precision
+        fixture (sha256 dedupe is per-org, so this is the only way to get
+        two runs with genuinely identical extracted fields within one test)
+        and drive one run to `ready` field-by-field, the other via the new
+        bulk route — the run must land in the same state either way, and
+        the same set of fields ends up confirmed."""
+        headers_a = _headers(_login_as(client, org_a, Role.ANALYST))
+        each_unit_a = _seed_each_unit(migrated_engine, org_a["org_id"])
+        ctx_a = _setup_open_rfq_with_supplier(client, headers_a, each_unit_a)
+        doc_a = _upload_document(
+            client, headers_a, ctx_a["rfq"]["id"], "shenzhen_precision_quote.pdf"
+        )
+        run_a = _start_run(client, headers_a, doc_a["id"])
+        assert run_a["state"] == "needs_review"
+        confirmed_count_a = _confirm_required_fields_one_by_one(client, headers_a, run_a["id"])
+        assert confirmed_count_a > 0
+        run_a = _get_run(client, run_a["id"])
+        assert run_a["state"] == "ready"
+
+        headers_b = _headers(_login_as(client, org_b, Role.ANALYST))
+        each_unit_b = _seed_each_unit(migrated_engine, org_b["org_id"])
+        ctx_b = _setup_open_rfq_with_supplier(client, headers_b, each_unit_b)
+        doc_b = _upload_document(
+            client, headers_b, ctx_b["rfq"]["id"], "shenzhen_precision_quote.pdf"
+        )
+        run_b = _start_run(client, headers_b, doc_b["id"])
+        assert run_b["state"] == "needs_review"
+
+        resp = _confirm_all_route(client, headers_b, run_b["id"])
+        assert resp.status_code == 200, resp.text
+        run_b_after = resp.json()
+        assert run_b_after["id"] == run_b["id"]
+        assert run_b_after["state"] == "ready"
+        assert run_b_after["fields_requiring_review"] == 0
+
+        # same fixture, same extracted fields -> the field-by-field run and
+        # the bulk-confirmed run required confirming the same number of
+        # fields to get there.
+        fields_b = _list_fields(client, run_b["id"])
+        still_pending_b = [
+            f for f in fields_b if f["requires_confirmation"] and not f["is_confirmed"]
+        ]
+        assert still_pending_b == []
+        confirmed_required_b = [
+            f for f in fields_b if f["requires_confirmation"] and f["is_confirmed"]
+        ]
+        assert len(confirmed_required_b) == confirmed_count_a
+
+        with migrated_engine.connect() as conn:
+            audit_rows = conn.execute(
+                sqltext(
+                    "SELECT after_state FROM audit_events"
+                    " WHERE event_type = 'extraction.fields_confirmed_bulk'"
+                    " AND entity_id = :rid"
+                ),
+                {"rid": run_b["id"]},
+            ).all()
+        assert len(audit_rows) == 1
+        assert audit_rows[0].after_state["confirmed_count"] == len(confirmed_required_b)
+
+    def test_confirm_all_idempotent_second_call_is_noop(
+        self, client: TestClient, org_a: dict[str, Any], migrated_engine: Engine
+    ) -> None:
+        headers = _headers(_login_as(client, org_a, Role.ANALYST))
+        each_unit_id = _seed_each_unit(migrated_engine, org_a["org_id"])
+        ctx = _setup_open_rfq_with_supplier(client, headers, each_unit_id)
+        document = _upload_document(
+            client, headers, ctx["rfq"]["id"], "shenzhen_precision_quote.pdf"
+        )
+        run = _start_run(client, headers, document["id"])
+
+        resp = _confirm_all_route(client, headers, run["id"])
+        assert resp.status_code == 200, resp.text
+        assert resp.json()["state"] == "ready"
+
+        # second call: nothing left requiring confirmation -> clean no-op,
+        # not a 409, and no second audit event.
+        resp2 = _confirm_all_route(client, headers, run["id"])
+        assert resp2.status_code == 200, resp2.text
+        assert resp2.json()["state"] == "ready"
+
+        with migrated_engine.connect() as conn:
+            count = conn.execute(
+                sqltext(
+                    "SELECT count(*) FROM audit_events"
+                    " WHERE event_type = 'extraction.fields_confirmed_bulk'"
+                    " AND entity_id = :rid"
+                ),
+                {"rid": run["id"]},
+            ).scalar_one()
+        assert count == 1
+
+    def test_confirm_all_viewer_is_403(
+        self, client: TestClient, org_a: dict[str, Any], migrated_engine: Engine
+    ) -> None:
+        analyst_headers = _headers(_login_as(client, org_a, Role.ANALYST))
+        each_unit_id = _seed_each_unit(migrated_engine, org_a["org_id"])
+        ctx = _setup_open_rfq_with_supplier(client, analyst_headers, each_unit_id)
+        document = _upload_document(
+            client, analyst_headers, ctx["rfq"]["id"], "shenzhen_precision_quote.pdf"
+        )
+        run = _start_run(client, analyst_headers, document["id"])
+
+        viewer_headers = _headers(_login_as(client, org_a, Role.VIEWER))
+        resp = _confirm_all_route(client, viewer_headers, run["id"])
+        assert resp.status_code == 403, resp.text
+        assert resp.json()["error"]["code"] == "forbidden_role"
+
+    def test_confirm_all_cross_org_404(
+        self,
+        client: TestClient,
+        org_a: dict[str, Any],
+        org_b: dict[str, Any],
+        migrated_engine: Engine,
+    ) -> None:
+        headers_a = _headers(_login_as(client, org_a, Role.ANALYST))
+        each_unit_id = _seed_each_unit(migrated_engine, org_a["org_id"])
+        ctx = _setup_open_rfq_with_supplier(client, headers_a, each_unit_id)
+        document = _upload_document(
+            client, headers_a, ctx["rfq"]["id"], "shenzhen_precision_quote.pdf"
+        )
+        run = _start_run(client, headers_a, document["id"])
+
+        headers_b = _headers(_login_as(client, org_b, Role.ANALYST))
+        resp = _confirm_all_route(client, headers_b, run["id"])
+        assert resp.status_code == 404, resp.text

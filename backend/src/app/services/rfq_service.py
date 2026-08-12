@@ -103,7 +103,9 @@ from app.services.audit import AuditRecorder
 # docstrings/comments); every method signature below uses one of these
 # aliases instead of a bare `list[...]`.
 _RfqWithLines = tuple[Rfq, list[RfqLine]]
-_RfqPage = tuple[list[Rfq], int]
+# (rfq, line_count) pairs — RfqRepository.search's own return shape, per its
+# module docstring (2026-08 product-audit remediation, P2).
+_RfqPage = tuple[list[tuple[Rfq, int]], int]
 _RfqStatusFilter = list[RfqStatus] | None
 _RfqLineList = list[RfqLine]
 _RfqSupplierList = list[RfqSupplier]

@@ -138,6 +138,9 @@ PERMISSIONS: dict[tuple[str, str], PermissionLevel] = {
     ("GET", "/api/v1/extraction-runs/{run_id}"): Role.VIEWER,
     ("GET", "/api/v1/extraction-runs/{run_id}/fields"): Role.VIEWER,
     ("PATCH", "/api/v1/extraction-runs/{run_id}/fields/{field_id}"): Role.ANALYST,
+    # Bulk field confirmation (2026-08 product-audit remediation, P2) — same
+    # analyst+ gate as the single-field PATCH above.
+    ("POST", "/api/v1/extraction-runs/{run_id}/fields/confirm-all"): Role.ANALYST,
     ("POST", "/api/v1/extraction-runs/{run_id}/confirm"): Role.ANALYST,
     # Part matching (03-api-contract.md §4.12): "O A N" for generate/
     # confirm/unmatch, "O A N V" for the ranked-candidates read route. See

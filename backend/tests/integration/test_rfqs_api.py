@@ -350,6 +350,56 @@ class TestRfqCreate:
         assert resp.json()["error"]["code"] == "conflict_duplicate"
 
 
+class TestRfqListLineCounts:
+    """2026-08 product-audit remediation, P2: "Lines column always displays
+    a dash because the summary API omits the count" — `GET /rfqs` (the list/
+    summary endpoint) must carry a correct `line_count` per row."""
+
+    def test_list_line_count_reflects_actual_line_count(
+        self, client: TestClient, org_a: dict[str, Any], migrated_engine: Engine
+    ) -> None:
+        unit_id = _seed_unit(migrated_engine, organization_id=org_a["org_id"])
+        headers = _headers(_login_as(client, org_a, Role.ANALYST))
+
+        part_ids = _three_parts(client, headers, unit_id)
+        multi_line_rfq = _create_rfq(client, headers, part_ids)
+
+        one_part = _three_parts(client, headers, unit_id)[:1]
+        single_line_rfq = _create_rfq(client, headers, one_part)
+        # drain the only line to zero — no minimum-line guard on a draft RFQ
+        # (RfqService.remove_line), so this is the only way to get a real,
+        # persisted 0-line RFQ to assert the "0" case against.
+        del_resp = client.delete(
+            f"/api/v1/rfqs/{single_line_rfq['id']}/lines/{single_line_rfq['lines'][0]['id']}",
+            headers=headers,
+        )
+        assert del_resp.status_code == 204, del_resp.text
+
+        listing = client.get("/api/v1/rfqs", headers={"Origin": ORIGIN}).json()
+        by_id = {item["id"]: item for item in listing["items"]}
+
+        assert by_id[multi_line_rfq["id"]]["line_count"] == 3
+        assert by_id[single_line_rfq["id"]]["line_count"] == 0
+
+    def test_list_line_count_not_an_n_plus_1_of_other_rfqs_lines(
+        self, client: TestClient, org_a: dict[str, Any], migrated_engine: Engine
+    ) -> None:
+        """Each RFQ's `line_count` in the listing reflects only its OWN
+        lines, never another RFQ's — a regression a naive unscoped `GROUP
+        BY` (missing the per-org filter, or missing the join predicate)
+        could produce."""
+        unit_id = _seed_unit(migrated_engine, organization_id=org_a["org_id"])
+        headers = _headers(_login_as(client, org_a, Role.ANALYST))
+
+        two_lines = _create_rfq(client, headers, _three_parts(client, headers, unit_id)[:2])
+        one_line = _create_rfq(client, headers, _three_parts(client, headers, unit_id)[:1])
+
+        listing = client.get("/api/v1/rfqs", headers={"Origin": ORIGIN}).json()
+        by_id = {item["id"]: item for item in listing["items"]}
+        assert by_id[two_lines["id"]]["line_count"] == 2
+        assert by_id[one_line["id"]]["line_count"] == 1
+
+
 class TestRfqBomExplosion:
     def test_explode_from_active_bom_multiplies_quantities(
         self, client: TestClient, org_a: dict[str, Any], migrated_engine: Engine

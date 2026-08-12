@@ -185,6 +185,27 @@ def patch_extraction_field(
     return ExtractionFieldResponse.from_model(field)
 
 
+@router.post("/{run_id}/fields/confirm-all")
+def confirm_all_extraction_fields(
+    run_id: UUID,
+    service: ExtractionServiceDep,
+    principal: Annotated[Principal, Depends(require_role(Role.ANALYST))],
+) -> ExtractionRunResponse:
+    """2026-08 product-audit remediation, P2 (bulk field confirmation). No
+    request body (yet) — every field still requiring confirmation on this
+    run is confirmed in one call, see `ExtractionService.confirm_all_fields`.
+
+    Returns the run detail, not a field (unlike `patch_extraction_field`
+    above): this task's brief explicitly allows either "the same shape the
+    single-field confirm returns, or the run detail", and a bulk action over
+    an unbounded number of fields has no single field to return — the run
+    (now `ready`, or unchanged if there was nothing pending) is the
+    meaningful result here.
+    """
+    run = service.confirm_all_fields(run_id, actor_id=principal.user.id)
+    return ExtractionRunResponse.from_model(run)
+
+
 @router.post("/{run_id}/confirm", status_code=201)
 def materialize_extraction_run(
     run_id: UUID,

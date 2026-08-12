@@ -583,9 +583,11 @@ class TestIncompleteWithoutAssumptions:
         self, client: TestClient, org_a: dict[str, Any], migrated_engine: Engine
     ) -> None:
         """Without assume_missing_costs_zero (or any rate assumptions), the
-        documentation/handling/duty/customs fields (which never have a
-        source column) stay genuinely missing, and completeness must reflect
-        that honestly rather than silently defaulting to zero."""
+        duty/customs fields (which have no assumption fallback of their own)
+        and this line's unset documentation/handling costs (real columns as
+        of migration 0016, but never populated by `_setup_worked_example`)
+        stay genuinely missing, and completeness must reflect that honestly
+        rather than silently defaulting to zero."""
         headers = _headers(_login_as(client, org_a, Role.ANALYST))
         ctx = _setup_worked_example(client, headers, migrated_engine, org_a)
         quote_line_id = ctx["quote"]["lines"][0]["id"]
@@ -599,3 +601,118 @@ class TestIncompleteWithoutAssumptions:
         body = resp.json()
         assert body["completeness"] == "incomplete"
         assert len(body["missing_inputs"]) > 0
+
+
+class TestCompleteReachable:
+    """2026-08 product-audit remediation: migration 0016 added
+    `quote_lines.documentation_cost`/`handling_cost`, the two inputs that
+    previously made `Completeness.COMPLETE` structurally unreachable through
+    this service (docs/METHODOLOGY.md §7). This is the "it is now actually
+    reachable" acceptance test the remediation task asked for: every
+    commercial field on the quote line is populated (including the two new
+    columns), same-currency/same-unit so FX/unit conversion never enter the
+    picture, and every assumption-only input (quality/delay risk rate,
+    required lead time, financing) is supplied so nothing is left missing —
+    the result must be `complete`, not merely `assumption_dependent`.
+    """
+
+    def test_fully_specified_line_under_full_assumptions_is_complete(
+        self, client: TestClient, org_a: dict[str, Any], migrated_engine: Engine
+    ) -> None:
+        headers = _headers(_login_as(client, org_a, Role.ANALYST))
+        unit_id = _seed_unit(migrated_engine, org_a["org_id"])
+        part = _create_part(client, headers, unit_id)
+        rfq = _create_rfq(client, headers, part["id"])
+        supplier = _create_supplier(client, headers)
+        _invite_supplier(client, headers, rfq["id"], supplier["id"])
+        _set_rfq_status(client, headers, rfq["id"], "open")
+
+        resp = client.post(
+            f"/api/v1/rfqs/{rfq['id']}/quotes",
+            json={
+                "supplier_id": supplier["id"],
+                "quote_date": "2026-08-01",
+                # same as the RFQ's own base_currency (_create_rfq): no FX
+                # rate lookup needed, so FX can never be a MissingInput here.
+                "currency": "USD",
+                "lines": [
+                    {
+                        "matched_rfq_line_id": rfq["lines"][0]["id"],
+                        "description": "Fully-specified line",
+                        "quantity": "500.000000",
+                        # same unit as the RFQ line (both default from the
+                        # same part) -> no conversion, so it can never be a
+                        # MissingInput or a USER_ASSUMPTION either.
+                        "unit_definition_id": unit_id,
+                        "unit_price": "10.50000000",
+                        "lead_time_days": 5,
+                        "tooling_cost": "800.000000",
+                        "setup_cost": "100.000000",
+                        "documentation_cost": "25.000000",
+                        "packaging_cost": "15.000000",
+                        "shipping_cost": "300.000000",
+                        "insurance_cost": "45.000000",
+                        "handling_cost": "20.000000",
+                        "other_fixed_cost": "10.000000",
+                        # amounts directly quoted -> "quoted amount wins"
+                        # (calculator.py's own words), so no tariff_rate/
+                        # duty_rate assumption is needed either.
+                        "tariff_amount": "50.000000",
+                        "duty_amount": "30.000000",
+                        "customs_fee": "12.000000",
+                    }
+                ],
+                "terms": {"payment_terms": "Net 30", "payment_terms_days": 30},
+            },
+            headers=headers,
+        )
+        assert resp.status_code == 201, resp.text
+        quote = resp.json()
+        quote_line_id = quote["lines"][0]["id"]
+
+        resp = client.post(
+            "/api/v1/landed-costs:preview",
+            json={
+                "quote_line_id": quote_line_id,
+                "assumptions": {
+                    # these five have no source column anywhere in this
+                    # schema by design (module docstrings of
+                    # services/landed_cost_service.py and
+                    # services/scenario_service.py) — under "full
+                    # assumptions" they are supplied, not omitted.
+                    "quality_risk_rate": "0.02",
+                    "delay_risk_per_day": "5",
+                    "required_lead_time_days": "3",
+                    "annual_rate": "0.08",
+                    "baseline_terms_days": "30",
+                },
+            },
+            headers=headers,
+        )
+        assert resp.status_code == 200, resp.text
+        body = resp.json()
+        assert body["completeness"] == "complete", body
+        assert body["missing_inputs"] == []
+        assert body["assumptions"] == []
+        for component in body["components"]:
+            assert component["is_missing"] is False, component
+
+        # persisting goes through the identical assembly path and must land
+        # on the wire the same way.
+        resp = client.post(
+            f"/api/v1/rfqs/{rfq['id']}/landed-costs",
+            json={
+                "quote_line_id": quote_line_id,
+                "assumptions": {
+                    "quality_risk_rate": "0.02",
+                    "delay_risk_per_day": "5",
+                    "required_lead_time_days": "3",
+                    "annual_rate": "0.08",
+                    "baseline_terms_days": "30",
+                },
+            },
+            headers=headers,
+        )
+        assert resp.status_code == 201, resp.text
+        stored = resp.json()
+        assert stored["completeness"] == "complete", stored

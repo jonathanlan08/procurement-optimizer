@@ -279,9 +279,12 @@ Stated plainly, because a portfolio project that hides its edges is not worth re
   ordering, stored `model_hash`), so repeat and permuted-input solves reproduce exactly. What
   is *not* guaranteed is which of several **exactly**-tied optima a future code change would
   surface.
-- **`COMPLETE` completeness is structurally unreachable.** `documentation` and `handling`
-  costs have no source columns on `quote_lines`, so every persisted landed-cost result is
-  `INCOMPLETE` or `ASSUMPTION_DEPENDENT`. This is explained in full in
+- **`COMPLETE` completeness is reachable, but rarely reached in practice.** `documentation_cost`
+  and `handling_cost` (migration 0016, 2026-08 product-audit remediation) are now real,
+  optional columns on `quote_lines`, so a landed-cost result **can** be `COMPLETE` — but only
+  when every commercial field on the line is populated and every risk/financing assumption is
+  supplied, which most real quotes and scenarios won't have. Most persisted results are still
+  `INCOMPLETE` or `ASSUMPTION_DEPENDENT` in practice. Full history in
   [docs/METHODOLOGY.md](docs/METHODOLOGY.md) §7 — including why the solver's eligibility gate
   is `INCOMPLETE` rather than "not `COMPLETE`".
 - **Audit actor UUIDs are unresolved in the UI.** `actor_user_id` is displayed raw; nothing

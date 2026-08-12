@@ -44,6 +44,7 @@ import {
   type ScenarioState,
   type ScenarioSummaryResponse,
 } from "./api";
+import { formatDecimal, formatMoney, isDecimalString } from "../../lib/money";
 import "./comparison.css";
 
 function statusLabel(raw: string): string {
@@ -78,7 +79,7 @@ function fxRateLabel(raw: unknown): string {
   const from = typeof fx.source_currency === "string" ? fx.source_currency : "?";
   const to = typeof fx.target_currency === "string" ? fx.target_currency : "?";
   const rate = typeof fx.provider_rate === "string" ? fx.provider_rate : String(fx.provider_rate ?? "?");
-  return `${from} → ${to} @ ${rate}`;
+  return `${from} → ${to} @ ${formatDecimal(rate)}`;
 }
 
 function weightLabel(raw: unknown): string {
@@ -105,7 +106,12 @@ function ScenarioSnapshotSummary({ scenario }: { scenario: ScenarioResponse }) {
           <ul className="explain-list">
             {setAssumptions.map(([key, value]) => (
               <li className="explain-list-item" key={key}>
-                {statusLabel(key)}: <span className="mono">{String(value)}</span>
+                {statusLabel(key)}:{" "}
+                <span className="mono">
+                  {typeof value === "string" && isDecimalString(value)
+                    ? formatDecimal(value)
+                    : String(value)}
+                </span>
               </li>
             ))}
           </ul>
@@ -142,9 +148,10 @@ function ScenarioSnapshotSummary({ scenario }: { scenario: ScenarioResponse }) {
       {scenario.allocation_result.objective_total_cost && (
         <div className="scenario-snapshot-block">
           <span className="detail-label">Expected total cost</span>
-          <p className="detail-value num">
-            {scenario.allocation_result.objective_total_cost.currency}{" "}
-            {scenario.allocation_result.objective_total_cost.amount}
+          <p className="detail-value num" title={scenario.allocation_result.objective_total_cost.amount}>
+            {formatMoney(scenario.allocation_result.objective_total_cost.amount, {
+              currency: scenario.allocation_result.objective_total_cost.currency,
+            })}
           </p>
         </div>
       )}

@@ -23,8 +23,16 @@ You need a Postgres instance. Two supported paths:
 The backend itself always runs on the host (`uv run uvicorn ...` from `backend/`),
 never inside compose — see `docs/planning/01-architecture.md` §11.
 
-Frontend setup will be documented here once the frontend package is scaffolded
-(see `docs/SPEC.md` §Technical architecture for the intended stack).
+### Frontend (React + TypeScript + Vite, in `frontend/`)
+
+```bash
+cd frontend
+npm install
+BACKEND_PORT=8001 npm run dev   # Vite dev server on :5173, proxying /api to the backend
+```
+
+The dev server proxies `/api` to `http://localhost:${BACKEND_PORT:-8000}` — set
+`BACKEND_PORT` to wherever your backend runs.
 
 ## Test commands
 
@@ -33,6 +41,21 @@ Run from `backend/`:
 ```
 uv run pytest -m "not integration"   # unit + component + contract, no DB required, < 60s
 uv run pytest                        # full suite incl. integration (needs Postgres, see above)
+```
+
+Run from `frontend/`:
+
+```
+npm run test        # Vitest unit/component suite
+npm run typecheck   # tsc --noEmit
+npm run build       # production build (also typechecks)
+```
+
+End-to-end (from the repo root — boots an ephemeral backend + frontend, then
+runs Playwright on Chromium/Firefox/WebKit):
+
+```
+bash scripts/e2e_local.sh
 ```
 
 ## Code style

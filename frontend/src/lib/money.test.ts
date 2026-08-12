@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatMoney, isDecimalString, roundDecimalString } from "./money";
+import { formatDecimal, formatMoney, isDecimalString, roundDecimalString } from "./money";
 
 describe("isDecimalString", () => {
   it("accepts plain decimals", () => {
@@ -50,5 +50,30 @@ describe("formatMoney", () => {
   });
   it("supports more display places", () => {
     expect(formatMoney("14.48109664", { places: 4 })).toBe("14.4811");
+  });
+  it("extends precision for sub-unit values instead of misrounding them", () => {
+    // review-3 P1: a 0.004 USD part rendered as $0.00, 0.006 as $0.01 (67% off)
+    expect(formatMoney("0.004", { currency: "USD" })).toBe("$0.0040");
+    expect(formatMoney("0.006000", { currency: "USD" })).toBe("$0.0060");
+    expect(formatMoney("0.018", { currency: "USD" })).toBe("$0.018");
+    expect(formatMoney("-0.004", { currency: "USD" })).toBe("−$0.0040");
+    // values >= 1 and true zero keep the caller's places
+    expect(formatMoney("1.004", { currency: "USD" })).toBe("$1.00");
+    expect(formatMoney("0.000000", { currency: "USD" })).toBe("$0.00");
+    // never exceeds the stored 8dp scale
+    expect(formatMoney("0.00000001", { currency: "USD" })).toBe("$0.00000001");
+  });
+});
+
+describe("formatDecimal", () => {
+  it("trims stored-scale noise but keeps at least two places", () => {
+    expect(formatDecimal("0.920000000000")).toBe("0.92");
+    expect(formatDecimal("199.500000000000")).toBe("199.50");
+    expect(formatDecimal("100")).toBe("100.00");
+    expect(formatDecimal("0.004000")).toBe("0.004");
+    expect(formatDecimal("-1.250000")).toBe("-1.25");
+  });
+  it("returns non-decimal input untouched", () => {
+    expect(formatDecimal("n/a")).toBe("n/a");
   });
 });

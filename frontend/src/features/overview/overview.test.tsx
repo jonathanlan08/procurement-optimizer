@@ -144,9 +144,13 @@ describe("OverviewPage", () => {
 
     renderPage();
 
-    expect(await screen.findByText("12")).toBeInTheDocument();
-    expect(screen.getByText("340")).toBeInTheDocument();
-    expect(screen.getByText("4")).toBeInTheDocument();
+    // KPI counts — scoped to the KPI value spans (the workflow guide also
+    // renders small step numbers like "4", which would otherwise collide).
+    await screen.findByText("12");
+    const kpiValues = document
+      .querySelectorAll(".overview-kpi-value");
+    const kpiTexts = Array.from(kpiValues).map((el) => el.textContent);
+    expect(kpiTexts).toEqual(["12", "340", "4"]);
 
     expect(screen.getByText(/Demo — synthetic data/i)).toBeInTheDocument();
 
@@ -160,6 +164,13 @@ describe("OverviewPage", () => {
     expect(within(linksNav).getByRole("link", { name: /suppliers/i })).toHaveAttribute("href", "/suppliers");
     expect(within(linksNav).getByRole("link", { name: /parts/i })).toHaveAttribute("href", "/parts");
     expect(within(linksNav).getByRole("link", { name: /audit log/i })).toHaveAttribute("href", "/audit");
+
+    // guided "How it works" workflow: numbered, deep-linked steps
+    expect(screen.getByText("How it works")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Add suppliers & parts/i })).toHaveAttribute("href", "/suppliers");
+    expect(screen.getByRole("link", { name: /Create an RFQ & invite suppliers/i })).toHaveAttribute("href", "/rfqs");
+    expect(screen.getByRole("link", { name: /Set assumptions & run a scenario/i })).toHaveAttribute("href", "/scenarios");
+    expect(screen.getByRole("link", { name: /Generate reports/i })).toHaveAttribute("href", "/reports");
   });
 
   it("shows an honest empty state when the org has no RFQs yet, instead of fabricating scenario data", async () => {

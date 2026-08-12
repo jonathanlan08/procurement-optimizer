@@ -41,6 +41,15 @@
   transition: transform 200ms ease-out, visibility 0s linear 0s;
 }
 
+/* On phones the 92vw panel left a sliver of page peeking through while its
+   content overflowed — go full-bleed instead (standard mobile sheet). */
+@media (max-width: 520px) {
+  .drawer-panel {
+    width: 100vw;
+    border-left: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .drawer-overlay,
   .drawer-panel {

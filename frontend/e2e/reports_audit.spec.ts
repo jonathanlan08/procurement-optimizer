@@ -62,10 +62,14 @@ test("audit log: filter by event_type=report.generated finds the event", async (
   await page.goto("/audit");
   await expect(page.getByRole("navigation", { name: "Primary" })).toBeVisible();
 
+  // The filter vocabulary is still the raw event key…
   await page.getByLabel("Event type").fill("report.generated");
-  const row = page.getByRole("row").filter({ hasText: "report.generated" }).first();
+  // …but the table now shows the humanized label ("Report generated"); the raw
+  // key lives on the cell's title attribute.
+  const row = page.getByRole("row").filter({ hasText: "Report generated" }).first();
   await expect(row).toBeVisible({ timeout: 10_000 });
   await expect(row).toContainText("generated_report");
+  await expect(row.getByTitle("report.generated")).toBeVisible();
 
   await row.click();
   const drawer = page.getByRole("dialog", { name: "Audit event" });

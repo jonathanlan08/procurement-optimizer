@@ -276,6 +276,14 @@
   grid-column: 1 / -1;
 }
 
+/* Two columns don't fit a phone-width drawer (review-3 P1: fields and helper
+   text clipped at 360px) — collapse every form grid to a single column. */
+@media (max-width: 520px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .field {
   display: flex;
   flex-direction: column;
@@ -373,6 +381,13 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--space-lg) var(--space-xl);
+}
+
+/* Same phone-width collapse as .form-grid above. */
+@media (max-width: 520px) {
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .detail-row {

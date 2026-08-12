@@ -217,3 +217,61 @@
   font-weight: 600;
   color: var(--color-foreground);
 }
+
+/* Guided workflow ("How it works") — a numbered, deep-linked path for a
+   first-time user. Spans both columns above the KPI/quick-link grid. */
+.overview-workflow {
+  margin-bottom: var(--space-2xl);
+}
+
+.overview-workflow-list {
+  list-style: none;
+  margin: var(--space-lg) 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-lg) var(--space-2xl);
+}
+
+.overview-workflow-step {
+  display: flex;
+  gap: var(--space-md);
+  align-items: flex-start;
+}
+
+.overview-workflow-num {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--hue-overview);
+}
+
+.overview-workflow-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.overview-workflow-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--hue-overview);
+  text-decoration: none;
+}
+
+.overview-workflow-title:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 720px) {
+  .overview-workflow-list {
+    grid-template-columns: 1fr;
+  }
+}

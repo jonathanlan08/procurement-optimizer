@@ -283,6 +283,11 @@ function AssumptionsForm({
           Assumptions <span className="badge badge--provenance-user_assumption">User assumption</span>
         </h3>
       </div>
+      <p className="detail-label assumptions-intro">
+        Optional inputs used to estimate costs a quote doesn&rsquo;t state — quality and delay
+        risk, financing, tariffs. Leave any blank to skip it. These are your assumptions, kept
+        separate from supplier-provided figures.
+      </p>
       <form onSubmit={(e) => void handleSubmit(onValid)(e)} noValidate>
         <div className="form-grid">
           <FormField label="Quality risk" hint="%, optional" error={errors.quality_risk_rate?.message}>
@@ -308,7 +313,11 @@ function AssumptionsForm({
           <FormField label="Tariff rate" hint="%, optional" error={errors.tariff_rate?.message}>
             <input {...register("tariff_rate")} inputMode="decimal" placeholder="not stated" />
           </FormField>
-          <FormField label="Assume missing costs = 0" checkbox>
+          <FormField
+            label="Treat unknown costs as zero"
+            hint="off = flag them as missing instead"
+            checkbox
+          >
             <input type="checkbox" {...register("assume_missing_costs_zero")} />
           </FormField>
         </div>
@@ -556,7 +565,14 @@ function ExplainDrawer({
                     {formatMoney(c.amount, { currency: result.currency })}
                   </span>
                 </div>
-                <div className="explain-formula">{c.formula}</div>
+                <div className="explain-formula">
+                  {/* the stored formula is an audit artifact and speaks in raw
+                      component keys ("all allocated_fixed inputs missing…") —
+                      say it in plain language instead when nothing computed */}
+                  {c.is_missing
+                    ? `No ${COMPONENT_LABELS[c.component].toLowerCase()} inputs were provided, so this component could not be computed.`
+                    : c.formula}
+                </div>
                 <ProvenanceBadge provenance={c.provenance} />
                 <div className="explain-chips">
                   {c.is_assumed && <span className="chip chip--assumed">Assumed</span>}

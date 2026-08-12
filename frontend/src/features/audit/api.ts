@@ -33,7 +33,7 @@ export interface AuditEventResponse {
   occurred_at: string;
   event_type: string;
   entity_type: string;
-  entity_id: string;
+  entity_id: string | null; // backend AuditEventResponse.entity_id is nullable
   actor_user_id: string | null;
   explanation: string | null;
   before_state: Record<string, unknown> | null;

@@ -37,7 +37,7 @@ import { FormField } from "../../components/FormField";
 import { PaginationBar } from "../../components/PaginationBar";
 import { PlusIcon } from "../../components/icons";
 import "../../components/workspace.css";
-import { isDecimalString } from "../../lib/money";
+import { formatDecimal, isDecimalString } from "../../lib/money";
 import { isAnalystOrAbove } from "../../lib/roles";
 import { zodResolver } from "../../lib/zodResolver";
 import {
@@ -114,7 +114,9 @@ function EffectiveRateLookup() {
       ) : effectiveQuery.data ? (
         <div className="fx-lookup-result">
           <span className="fx-lookup-rate mono">
-            1 {effectiveQuery.data.base_currency} = {effectiveQuery.data.rate} {effectiveQuery.data.quote_currency}
+            1 {effectiveQuery.data.base_currency} ={" "}
+            <span title={effectiveQuery.data.rate}>{formatDecimal(effectiveQuery.data.rate)}</span>{" "}
+            {effectiveQuery.data.quote_currency}
           </span>
           <SourceBadge source={effectiveQuery.data.source} />
           <span className="detail-label">
@@ -260,6 +262,12 @@ function OverridesList() {
         accessorKey: "rate",
         header: "Rate",
         meta: { align: "right", mono: true },
+        // stored at 12dp; show it without the trailing-zero noise (full
+        // precision stays on the cell's title)
+        cell: ({ getValue }) => {
+          const raw = String(getValue());
+          return <span title={raw}>{formatDecimal(raw)}</span>;
+        },
       },
       {
         id: "effective_date",

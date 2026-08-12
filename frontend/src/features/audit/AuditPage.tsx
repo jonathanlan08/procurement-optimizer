@@ -47,6 +47,20 @@ import "./audit.css";
 
 const FIRST_PAGE_KEY = "__first__";
 
+/** "supplier.created" -> "Supplier created" — a display courtesy only; the
+ * raw key remains the filter vocabulary and the detail panel's value. */
+function humanizeEventType(raw: string): string {
+  const words = raw.replace(/[._]/g, " ").trim();
+  return words ? words.charAt(0).toUpperCase() + words.slice(1) : raw;
+}
+
+/** UUIDs read as noise in a scanning column — show the first 8 chars with the
+ * full identifier one hover (and, always, in the detail panel). */
+function ShortId({ id }: { id: string | null | undefined }) {
+  if (!id) return <>—</>;
+  return <span title={id}>{id.length > 12 ? `${id.slice(0, 8)}…` : id}</span>;
+}
+
 interface FilterInputs {
   eventType: string;
   entityType: string;
@@ -86,7 +100,7 @@ function AuditDrawer({
           <div className="detail-grid">
             <DetailRow label="Event type" value={event.event_type} />
             <DetailRow label="Entity type" value={event.entity_type} />
-            <DetailRow label="Entity ID" value={event.entity_id} mono full />
+            <DetailRow label="Entity ID" value={event.entity_id ?? "—"} mono full />
             <DetailRow label="Actor user ID" value={event.actor_user_id ?? "— system"} mono />
             <DetailRow label="Occurred at" value={new Date(event.occurred_at).toLocaleString()} />
             {event.request_id && <DetailRow label="Request ID" value={event.request_id} mono full />}
@@ -182,8 +196,14 @@ export function AuditPage() {
       {
         id: "event_type",
         accessorKey: "event_type",
-        header: "Event type",
+        header: "Event",
         enableSorting: false,
+        // "supplier.created" -> "Supplier created"; the raw key (the filter
+        // vocabulary) stays on the tooltip and in the detail panel
+        cell: (ctx) => {
+          const raw = ctx.getValue<string>();
+          return <span title={raw}>{humanizeEventType(raw)}</span>;
+        },
       },
       {
         id: "entity_type",
@@ -197,13 +217,18 @@ export function AuditPage() {
         header: "Entity ID",
         enableSorting: false,
         meta: { mono: true },
+        cell: (ctx) => <ShortId id={ctx.getValue<string>()} />,
       },
       {
         id: "actor_user_id",
-        accessorFn: (r) => r.actor_user_id ?? "— system",
+        accessorFn: (r) => r.actor_user_id ?? "",
         header: "Actor",
         enableSorting: false,
         meta: { mono: true },
+        cell: (ctx) => {
+          const v = ctx.getValue<string>();
+          return v ? <ShortId id={v} /> : "— system";
+        },
       },
       {
         id: "explanation",

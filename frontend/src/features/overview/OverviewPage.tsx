@@ -50,6 +50,17 @@ const WORKSPACE_LINKS: { to: string; label: string; description: string; hue?: H
   { to: "/audit", label: "Audit log", description: "Full change history across the workspace.", hue: "audit" },
 ];
 
+// The end-to-end workflow spelled out for a first-time user — the reviewer's
+// "biggest missing UX element". Each step deep-links to where it happens.
+const WORKFLOW_STEPS: { to: string; title: string; description: string }[] = [
+  { to: "/suppliers", title: "Add suppliers & parts", description: "Set up your vendors and the parts you buy — or start from the seeded demo data." },
+  { to: "/rfqs", title: "Create an RFQ & invite suppliers", description: "Open a request for quotation, add the lines you need, and invite vendors to quote." },
+  { to: "/rfqs", title: "Enter or upload quotes", description: "Type quotes in by hand, or upload a supplier's document and let extraction read it." },
+  { to: "/scenarios", title: "Set assumptions & run a scenario", description: "Fill in any costs the quotes don't state, then compute landed cost and the best allocation." },
+  { to: "/scenarios", title: "Review the allocation & brief", description: "See who wins each line and why, and generate a negotiation brief (nothing is ever emailed)." },
+  { to: "/reports", title: "Generate reports", description: "Export a supplier comparison or CFO recommendation as CSV, XLSX, or PDF." },
+];
+
 const SCENARIO_STATE_LABELS: Record<ScenarioState, string> = {
   draft: "Draft",
   running: "Running",
@@ -189,6 +200,28 @@ export function OverviewPage() {
         <KpiCard label="Parts" query={partTotalQuery} to="/parts" linkLabel="View parts" hue="parts" />
         <KpiCard label="Open RFQs" query={openRfqTotalQuery} to="/rfqs" linkLabel="View RFQs" hue="rfqs" />
       </div>
+
+      <section className="detail-section overview-card overview-workflow">
+        <h3 className="detail-section-title">How it works</h3>
+        <p className="detail-label">
+          The workflow, end to end — each step links to where you do it.
+        </p>
+        <ol className="overview-workflow-list">
+          {WORKFLOW_STEPS.map((step, i) => (
+            <li key={step.to} className="overview-workflow-step">
+              <span className="overview-workflow-num" aria-hidden="true">
+                {i + 1}
+              </span>
+              <div className="overview-workflow-body">
+                <Link className="overview-workflow-title" to={step.to}>
+                  {step.title}
+                </Link>
+                <span className="detail-label">{step.description}</span>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </section>
 
       <div className="overview-columns">
         <RecentScenariosCard />

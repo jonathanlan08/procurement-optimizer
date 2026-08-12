@@ -204,18 +204,20 @@ prompt-injection string.
 ```bash
 # backend
 export PATH="$HOME/Library/Python/3.9/bin:$PATH"
-cd backend && uv run pytest                 # 965 passed
+cd backend && uv run pytest                 # 967 passed
 
 # frontend
 export PATH="$HOME/.local/node22/bin:$PATH"
-cd frontend && npm test                     # 80 passed in 16 files
+cd frontend && npm test                     # 86 passed in 17 files
 ```
 
-**965 backend tests, all passing** — 415 unit (pure domain: money, landed cost, price
-breaks, scoring, solver, matching, normalization, file validation, storage), 479 integration
-against a **real PostgreSQL** (no SQLite anywhere), and 2 contract tests that fail if any
-route lacks a permission declaration. **80 frontend tests** (Vitest + Testing Library) and a **25-test Playwright E2E suite** (full journey on Chromium, smoke on Firefox and WebKit, a mobile-viewport navigation spec, and an axe-core accessibility sweep of every page at WCAG 2a/2aa with zero violations),
-all passing.
+**967 backend tests, all passing** — 472 unit (pure domain: money, landed cost, price
+breaks, scoring, solver, matching, normalization, file validation, storage), 490 integration
+against a **real PostgreSQL** (no SQLite anywhere), and 5 contract tests that fail if any
+route's declared permissions drift from what its dependencies actually enforce. **86 frontend
+tests** (Vitest + Testing Library) and a **25-test Playwright E2E suite** (full journey on
+Chromium, smoke on Firefox and WebKit, a mobile-viewport navigation spec, and an axe-core
+accessibility sweep of every page at WCAG 2a/2aa with zero violations), all passing.
 
 CI (`.github/workflows/ci.yml`) additionally runs `ruff`, `mypy --strict` over the whole
 package, an `upgrade → downgrade base → upgrade` migration cycle on an empty database, the
@@ -285,11 +287,11 @@ Stated plainly, because a portfolio project that hides its edges is not worth re
   `INCOMPLETE` or `ASSUMPTION_DEPENDENT` in practice. Full history in
   [docs/METHODOLOGY.md](docs/METHODOLOGY.md) §7 — including why the solver's eligibility gate
   is `INCOMPLETE` rather than "not `COMPLETE`".
-- **Audit actor UUIDs are unresolved in the UI.** `actor_user_id` is displayed raw; nothing
-  joins it to `users.full_name` yet.
-- **No report purge job**, no `docs/openapi.json` (so no OpenAPI-drift CI job), no Playwright
-  E2E suite, in-memory single-node rate limiting, and no segregation of duties between the
-  person who uploads a document and the person who confirms its low-confidence fields.
+- **Audit actor UUIDs are unresolved in the UI.** `actor_user_id` is shown as a truncated
+  id (full value on hover); nothing joins it to `users.full_name` yet.
+- **No report purge job**, no `docs/openapi.json` (so no OpenAPI-drift CI job), in-memory
+  single-node rate limiting, and no segregation of duties between the person who uploads a
+  document and the person who confirms its low-confidence fields.
 
 Everything above, with what exists today and what remains, is tracked in
 [docs/ROADMAP.md](docs/ROADMAP.md).
@@ -299,7 +301,7 @@ Everything above, with what exists today and what remains, is tracked in
 | Document | Contents |
 |---|---|
 | [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Layers, isolation stack, middleware, providers, the inline-jobs decision, SPA structure |
-| [DATABASE.md](docs/DATABASE.md) | Schema conventions, composite org FKs, numeric scales, migration inventory `0001`–`0015` |
+| [DATABASE.md](docs/DATABASE.md) | Schema conventions, composite org FKs, numeric scales, migration inventory `0001`–`0016` |
 | [DATA_DICTIONARY.md](docs/DATA_DICTIONARY.md) | All 40 tables, column by column, plus every enum |
 | [METHODOLOGY.md](docs/METHODOLOGY.md) | Decimal policy, landed-cost formulas, the hand-verified worked example, FX/units, scoring |
 | [DOCUMENT_PIPELINE.md](docs/DOCUMENT_PIPELINE.md) | Upload security, acquisition, the injection trust boundary, validation ladder, matching |

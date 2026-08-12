@@ -55,7 +55,7 @@ const EVENT_2 = {
   occurred_at: "2026-08-02T11:00:00Z",
   event_type: "quote.created",
   entity_type: "quote",
-  entity_id: "quote-1",
+  entity_id: null, // regression: a null entity_id must not crash the table
   actor_user_id: null,
   explanation: null,
   before_state: null,
@@ -110,16 +110,18 @@ describe("AuditPage", () => {
 
     renderPage();
 
-    expect(await screen.findByText("rfq.status_changed")).toBeInTheDocument();
-    const row1 = screen.getByText("rfq.status_changed").closest("tr");
+    expect(await screen.findByText("Rfq status changed")).toBeInTheDocument();
+    const row1 = screen.getByText("Rfq status changed").closest("tr");
     expect(within(row1 as HTMLElement).getByText("rfq")).toBeInTheDocument();
     expect(within(row1 as HTMLElement).getByText("rfq-1")).toBeInTheDocument();
     expect(within(row1 as HTMLElement).getByText("user-1")).toBeInTheDocument();
 
-    // system-initiated event (no actor, no explanation) renders raw
-    // placeholders, never a fabricated name.
-    const row2 = screen.getByText("quote.created").closest("tr");
+    // system-initiated event (no actor, no explanation, null entity_id)
+    // renders placeholders without crashing, never a fabricated name.
+    const row2 = screen.getByText("Quote created").closest("tr");
     expect(within(row2 as HTMLElement).getByText("— system")).toBeInTheDocument();
+    // null entity_id + null actor both render an em dash (2 cells)
+    expect(within(row2 as HTMLElement).getAllByText("—").length).toBeGreaterThanOrEqual(1);
   });
 
   it("appends items on Load more and passes next_cursor as the cursor param", async () => {
@@ -128,15 +130,15 @@ describe("AuditPage", () => {
 
     renderPage();
 
-    await screen.findByText("rfq.status_changed");
-    expect(screen.queryByText("scenario.completed")).not.toBeInTheDocument();
+    await screen.findByText("Rfq status changed");
+    expect(screen.queryByText("Scenario completed")).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /load more/i }));
 
-    expect(await screen.findByText("scenario.completed")).toBeInTheDocument();
+    expect(await screen.findByText("Scenario completed")).toBeInTheDocument();
     // first page's rows are still present — Load more appends, not replaces.
-    expect(screen.getByText("rfq.status_changed")).toBeInTheDocument();
-    expect(screen.getByText("quote.created")).toBeInTheDocument();
+    expect(screen.getByText("Rfq status changed")).toBeInTheDocument();
+    expect(screen.getByText("Quote created")).toBeInTheDocument();
 
     expect(secondPageCalls).toHaveLength(1);
     expect(secondPageCalls[0]).toContain("cursor=cursor-2");
@@ -150,7 +152,7 @@ describe("AuditPage", () => {
 
     renderPage();
 
-    fireEvent.click(await screen.findByText("rfq.status_changed"));
+    fireEvent.click(await screen.findByText("Rfq status changed"));
 
     const dialog = await screen.findByRole("dialog");
     expect(within(dialog).getByText("RFQ moved from draft to open.")).toBeInTheDocument();

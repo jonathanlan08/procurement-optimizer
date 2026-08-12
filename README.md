@@ -30,24 +30,18 @@ the highest landed effective unit cost of the four bidders, and a test asserts i
 
 ## Screenshots
 
-<!-- TODO(principal): capture -->
 ![Comparison workspace: supplier scores, landed-cost breakdown, and explainability drawer](docs/images/comparison-workspace.png)
 
 ![Overview: hue-coded workspace summary](docs/images/overview.png)
 
-<!-- TODO(principal): capture -->
 ![Extraction review: confidence badges, the Simulated chip, and the prompt-injection banner](docs/images/extraction-review.png)
 
-<!-- TODO(principal): capture -->
 ![Allocation panel: honest solver status, split table, and infeasibility explainer](docs/images/allocation-panel.png)
 
-<!-- TODO(principal): capture -->
 ![Negotiation brief drawer: per-section provenance badges and the never-sends-emails callout](docs/images/negotiation-brief.png)
 
-<!-- TODO(principal): capture -->
 ![Reports workspace: generate a CSV/XLSX/PDF export and download it](docs/images/reports.png)
 
-<!-- TODO(principal): capture -->
 ![Audit log: filterable, cursor-paged event table with before/after diffs](docs/images/audit-log.png)
 
 ## What it does, end to end

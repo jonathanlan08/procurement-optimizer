@@ -206,17 +206,17 @@ prompt-injection string.
 ```bash
 # backend
 export PATH="$HOME/Library/Python/3.9/bin:$PATH"
-cd backend && uv run pytest                 # 896 passed
+cd backend && uv run pytest                 # 965 passed
 
 # frontend
 export PATH="$HOME/.local/node22/bin:$PATH"
-cd frontend && npm test                     # 63 passed in 13 files
+cd frontend && npm test                     # 80 passed in 16 files
 ```
 
-**896 backend tests, all passing** — 415 unit (pure domain: money, landed cost, price
+**965 backend tests, all passing** — 415 unit (pure domain: money, landed cost, price
 breaks, scoring, solver, matching, normalization, file validation, storage), 479 integration
 against a **real PostgreSQL** (no SQLite anywhere), and 2 contract tests that fail if any
-route lacks a permission declaration. **63 frontend tests** (Vitest + Testing Library),
+route lacks a permission declaration. **80 frontend tests** (Vitest + Testing Library) and a **25-test Playwright E2E suite** (full journey on Chromium, smoke on Firefox and WebKit, a mobile-viewport navigation spec, and an axe-core accessibility sweep of every page at WCAG 2a/2aa with zero violations),
 all passing.
 
 CI (`.github/workflows/ci.yml`) additionally runs `ruff`, `mypy --strict` over the whole

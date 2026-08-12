@@ -116,18 +116,22 @@ are hand-written today.
 avoid AGPL; `rapidfuzz` MIT; fonts self-hosted rather than CDN) but nothing enforces them in
 CI. Planned as a job that blocks AGPL/GPL dependencies.
 
-**End-to-end (Playwright) suite.** `.gitignore` reserves the Playwright output paths and the
-SPEC specifies the full E2E journey, but no Playwright suite is committed. Coverage today is
-the backend pytest suite (unit, integration against real PostgreSQL, and contract) plus the
-frontend Vitest component suite.
+**End-to-end (Playwright) suite.** ~~No Playwright suite is committed~~ — delivered in two
+stages: the Phase-7 suite (auth/workflow/documents/reports-audit/upload) and the 2026-08
+audit-remediation expansion (`frontend/e2e/`: mobile-viewport navigation spec, axe-core
+accessibility sweep, Firefox + WebKit smoke projects alongside the full Chromium run;
+one-command local runner at `scripts/e2e_local.sh`, CI job in `.github/workflows/ci.yml`).
+Still open: physical-device runs (no devices in the loop) and expanding the
+firefox/webkit subset beyond auth + workflow.
 
 ## Accessibility and UX
 
-**Deeper accessibility pass.** The design system specifies focus rings, non-colour-only
-status encoding (glyphs paired with colour), and dense-table semantics, and the shell uses
-landmark roles and `aria-label`ed navigation — but no systematic audit (axe sweep, keyboard
-traversal of every drawer and dialog, screen-reader pass over the comparison tables) has been
-performed.
+**Deeper accessibility pass.** The 2026-08 remediation added an automated axe-core sweep
+(`frontend/e2e/a11y.spec.ts`) of every page at `wcag2a`/`wcag2aa` with zero violations and
+zero exclusions (the semantic status tokens were darkened to clear 4.5:1 on badge tints),
+plus a focus-trapped, `aria`-complete mobile navigation drawer. Still open: a manual
+screen-reader pass over the comparison tables and keyboard traversal of every drawer/dialog
+beyond the automated checks.
 
 ## Lifecycle and administration
 

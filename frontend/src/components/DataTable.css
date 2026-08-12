@@ -6,6 +6,7 @@
   border-radius: var(--radius-md);
   background: var(--color-surface);
   overflow: auto;
+  -webkit-overflow-scrolling: touch;
   max-height: 100%;
 }
 
@@ -169,4 +170,44 @@
 .data-table-retry-btn:hover {
   border-color: var(--color-accent);
   background: var(--color-background);
+}
+
+/* Narrow-viewport containment (audit P1: "the parts table becomes extremely
+   cramped on a phone"). Root cause: `.data-table td` had no `white-space`
+   rule, so at a narrow container width the browser wrapped cell text across
+   multiple lines to fit the 100%-width table instead of letting the table
+   grow past the container and scroll — the opposite of what a dense
+   analytical table needs. Scoped to <=768px only so desktop truncation/
+   wrapping behavior (verified fine at typical desktop widths) is untouched.
+   `.data-table-wrap`'s `overflow: auto` (above) then does the actual
+   scrolling — this block only stops the table from shrinking to fit. */
+@media (max-width: 768px) {
+  .data-table td {
+    white-space: nowrap;
+  }
+
+  /* Sticky identity column so the row's key identifier stays visible while
+     scrolling horizontally through the rest of a wide row. Background is
+     set explicitly per row state (base / hover) rather than `background:
+     inherit`, since the parent <tr> has no background of its own in the
+     base and error/empty states (inherit would resolve to transparent,
+     letting scrolled-under cells show through the "sticky" column). */
+  .data-table th:first-child,
+  .data-table td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+  }
+
+  .data-table thead th:first-child {
+    background: var(--color-surface);
+  }
+
+  .data-table tbody td:first-child {
+    background: var(--color-surface);
+  }
+
+  .data-table tbody tr.is-clickable:hover td:first-child {
+    background: var(--color-background);
+  }
 }

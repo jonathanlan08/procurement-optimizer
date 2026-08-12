@@ -55,6 +55,102 @@
   font-weight: 600;
 }
 
+/* Mobile nav: hamburger button (top app bar) + slide-in drawer that reuses
+   the .shell-sidebar styling/markup (SidebarNav is rendered once for the
+   static aside, once for the drawer panel below — "one nav, two
+   presentations"). Everything here is `display: none` by default so it has
+   zero effect on desktop (>768px); the <=768px media query at the bottom of
+   this file is the only place that turns it on. */
+
+.shell-menu-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-secondary);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.shell-menu-btn:hover {
+  background: var(--color-muted);
+  color: var(--color-foreground);
+}
+
+.shell-nav-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.45);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 150ms ease-in, visibility 0s linear 150ms;
+  z-index: 50;
+}
+
+.shell-nav-overlay[data-state="open"] {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 200ms ease-out, visibility 0s linear 0s;
+}
+
+/* Compound selectors (`.shell-sidebar.shell-drawer-panel`) so these rules
+   reliably win over the base `.shell-sidebar` rule (display: flex) above,
+   regardless of source order — both are still single-class-equivalent
+   elsewhere in the cascade, so relying on ordering alone would be fragile. */
+.shell-sidebar.shell-drawer-panel {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: min(280px, 84vw);
+  transform: translateX(-100%);
+  visibility: hidden;
+  transition: transform 150ms ease-in, visibility 0s linear 150ms;
+  z-index: 51;
+  box-shadow: var(--shadow-lg);
+}
+
+.shell-sidebar.shell-drawer-panel[data-state="open"] {
+  transform: translateX(0);
+  visibility: visible;
+  transition: transform 200ms ease-out, visibility 0s linear 0s;
+}
+
+.shell-drawer-close-btn {
+  position: absolute;
+  top: var(--space-md);
+  right: var(--space-md);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-on-primary);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.shell-drawer-close-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shell-nav-overlay,
+  .shell-sidebar.shell-drawer-panel {
+    transition-delay: 0s !important;
+  }
+}
+
 .shell-main {
   display: flex;
   flex-direction: column;
@@ -136,7 +232,22 @@
     grid-template-columns: 1fr;
   }
 
-  .shell-sidebar {
-    display: none; /* mobile nav lands with the feature pages in Phase 5 */
+  /* Tag-qualified so it targets only the static <aside>, not the drawer
+     <div> (which also carries the .shell-sidebar class for shared
+     styling — see the "one nav, two presentations" comment above). */
+  aside.shell-sidebar {
+    display: none;
+  }
+
+  .shell-menu-btn {
+    display: inline-flex;
+  }
+
+  .shell-nav-overlay {
+    display: block;
+  }
+
+  .shell-sidebar.shell-drawer-panel {
+    display: flex;
   }
 }

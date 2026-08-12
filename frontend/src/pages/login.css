@@ -1,9 +1,76 @@
 .login-page {
-  height: 100%;
+  min-height: 100%;
+  display: grid;
+  grid-template-columns: minmax(320px, 44%) 1fr;
+  background: var(--color-background);
+}
+
+/* Brand panel — the same navy->indigo wash as the app shell's brand block
+   (MASTER.md v2: the one permitted gradient), extended to a full panel so
+   the front door carries the product identity the client asked for. */
+.login-brand {
+  background: linear-gradient(135deg, #0f172a 0%, #312e81 100%);
+  color: #e2e8f0;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-background);
+  padding: var(--space-3xl);
+}
+
+.login-brand-inner {
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+}
+
+.login-brand-mark {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  background: var(--color-info);
+}
+
+.login-brand-name {
+  margin: 0;
+  font-size: 26px;
+  color: #f8fafc;
+}
+
+.login-brand-thesis {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #cbd5e1;
+}
+
+.login-hue-row {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.login-hue-row span {
+  width: 22px;
+  height: 6px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.login-brand-footnote {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.login-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2xl);
+  padding: var(--space-3xl) var(--space-xl);
 }
 
 .login-card {
@@ -12,7 +79,7 @@
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
   padding: var(--space-3xl);
-  width: min(380px, 92vw);
+  width: min(420px, 92vw);
   display: flex;
   flex-direction: column;
   gap: var(--space-xl);
@@ -81,4 +148,118 @@
 .btn-primary:disabled {
   opacity: 0.6;
   cursor: default;
+}
+
+/* Demo access block — public synthetic credentials, one-click sign-in
+   (see LoginPage.tsx's own comment for why this is deliberately visible). */
+.login-demo {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-top: 3px solid var(--hue-overview);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-2xl) var(--space-3xl);
+  width: min(420px, 92vw);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.login-demo-title {
+  margin: 0;
+  font-size: 15px;
+}
+
+.login-demo-note {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-muted-foreground);
+}
+
+.login-demo-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.login-demo-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-lg);
+}
+
+.login-demo-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.login-demo-role {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-foreground);
+}
+
+.login-demo-hint {
+  font-size: 12px;
+  color: var(--color-muted-foreground);
+}
+
+.login-demo-email {
+  font-size: 11px;
+  color: var(--color-muted-foreground);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.btn-demo {
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--color-accent);
+  background: transparent;
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm) var(--space-md);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.btn-demo:hover:not(:disabled) {
+  background: var(--color-accent);
+  color: var(--color-on-primary);
+}
+
+.btn-demo:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+@media (max-width: 900px) {
+  .login-page {
+    grid-template-columns: 1fr;
+  }
+
+  .login-brand {
+    padding: var(--space-2xl) var(--space-xl);
+  }
+
+  .login-brand-inner {
+    max-width: none;
+  }
+
+  .login-brand-thesis {
+    display: none;
+  }
+
+  .login-main {
+    padding: var(--space-2xl) var(--space-lg);
+  }
 }

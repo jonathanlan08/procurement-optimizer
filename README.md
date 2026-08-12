@@ -32,6 +32,8 @@ the highest landed effective unit cost of the four bidders, and a test asserts i
 
 ![Comparison workspace: supplier scores, landed-cost breakdown, and explainability drawer](docs/images/comparison-workspace.png)
 
+![Sign in: brand panel and one-click demo access](docs/images/login.png)
+
 ![Overview: hue-coded workspace summary](docs/images/overview.png)
 
 ![Extraction review: confidence badges, the Simulated chip, and the prompt-injection banner](docs/images/extraction-review.png)
@@ -184,8 +186,8 @@ Seeded by `backend/src/app/seed/demo_dataset.py` into
 | Analyst | `demo-analyst@meridianfab.example` | `demo-analyst-2026` |
 | Viewer | `demo-viewer@meridianfab.example` | `demo-viewer-2026` |
 
-Sign in as the analyst for the full workflow; sign in as the viewer to see the read-only
-role enforced server-side.
+The sign-in page lists all three with one-click access; use the analyst for the full
+workflow, the viewer to see the read-only role enforced server-side.
 
 ### The demo dataset
 

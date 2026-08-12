@@ -15,7 +15,7 @@ async function login(page: import("@playwright/test").Page, email: string, passw
   await page.goto("/login");
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);
-  await page.getByRole("button", { name: "Sign in" }).click();
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
 }
 
 test.describe("authentication", () => {
@@ -52,7 +52,7 @@ test.describe("authentication", () => {
     await expect(alert).toHaveText("Invalid email or password.");
     // never navigated away — the SPA renders the error inline, no reload
     await expect(page).toHaveURL(/\/login$/);
-    await expect(page.getByRole("button", { name: "Sign in" })).toBeEnabled();
+    await expect(page.getByRole("button", { name: "Sign in", exact: true })).toBeEnabled();
   });
 
   test("viewer role: reads the real seeded workspace with mutation controls absent", async ({

@@ -1,5 +1,8 @@
 # Procurement Optimizer
 
+[![CI](https://github.com/jonathanlan08/procurement-optimizer/actions/workflows/ci.yml/badge.svg)](https://github.com/jonathanlan08/procurement-optimizer/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 A full-stack vendor-negotiation and procurement-optimization platform that turns
 inconsistent supplier quotes into transparent landed-cost comparisons, configurable vendor
 scores, optimized order allocations, and grounded negotiation briefs — with a complete audit

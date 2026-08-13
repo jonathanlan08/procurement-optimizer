@@ -128,6 +128,15 @@ export function LoginPage() {
           <p className="login-demo-note">
             Synthetic organization, public demo credentials — one click signs you in.
           </p>
+          {/* There is deliberately no self-service sign-up: this is a
+              multi-tenant B2B workspace where an administrator provisions
+              members into an organization (see docs/SPEC.md). Saying so keeps
+              a first-time visitor from hunting for a "Create account" link. */}
+          <p className="login-demo-note">
+            There&rsquo;s no public sign-up — procurement workspaces are provisioned per
+            organization, and members are invited by an administrator. These demo accounts
+            are the way in.
+          </p>
           <ul className="login-demo-list">
             {DEMO_ACCOUNTS.map((acct) => (
               <li key={acct.role} className="login-demo-row">

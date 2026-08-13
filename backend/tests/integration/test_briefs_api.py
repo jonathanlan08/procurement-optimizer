@@ -651,6 +651,38 @@ class TestNumericCrossCheckGuard:
 
 
 class TestReviewWorkflow:
+    def test_reviewed_brief_carries_the_reviewer_display_name(
+        self, client: TestClient, org_a: dict[str, Any], migrated_engine: Engine
+    ) -> None:
+        """Regression (2026-08 external review P3): a reviewed brief exposed
+        only `reviewed_by_id`, so the UI printed a raw UUID. The detail
+        response now resolves the reviewer's name org-scoped, on the review
+        response AND on a subsequent GET."""
+        headers = _headers(_login_as(client, org_a, Role.ANALYST))
+        ctx = _setup_two_supplier_case(client, headers, migrated_engine, org_a)
+        scenario = _create_and_complete_scenario(client, headers, ctx["rfq"]["id"])
+        brief = _generate_brief(client, headers, scenario["id"], ctx["supplier_a"]["id"]).json()
+        # not yet reviewed: no reviewer, hence no name
+        assert brief["reviewed_by_id"] is None
+        assert brief["reviewed_by_full_name"] is None
+
+        resp = client.post(
+            f"/api/v1/negotiation-briefs/{brief['id']}/review",
+            json={"approved": True, "reviewer_notes": "checked"},
+            headers=headers,
+        )
+        assert resp.status_code == 200, resp.text
+        reviewed = resp.json()
+        assert reviewed["reviewed_by_id"] is not None
+        name = reviewed["reviewed_by_full_name"]
+        assert name, "reviewed brief must carry a resolved reviewer name"
+        assert name != reviewed["reviewed_by_id"]  # a name, not the raw id
+
+        fetched = client.get(
+            f"/api/v1/negotiation-briefs/{brief['id']}", headers={"Origin": ORIGIN}
+        ).json()
+        assert fetched["reviewed_by_full_name"] == name
+
     def test_review_transitions_state_and_clears_requires_review(
         self, client: TestClient, org_a: dict[str, Any], migrated_engine: Engine
     ) -> None:

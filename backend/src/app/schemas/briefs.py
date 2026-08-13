@@ -113,6 +113,9 @@ class NegotiationBriefResponse(BaseModel):
     state: str
     requires_review: bool
     reviewed_by_id: str | None
+    # resolved display name (org-scoped); None when the reviewer is unknown —
+    # a raw reviewer UUID on a reviewed brief was a 2026-08 external-review P3
+    reviewed_by_full_name: str | None = None
     reviewed_at: datetime | None
     created_by_id: str
     created_at: datetime
@@ -123,7 +126,9 @@ class NegotiationBriefResponse(BaseModel):
     archive_reason: str | None
 
     @classmethod
-    def from_model(cls, brief: NegotiationBrief) -> NegotiationBriefResponse:
+    def from_model(
+        cls, brief: NegotiationBrief, *, reviewed_by_full_name: str | None = None
+    ) -> NegotiationBriefResponse:
         return cls(
             id=str(brief.id),
             scenario_id=str(brief.scenario_id),
@@ -144,6 +149,7 @@ class NegotiationBriefResponse(BaseModel):
             reviewed_by_id=(
                 str(brief.reviewed_by_id) if brief.reviewed_by_id is not None else None
             ),
+            reviewed_by_full_name=reviewed_by_full_name,
             reviewed_at=brief.reviewed_at,
             created_by_id=str(brief.created_by_id),
             created_at=brief.created_at,

@@ -426,7 +426,18 @@ function BriefDrawer({
               <h3 className="detail-section-title">Review</h3>
               <p className="detail-value">
                 Reviewed {brief.reviewed_at ? new Date(brief.reviewed_at).toLocaleString() : ""}
-                {brief.reviewed_by_id ? ` by ${brief.reviewed_by_id}` : ""}.
+                {brief.reviewed_by_id ? (
+                  <>
+                    {" by "}
+                    {/* the resolved name, falling back to a truncated id (full
+                        value on hover) when the reviewer can't be resolved —
+                        a bare UUID here was a 2026-08 external-review P3 */}
+                    <span title={brief.reviewed_by_id}>
+                      {brief.reviewed_by_full_name ?? `${brief.reviewed_by_id.slice(0, 8)}…`}
+                    </span>
+                  </>
+                ) : null}
+                .
               </p>
             </section>
           ) : (

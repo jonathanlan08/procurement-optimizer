@@ -127,6 +127,9 @@ export interface BriefResponse {
   state: BriefState;
   requires_review: boolean;
   reviewed_by_id: string | null;
+  // org-scoped display name; null when the reviewer can't be resolved, in
+  // which case the UI falls back to the (truncated) id rather than inventing one
+  reviewed_by_full_name?: string | null;
   reviewed_at: string | null;
   created_by_id: string;
   created_at: string;

@@ -52,6 +52,7 @@ from app.api.deps import (
     SettingsDep,
     require_role,
 )
+from app.models.briefs import NegotiationBrief
 from app.models.identity import Role
 from app.schemas.briefs import (
     BriefArchiveRequest,
@@ -62,10 +63,30 @@ from app.schemas.briefs import (
     NegotiationBriefSummaryResponse,
 )
 from app.services.brief_service import BriefService, build_narrative_provider
+from app.services.user_lookup import resolve_user_names
 
 scenario_briefs_router = APIRouter(prefix="/comparison-scenarios", tags=["negotiation-briefs"])
 rfq_briefs_router = APIRouter(prefix="/rfqs", tags=["negotiation-briefs"])
 briefs_router = APIRouter(prefix="/negotiation-briefs", tags=["negotiation-briefs"])
+
+
+def _brief_response(
+    db: DbDep, principal: Principal, brief: NegotiationBrief
+) -> NegotiationBriefResponse:
+    """Detail response with the reviewer's display name resolved.
+
+    A reviewed brief used to render its reviewer as a raw UUID (2026-08
+    external-review P3). Resolution is org-scoped by `resolve_user_names`, so
+    an id belonging to another organization stays unresolved and the client
+    falls back to the id — never a cross-org name leak.
+    """
+    names = resolve_user_names(db, principal.organization_id, [brief.reviewed_by_id])
+    return NegotiationBriefResponse.from_model(
+        brief,
+        reviewed_by_full_name=(
+            names.get(brief.reviewed_by_id) if brief.reviewed_by_id is not None else None
+        ),
+    )
 
 
 def get_brief_service(
@@ -92,6 +113,7 @@ def generate_brief(
     body: BriefGenerateRequest,
     service: BriefServiceDep,
     principal: Annotated[Principal, Depends(require_role(Role.ANALYST))],
+    db: DbDep,
 ) -> NegotiationBriefResponse:
     targets = body.targets
     brief = service.generate(
@@ -105,7 +127,7 @@ def generate_brief(
             targets.walk_away_threshold if targets is not None else None
         ),
     )
-    return NegotiationBriefResponse.from_model(brief)
+    return _brief_response(db, principal, brief)
 
 
 @scenario_briefs_router.get("/{scenario_id}/negotiation-briefs")
@@ -148,9 +170,10 @@ def list_briefs_for_rfq(
 def get_brief(
     brief_id: UUID,
     service: BriefServiceDep,
-    _principal: Annotated[Principal, Depends(require_role(Role.VIEWER))],
+    principal: Annotated[Principal, Depends(require_role(Role.VIEWER))],
+    db: DbDep,
 ) -> NegotiationBriefResponse:
-    return NegotiationBriefResponse.from_model(service.get(brief_id))
+    return _brief_response(db, principal, service.get(brief_id))
 
 
 @briefs_router.post("/{brief_id}/review")
@@ -159,6 +182,7 @@ def review_brief(
     body: BriefReviewRequest,
     service: BriefServiceDep,
     principal: Annotated[Principal, Depends(require_role(Role.ANALYST))],
+    db: DbDep,
 ) -> NegotiationBriefResponse:
     brief = service.mark_reviewed(
         brief_id,
@@ -166,7 +190,7 @@ def review_brief(
         reviewer_notes=body.reviewer_notes,
         actor_id=principal.user.id,
     )
-    return NegotiationBriefResponse.from_model(brief)
+    return _brief_response(db, principal, brief)
 
 
 @briefs_router.post("/{brief_id}/archive")
@@ -175,9 +199,10 @@ def archive_brief(
     body: BriefArchiveRequest,
     service: BriefServiceDep,
     principal: Annotated[Principal, Depends(require_role(Role.ADMINISTRATOR))],
+    db: DbDep,
 ) -> NegotiationBriefResponse:
     brief = service.archive(brief_id, reason=body.reason, actor_id=principal.user.id)
-    return NegotiationBriefResponse.from_model(brief)
+    return _brief_response(db, principal, brief)
 
 
 __all__ = ["briefs_router", "rfq_briefs_router", "scenario_briefs_router"]

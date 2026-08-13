@@ -99,14 +99,19 @@ jobs:
       E2E_BASE_URL: "http://localhost:5173"
     steps:
       - uses: actions/checkout@v4
+      # Caches are deliberately DISABLED for this job. `backend` and `frontend`
+      # run concurrently and own the uv/npm caches; when this job also tried to
+      # save them, the post-job save raced them ("Unable to reserve cache …
+      # another job may be creating this cache") and setup-uv's post step exited
+      # 2, failing an e2e run whose every real step — including the whole
+      # Playwright suite — had already passed.
       - uses: astral-sh/setup-uv@v5
         with:
           python-version: "3.12"
+          enable-cache: false
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
       - name: Install backend dependencies
         working-directory: backend
         run: uv sync --locked

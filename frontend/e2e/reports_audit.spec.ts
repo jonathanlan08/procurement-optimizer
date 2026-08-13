@@ -29,7 +29,12 @@ test("generate a supplier-comparison report and download it", async ({ page }) =
   await page.getByRole("button", { name: "Generate report" }).click();
 
   const row = page.getByRole("row").filter({ hasText: "Supplier comparison" }).first();
-  await expect(row).toContainText("Ready", { timeout: 20_000 });
+  // 60s, not 20s: report generation runs on the thread job runner and the
+  // FIRST one in a process also pays for reportlab/openpyxl import warm-up.
+  // That fits comfortably on a dev machine but exceeded 20s on a cold, shared
+  // CI runner (observed as a flake on the first GitHub Actions run) — the
+  // work is genuinely slow there, not stuck, so the wait is what should give.
+  await expect(row).toContainText("Ready", { timeout: 60_000 });
 
   const downloadLink = row.getByRole("link", { name: "Download" });
   const downloadUrl = await downloadLink.getAttribute("href");

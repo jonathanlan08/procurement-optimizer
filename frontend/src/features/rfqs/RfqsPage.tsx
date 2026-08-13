@@ -76,10 +76,10 @@ import { isDecimalString } from "../../lib/money";
 import { isAnalystOrAbove } from "../../lib/roles";
 import { useDebouncedValue } from "../../lib/useDebouncedValue";
 import { zodResolver } from "../../lib/zodResolver";
-import { DocumentsSection } from "../documents/DocumentsSection"; // ALLOWED insertion: quote documents, mounted below
-import { ReviewPane } from "../extraction/ReviewPane"; // ALLOWED insertion: full-screen extraction review
+import { DocumentsSection } from "../documents/DocumentsSection"; // quote documents, mounted below
+import { ReviewPane } from "../extraction/ReviewPane"; // full-screen extraction review
 import { type PartResponse, usePart, useParts } from "../parts/api";
-import { QuotesSection } from "../quotes/QuotesSection"; // ALLOWED insertion: quote entry, mounted below
+import { QuotesSection } from "../quotes/QuotesSection"; // quote entry, mounted below
 import { type SupplierResponse, useSupplier, useSuppliers } from "../suppliers/api";
 import { type UnitDefinitionResponse, useBom, useBoms, useUnits } from "../boms/api";
 import {
@@ -1566,10 +1566,10 @@ function RfqDetail({
 
       <RfqSupplierSection rfq={rfq} canWrite={canWrite} />
 
-      {/* ALLOWED insertion: quote documents + extraction entry point */}
+      {/* quote documents + extraction entry point */}
       <DocumentsSection rfq={rfq} onReviewExtraction={onReviewExtraction} />
 
-      <QuotesSection rfq={rfq} /> {/* ALLOWED insertion: quote entry section */}
+      <QuotesSection rfq={rfq} /> {/* quote entry section */}
 
       <div className="form-actions">
         <button type="button" className="btn-ghost-sm" onClick={onClosed}>
@@ -1593,7 +1593,7 @@ export function RfqsPage() {
   const [statusFilter, setStatusFilter] = useState<Set<RfqStatus>>(new Set());
   const [offset, setOffset] = useState(0);
   const [drawerState, setDrawerState] = useState<DrawerState>(null);
-  // ALLOWED insertion: "Review extraction" wiring - a full-screen surface
+  // "Review extraction" wiring - a full-screen surface
   // (../extraction/ReviewPane.tsx), rendered as a page-level sibling of the
   // RFQ drawer rather than nested inside it (see that file's own header for
   // why), so it needs its own state here rather than living inside
@@ -1784,7 +1784,7 @@ export function RfqsPage() {
         )}
       </Drawer>
 
-      {/* ALLOWED insertion: "Review extraction" wiring line */}
+      {/* "Review extraction" wiring line */}
       {reviewingRunId && (
         <ReviewPane runId={reviewingRunId} onClose={() => setReviewingRunId(null)} />
       )}

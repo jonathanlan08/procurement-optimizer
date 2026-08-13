@@ -1,4 +1,4 @@
-"""Org-scoped repository base - PRINCIPAL-OWNED. Isolation control #2.
+"""Org-scoped repository base. Isolation control #2.
 
 Every business-data repository extends OrgScopedRepository. Every query it emits
 is filtered by organization_id; there is no unscoped accessor. Control #1 is the

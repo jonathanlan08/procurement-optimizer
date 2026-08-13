@@ -13,7 +13,7 @@ Three phases, matching the contract's three mutating routes:
   exception.
 - `commit()` (`POST /part-imports/{id}/commit`): all-or-nothing. Refuses
   outright if the batch is not `previewing` (idempotent-guard, `409
-  conflict_state` - this task's brief) or if it contains any `error` row
+  conflict_state` - the spec) or if it contains any `error` row
   (the whole batch is refused, not just that row - see
   `PartImportService.commit` docstring for why). Otherwise creates one
   `Part` per `create` row via `PartService.create` - the exact same
@@ -28,7 +28,7 @@ Three phases, matching the contract's three mutating routes:
 Unit resolution (`unit_code` -> `unit_definition_id`) and existing-active-
 part duplicate detection both need the database, so both happen here, not in
 the pure parser - see `app.importing.part_import_parser` module docstring.
-`commit()` re-runs both (this task's brief: "re-check duplicates") rather
+`commit()` re-runs both (the spec: "re-check duplicates") rather
 than trusting what `preview()` recorded, because time passes between preview
 and commit and another request may have changed what is true.
 """
@@ -358,7 +358,7 @@ class PartImportService:
         """All-or-nothing (§4.5). Two distinct failure shapes, both `409`:
 
         1. The batch is not `previewing` (already committed/cancelled) -
-           `commit` is idempotent-guarded, this task's brief.
+           `commit` is idempotent-guarded, the spec.
         2. The batch contains any `error` row. The *whole* batch is refused
            here, not just that row: `create` rows in the same batch are not
            created either. This reads `SPEC §3`'s "transactional import...

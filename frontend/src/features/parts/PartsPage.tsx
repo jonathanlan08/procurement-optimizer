@@ -41,7 +41,7 @@ import { isAdministratorOrAbove, isAnalystOrAbove } from "../../lib/roles";
 import { useDebouncedValue } from "../../lib/useDebouncedValue";
 import { zodResolver } from "../../lib/zodResolver";
 import { useUnits } from "../boms/api";
-import { PartImportPanel } from "../imports/PartImportPanel"; // ALLOWED insertion: part-import workflow
+import { PartImportPanel } from "../imports/PartImportPanel"; // part-import workflow
 import {
   type ApprovalStatus,
   type PartResponse,
@@ -786,7 +786,7 @@ export function PartsPage() {
             />
             Include archived
           </label>
-          <PartImportPanel /> {/* ALLOWED insertion: part-import workflow, self-gated */}
+          <PartImportPanel /> {/* part-import workflow, self-gated */}
           {canWrite && (
             <button
               type="button"

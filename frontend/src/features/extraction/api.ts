@@ -50,7 +50,7 @@
  * task brief describes match-candidate review as part of the same
  * post-materialize surface ReviewPane.tsx owns ("After materialize: link
  * to the quote + match candidates section"), and no standalone matching
- * folder is in this task's file list.
+ * folder is in the file list.
  *  - **"Confirm/Reject" per candidate is a judgment call over the real
  *    route shape**, documented here since the literal API has no
  *    per-candidate confirm/reject route at all (`services/

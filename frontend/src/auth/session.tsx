@@ -1,4 +1,4 @@
-/** Auth session state + guards - PRINCIPAL-OWNED. */
+/** Auth session state + guards. */
 
 import {
   createContext,

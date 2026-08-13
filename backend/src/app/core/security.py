@@ -1,4 +1,4 @@
-"""Password hashing, session tokens, CSRF - PRINCIPAL-OWNED.
+"""Password hashing, session tokens, CSRF.
 
 Rules (docs/planning/07-security-model.md, ratified):
 - argon2id for passwords

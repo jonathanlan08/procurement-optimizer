@@ -1098,7 +1098,7 @@ class TestQuoteAuditTrail:
         assert _event_types(quote["id"]) == ["quote.created", "quote.updated", "quote.superseded"]
         # The replacement quote gets no `quote.created` event of its own -
         # `supersede()` writes exactly one audit event (`quote.superseded`,
-        # keyed to the OLD quote per this task's brief), with the new
+        # keyed to the OLD quote by design), with the new
         # quote's full graph nested inside that event's after_state instead
         # (see services/quote_service.py's `supersede()` comment). Only its
         # own later `archive()` call gets an event keyed to its own id.

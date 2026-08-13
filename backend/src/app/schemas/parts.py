@@ -72,7 +72,7 @@ RequiredSpecificationValue = str | bool | int | float
 def _validate_required_specifications(
     value: dict[str, RequiredSpecificationValue] | None,
 ) -> dict[str, RequiredSpecificationValue] | None:
-    """"validate keys nonempty, ≤100 entries" per this task's brief. Values are
+    """"validate keys nonempty, ≤100 entries" by design. Values are
     already type-constrained by the annotation; nothing further to check."""
     if value is None:
         return value

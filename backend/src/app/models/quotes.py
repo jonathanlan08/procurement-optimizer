@@ -93,7 +93,7 @@ intentional decision, not an oversight:
 9. **`QuoteLine.documentation_cost`/`handling_cost`, added later (migration
    0016, 2026-08 product-audit remediation).** Not in this phase's original
    field list, and not in the ERD's `QUOTE_LINES` box either - added because
-   `app.domain.landed_cost.contracts` (PRINCIPAL-OWNED) has always defined
+   `app.domain.landed_cost.contracts` () has always defined
    `FixedCosts.documentation`/`LogisticsCosts.handling` as real inputs to the
    landed-cost formula, but until this migration nothing anywhere in this
    schema could supply either, so `LandedCostService` always passed both as

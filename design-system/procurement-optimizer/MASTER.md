@@ -307,7 +307,7 @@ element categories below.
 Each hue is >=4.5:1 as text against white and against its own 10%-alpha tint pill (verified
 per-pair; see frontend/e2e/a11y.spec.ts's zero-violation gate). **BOMs and FX rates have no
 assigned hue** - the design director scoped this to seven workspaces, not all nine NAV entries,
-so those two keep their plain accent-blue treatment everywhere below rather than this task
+so those two keep their plain accent-blue treatment everywhere below rather than this change
 inventing colors the spec never defined.
 
 A second set, `--hue-<name>-on-dark`, exists purely as an accessibility derivative: the seven

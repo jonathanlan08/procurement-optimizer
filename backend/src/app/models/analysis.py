@@ -5,11 +5,11 @@
 convention of documenting every departure from the ERD's literal box rather
 than silently narrowing or renaming:
 
-1. **`LandedCostResult` follows this task's own narrower, explicit column
+1. **`LandedCostResult` follows the narrower, explicit column
    list**, not the ERD's fuller `LANDED_COST_RESULTS` box. The ERD also
    carries `scenario_id` (nullable FK to `comparison_scenarios`),
    `source_currency`, `exchange_rate_id`, and `manual_overrides`; none of
-   those are in this task's explicit brief, and `comparison_scenarios` does
+   those are in the explicit brief, and `comparison_scenarios` does
    not exist yet in this codebase (a later phase), so `scenario_id` could not
    even be typed as a real FK today. The task's own `inputs_snapshot` JSONB
    is explicitly specified to capture "the full assembled input incl.
@@ -36,7 +36,7 @@ than silently narrowing or renaming:
    above, which specifies an unambiguous, differently-shaped column), so the
    codebase-wide convention wins here.
 
-Both enums below wrap a principal-owned domain enum directly rather than
+Both enums below wrap a frozen domain enum directly rather than
 re-declaring its members, so the DB type's members can never drift from the
 domain module's - the same pattern `app/models/documents.py`'s
 `CONFIDENCE_BAND_ENUM` already establishes for `app.domain.confidence.

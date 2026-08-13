@@ -1,7 +1,7 @@
 # 06 - Order-Allocation Optimization Methodology
 
-Status: **DRAFT FOR PRINCIPAL REVIEW**
-Implements SPEC §Order-allocation optimization. Solver: OR-Tools CP-SAT (agreed with the principal,
+Status: **DRAFT**
+Implements SPEC §Order-allocation optimization. Solver: OR-Tools CP-SAT (agreed with the maintainer,
 with the determinism changes in `01-architecture.md` §10 D3).
 
 ---
@@ -226,7 +226,7 @@ scaled(x)  = int(x.quantize(Decimal("0.0001"), ROUND_HALF_EVEN) * COST_SCALE)
 QTY_MULT   = 1 for integral units; 1_000 for kg/m (3 dp of quantity)
 ```
 
-Why `10^4` and not `10^6` (the principal's provisional value): headroom. The largest objective term is
+Why `10^4` and not `10^6` (the maintainer's provisional value): headroom. The largest objective term is
 `Σ c_t · q`, bounded by `max_unit_cost × total_qty × COST_SCALE`. With `10^6`, a 10 M-unit order of a
 $1 000 part reaches `10^16` - still inside int64 but within two orders of magnitude of the limit, and
 CP-SAT's internal products can exceed it. With `10^4` there are four more decimal orders of headroom
@@ -309,14 +309,14 @@ from a black box into an explanation.
 ## 9. Assumptions, limits, and gaps
 
 1. **All-units discounts assumed** (see `05-calculation-methodology.md` §6). Incremental/marginal
-   discounts are a different formulation; if the principal wants them, it is a `q[s,l,t]` chain with
+   discounts are a different formulation; if the maintainer wants them, it is a `q[s,l,t]` chain with
    ordering constraints - roughly a day of work and a new set of boundary tests.
 2. **Deterministic demand.** No safety stock, no forecast uncertainty, no multi-period planning.
 3. **Costs are linear in quantity within a tier.** Volume-dependent freight (a second container at
    1 200 units) is not modelled; it would need step-fixed freight variables. Flagged as a realistic
    gap the demo should mention rather than hide.
 4. **One-shot award.** No lot-splitting over time, no delivery scheduling.
-5. **Concentration on cost basis by default** - confirm with the principal; qty basis is a one-line
+5. **Concentration on cost basis by default** - confirm with the maintainer; qty basis is a one-line
    switch but changes results.
 6. **Supplier-level capacity** is optional and, when absent, only per-line capacity binds. Real
    suppliers have shared capacity across parts; the field exists, the seed data should exercise it.

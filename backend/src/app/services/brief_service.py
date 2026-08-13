@@ -23,7 +23,7 @@ returning the finished brief, `201`.
 ## Deviation 2 - no `PATCH /negotiation-briefs/{id}` in this build
 
 §4.17 also lists `PATCH .../{id}` for "human edits to any section, audited".
-This task's own OBJECTIVE text, which enumerates every route/schema/service
+The spec, which enumerates every route/schema/service
 method this file and `api/v1/briefs.py` must implement, does not mention an
 edit endpoint at all (only generate/get/review/archive/list) - deliberately
 narrower than the contract table, the same "task's own explicit scope wins
@@ -38,7 +38,7 @@ half shape.
 ## Deviation 3 - no `/email-draft` route in this build
 
 §4.17 lists `GET .../{id}/email-draft` ("returns text only... no send
-endpoint and there will not be one"). This task's own OBJECTIVE is
+endpoint and there will not be one"). The spec is
 explicit in the other direction: "NO send/email endpoint (assert in tests
 that no such route exists)". The two are reconciled, not contradicted: the
 contract's own route is a read of already-generated draft text, never a

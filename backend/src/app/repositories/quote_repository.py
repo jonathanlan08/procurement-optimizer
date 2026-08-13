@@ -13,7 +13,7 @@ every relationship defined there is one-directional, forward-only), so there
 is nothing to eager-load through.
 
 Default listing (`list_by_rfq`) excludes superseded quotes unless
-`include_superseded=True` is passed (this task's brief: "list by rfq
+`include_superseded=True` is passed (the spec: "list by rfq
 (exclude superseded by default)"). The manual-supersession chain
 (app/models/quotes.py module docstring point 2) means an RFQ can accumulate
 several superseded revisions per supplier over time, and a client asking

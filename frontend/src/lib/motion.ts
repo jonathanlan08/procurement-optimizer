@@ -1,4 +1,4 @@
-/** Motion system - PRINCIPAL-OWNED. Built on motion.dev's vanilla `animate`.
+/** Motion system. Built on motion.dev's vanilla `animate`.
  *
  * Governance (MASTER.md v2.1 "Motion"): this workspace is data-dense and
  * analytical, so motion exists to mark *orientation changes* (arriving on a

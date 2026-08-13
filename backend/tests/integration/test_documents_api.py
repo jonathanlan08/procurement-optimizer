@@ -52,7 +52,7 @@ def _cleanup_quote_documents(migrated_engine: Engine) -> Generator[None, None, N
     test_content_sha256_duplicate_allowed_across_orgs`'s deliberately
     unscoped `SELECT count(*) FROM quote_documents` (Postgres READ COMMITTED
     visibility does not care which connection committed a row). That file is
-    outside this task's allowed-edits list, so the fix lives here instead:
+    outside the allowed-edits list, so the fix lives here instead:
     delete this module's own rows after every test, leaving the shared table
     exactly as any other module would find it."""
     yield

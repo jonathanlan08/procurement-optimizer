@@ -36,7 +36,7 @@ task's `api/v1/documents.py`.
    `app/models/documents.py`'s own module docstring notes `quarantined` is
    reachable from `uploaded`/`validated` *before* Stage 2/4 ever run - a
    persisted quarantine audit trail for rejected uploads is a real future
-   need, but it is not part of this task's brief (no test in this task's
+   need, but it is not part of the spec (no test in the
    own required list exercises it) and is left to the extraction-pipeline
    phase that will also own `app/domain/documents/transitions.py`.
 3. **Duplicate content is `409 conflict_duplicate`, not the contract's

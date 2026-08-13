@@ -1,4 +1,4 @@
-"""Vendor-scoring contracts - PRINCIPAL-OWNED.
+"""Vendor-scoring contracts.
 
 SPEC §Vendor comparison engine, methodology in 05 §7, rulings in
 00-decisions.md §2 (#5: missing criterion values renormalize weights; missing

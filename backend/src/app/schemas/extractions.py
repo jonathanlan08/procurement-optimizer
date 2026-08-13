@@ -13,7 +13,7 @@ names verbatim - `provider` (not `provider_name`) and `simulated` (not
 `{code, message}` object (or `null`) rather than two flat columns, matching
 this codebase's general error-envelope shape (`app/core/errors.py`).
 `injection_suspected` is added beyond the contract's terse annotation per
-this task's own explicit instruction (its OBJECTIVE literally lists it among
+the explicit instruction (its OBJECTIVE literally lists it among
 the fields `GET /extraction-runs/{id}` must surface) - computed from
 `ExtractionRun.raw_response["injection_scan"]`, the run-level place
 `ExtractionService.start_run` persists the canary scanner's verdict (there is
@@ -170,7 +170,7 @@ class ExtractionFieldPatchRequest(BaseModel):
 
 class ExtractionMaterializeRequest(BaseModel):
     """`POST /extraction-runs/{id}/confirm` body. Not spelled out in
-    §4.10's own terse annotation, but required per this task's explicit
+    §4.10's own terse annotation, but required per the explicit
     instruction: the RFQ comes from the document, but nothing in the
     extraction payload can name *which invited supplier* issued the quote
     with the reliability a foreign key demands, so the reviewer supplies it

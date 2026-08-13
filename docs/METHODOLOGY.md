@@ -154,7 +154,7 @@ on (material + logistics); quality risk 2 %; no delay; Net-60 against a Net-30 b
 | **effective unit cost** | `7240.548318 / 500` | **`14.48109664`** |
 
 The planning draft's financing figure (`−37.520000`, total `7240.550653`) was arithmetically
-wrong and was corrected by the principal (`docs/planning/00-decisions.md` §3):
+wrong and was corrected by the maintainer (`docs/planning/00-decisions.md` §3):
 `0.08 × (30 − 60)/365 = −0.006575342465…`, `5706.521740 × 0.006575342465… = 37.52233473…` →
 `−37.522335` at 6 dp.
 
@@ -267,7 +267,7 @@ documentation=money(line.documentation_cost, "documentation"),
 handling=money(line.handling_cost, "handling"),
 ```
 
-`app.domain.landed_cost.contracts`/`calculator.py` (PRINCIPAL-OWNED) required no change at
+`app.domain.landed_cost.contracts`/`calculator.py` () required no change at
 all - both fields were already real inputs to the formula; only the service-layer source was
 missing. `Completeness.COMPLETE` is now structurally **reachable**: a quote line with every
 commercial field populated, under a request that supplies every risk/financing assumption

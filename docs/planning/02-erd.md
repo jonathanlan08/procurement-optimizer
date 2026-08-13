@@ -1,6 +1,6 @@
 # 02 - Data Model / ERD
 
-Status: **DRAFT FOR PRINCIPAL REVIEW**
+Status: **DRAFT**
 Covers every entity in `docs/SPEC.md` §Database requirements, plus additions marked **[+]**.
 
 ---
@@ -784,7 +784,7 @@ FKs alone - a FK would follow the mutation.
 **Price breaks**
 - `ck_price_break_range`: `min_quantity > 0 AND (max_quantity IS NULL OR max_quantity >= min_quantity)`.
 - `uq_price_break_min`: `UNIQUE (quote_line_id, min_quantity)`.
-- **No-overlap:** `EXCLUDE USING gist (quote_line_id WITH =, numrange(min_quantity, COALESCE(max_quantity,'infinity'), '[]') WITH &&)` (requires `btree_gist`). If the principal prefers not to enable the extension, fall back to an application-level validator plus a nightly integrity test - but the DB-level exclusion is strictly better and cheap.
+- **No-overlap:** `EXCLUDE USING gist (quote_line_id WITH =, numrange(min_quantity, COALESCE(max_quantity,'infinity'), '[]') WITH &&)` (requires `btree_gist`). If the maintainer prefers not to enable the extension, fall back to an application-level validator plus a nightly integrity test - but the DB-level exclusion is strictly better and cheap.
 - Gap detection (tiers must be contiguous) stays in the application: a gap is a warning, an overlap is an error.
 
 **Scoring**
@@ -884,7 +884,7 @@ prevention on the review screens, where two analysts editing one quote is realis
 
 1. **Multi-currency within one quote.** SPEC puts `currency` on the quote. Real quotes sometimes price
    freight in a different currency. Modelled as quote-level currency for v0.1.0; per-line currency
-   override is a schema change if the principal wants it - cheaper to decide now than later.
+   override is a schema change if the maintainer wants it - cheaper to decide now than later.
 2. **Tax vs tariff vs duty** are separate columns but the SPEC never says whether tax is recoverable
    (VAT) - recoverable tax should not be in landed cost. Proposed: `tax_is_recoverable boolean` on
    `quote_terms`, defaulting to `false`, surfaced as an assumption. **Needs a decision.**

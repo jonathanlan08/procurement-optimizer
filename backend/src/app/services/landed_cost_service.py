@@ -11,7 +11,7 @@ stateless calculator, not a decision (03-api-contract.md §6 gap #2: "I
 believe that is correct... it is the one mutation-free money path with no
 audit row").
 
-**Assembly recipe** (this task's brief, followed literally):
+**Assembly recipe** (the spec, followed literally):
 `quote_line` + its `quote_price_breaks` (via the frozen
 `app.domain.landed_cost.breaks.select_price_break`, evaluated at the matched
 RFQ line's `required_quantity`) + `quote_terms` (payment terms days) + the FX
@@ -124,7 +124,7 @@ class LandedCostAssumptions:
     """Optional, all-decimal-string scenario assumptions from the request.
     See module docstring for why `tariff_rate`/`duty_rate`/
     `promised_lead_time_days`/`required_lead_time_days` are present in
-    addition to the five fields this task's brief names by name."""
+    addition to the five fields the spec names by name."""
 
     quality_risk_rate: str | None = None
     delay_risk_per_day: str | None = None
@@ -335,7 +335,7 @@ class LandedCostService:
         part_id: uuid.UUID,
     ) -> tuple[Quantified, dict[str, Any]]:
         """Convert `price` (per quote-line unit) into a price per RFQ-line
-        unit - the RFQ line's unit is always the target (this task's own
+        unit - the RFQ line's unit is always the target (the
         instruction). A missing conversion factor never guesses: the price
         becomes MISSING with an explanatory note, which the calculator turns
         into an INCOMPLETE result (never a silent 1:1 passthrough)."""

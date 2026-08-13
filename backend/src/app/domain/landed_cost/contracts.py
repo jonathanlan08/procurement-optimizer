@@ -1,7 +1,7 @@
-"""Landed-cost calculation contracts - PRINCIPAL-OWNED.
+"""Landed-cost calculation contracts.
 
 Formulas (docs/planning/05-calculation-methodology.md §3, ratified in
-00-decisions.md; the worked example in 05 §9 carries the principal's corrected
+00-decisions.md; the worked example in 05 §9 carries the corrected
 hand-verified values):
 
     extended_material_cost = normalized_unit_price * accepted_quantity

@@ -12,7 +12,7 @@ is the more authoritative source for the schema shape.
 **`PartImportBatch.format` is not in 02-erd.md's box.** Added anyway,
 following the same precedent already recorded in `app/models/boms.py`'s
 module docstring for `BillOfMaterials` carrying `TimestampedMixin`/
-`ArchivableMixin` beyond what its own ERD box lists: this task's brief
+`ArchivableMixin` beyond what its own ERD box lists: the spec
 explicitly calls for a `format csv|xlsx` column, and every table in this
 schema already carries strictly more structure than its own compact ERD box
 notation shows in at least one place (BOMs is the precedent; `Part` is
@@ -36,7 +36,7 @@ would do), the same reasoning `app/models/boms.py` already gives for why
 
 **`PartImportRow.disposition` implements a subset of 02-erd.md's own
 documented value set.** The ERD box literally spells out `"create|update|
-skip_duplicate|error"` for this column, but nothing in SPEC §3, this task's
+skip_duplicate|error"` for this column, but nothing in SPEC §3, the
 brief, or docs/planning/03-api-contract.md §4.5 describes an *update*
 policy for a part import (matching-on-internal-part-number-and-overwriting
 existing fields is a real, separate product decision - which fields

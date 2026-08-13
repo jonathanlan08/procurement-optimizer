@@ -1,4 +1,4 @@
-"""Declarative base and mixins - PRINCIPAL-OWNED.
+"""Declarative base and mixins.
 
 Conventions (docs/planning/02-erd.md §1, ratified):
 - UUID primary keys generated in the application (IdGenerator), never in the DB

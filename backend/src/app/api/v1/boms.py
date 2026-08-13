@@ -16,19 +16,19 @@ per instructions but both are recorded here:
    specifies how a BOM actually moves `draft -> active`, nor when a
    predecessor becomes `superseded` - see `services/bom_service.py`'s
    module docstring for the full status-transition design this fills that
-   gap with. This task's brief explicitly asks for this route ("if
+   gap with. The spec explicitly asks for this route ("if
    genuinely undefined: draft on create, activate endpoint promotes
    draft->active"), the same kind of contract-silent-but-reasonable
    addition already made for `POST /parts/{id}/unarchive` in
    `api/v1/parts.py`.
-2. **No `PATCH /boms/{id}`.** This task's file-creation brief lists the six
+2. **No `PATCH /boms/{id}`.** The spec lists the six
    routes this module implements (GET/POST /boms, GET /boms/{id}, POST
    .../versions, POST .../activate, POST .../archive, GET .../versions) and
    does not include metadata-only `PATCH`. Lines are already fully
    immutable in place (no line-edit route exists anywhere - the model has
    no columns to update a line with, per app/models/boms.py); a metadata-
    only `PATCH` would be a legitimate follow-up but is out of scope for
-   this task's allowlisted route set.
+   the allowlisted route set.
 3. **`GET /boms/{id}/versions`, not `GET /boms/{root_id}/versions`.** The
    contract names the path parameter `{root_id}`, implying the caller must
    already know the root id. This router accepts *any* version's id in the
@@ -39,7 +39,7 @@ per instructions but both are recorded here:
    works, which is more convenient for a client that only has "the BOM I'm
    looking at right now," not necessarily its root.
 
-Roles (§4.7 route table + this task's stated default "viewer reads, analyst
+Roles (§4.7 route table + the stated default "viewer reads, analyst
 mutates, admin archives"): list/get/version-chain are `O A N V`; create,
 new-version, and activate are `O A N`; archive is `O A`.
 """

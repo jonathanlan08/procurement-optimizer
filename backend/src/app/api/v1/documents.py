@@ -9,7 +9,7 @@ route table nests create/list under the parent RFQ
 (`POST`/`GET /rfqs/{id}/quote-documents`) while `GET /quote-documents/{id}`,
 `GET /quote-documents/{id}/content`, and `POST /quote-documents/{id}/archive`
 address the document directly - followed literally here per "follow the
-contract's actual paths if they differ" (this task's own instruction), the
+contract's actual paths if they differ" (the instruction), the
 identical resolution `api/v1/quotes.py`'s module docstring already documents
 for the same task-prose-vs-contract-table gap. `rfq_documents_router` and
 `router` are both exported and both mounted in `app/main.py`.
@@ -19,7 +19,7 @@ page image from Stage 4 (text/table acquisition) output, which
 `services/document_service.py` does not implement (Stage 1-3 scope only; see
 that module's own docstring).
 
-Security, per this task's brief:
+Security, by design:
 - File size is checked with a **streamed** read against
   `settings.max_upload_bytes`, aborting with `413` before the whole file is
   ever buffered - the same `_read_upload_within_limit` technique
@@ -89,7 +89,7 @@ def get_document_service(
     settings: SettingsDep,
 ) -> DocumentService:
     # Built per request from Settings, not injected via api/deps.py
-    # (principal-owned, off limits) - per this task's own instruction; see
+    # (frozen); see
     # providers/storage/__init__.py's module docstring.
     storage = build_storage_provider(settings)
     return DocumentService(

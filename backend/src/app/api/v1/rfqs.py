@@ -22,7 +22,7 @@ Deviations from the contract's literal route table (§4.8), contract wins per
 instructions but both are recorded here:
 
 1. **`POST /rfqs/{id}/suppliers/{sid}/reinstate`** has no entry in §4.8's
-   table. This task's brief explicitly asks for an un-exclude operation
+   table. The spec explicitly asks for an un-exclude operation
    ("invitations: invite (only draft/open), exclude (requires reason),
    un-exclude") the same way `api/v1/boms.py`'s `POST /boms/{id}/activate`
    fills a brief-mandated, contract-silent gap. Gated `O A N` (analyst+),

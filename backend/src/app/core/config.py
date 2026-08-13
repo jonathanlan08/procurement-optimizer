@@ -1,4 +1,4 @@
-"""Typed application settings - PRINCIPAL-OWNED.
+"""Typed application settings.
 
 Fail-fast: invalid combinations refuse to start rather than degrade silently.
 Never log or serialize secret values.

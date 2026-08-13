@@ -17,14 +17,14 @@ so a second, parallel enum would only invite the two to drift apart. It is a
 plain `StrEnum`, not an ORM class, so importing it here does not pull any
 SQLAlchemy/session machinery into this otherwise-pure module.
 
-## A genuine conflict between this task's own prose and its cited source
+## A genuine conflict between the prose and its cited source
 
-This task's own instructions describe the five strategies' priority order,
+The spec describes the five strategies' priority order,
 per-strategy confidence, and the fuzzy scoring formula in terms that
 diverge from 04-document-pipeline.md §10 - the very section the task cites
 as their source - on several concrete points:
 
-| Aspect | This task's prose | §10 (implemented here) |
+| Aspect | The spec | §10 (implemented here) |
 |---|---|---|
 | Priority 3 vs 4 | `normalized_text` before `alternative` | `alternative` first |
 | Confidence: `alternative` | 0.95 | 0.90 (0.75 if `conditional`, see below) |
@@ -48,13 +48,13 @@ evidence that §10's *priority order* specifically is the one actually
 enforced at runtime (not merely one of two equally-valid readings): the
 `MatchStrategy` enum's own declaration order in `app/models/documents.py`
 follows the ERD box's listing (`internal_pn, mpn, normalized_text,
-alternative, fuzzy` - the same order this task's prose uses), and that
+alternative, fuzzy` - the same order the prose uses), and that
 model's own docstring explicitly calls this out as "differ[ing] from §10's
 execution order" - i.e. the FROZEN model itself already documents that its
 enum's declaration order is cosmetic and §10's execution order is the real
 one. `_STRATEGY_PRIORITY` below is keyed to §10, not to declaration order.
 
-One field is kept at this task's own explicit, concrete number rather than
+One field is kept at the explicit, concrete number rather than
 §10's: `MatchConfig.fuzzy_threshold` defaults to `0.82`, not §10's stated
 `0.80`. This is deliberate, not an oversight of the same rule above - this
 task's own required test coverage ("fuzzy threshold boundary: 0.81 excluded,
@@ -80,7 +80,7 @@ narrowed away by the task's own dataclass shape, not silently dropped.
 
 ## `LineTexts`/`CatalogPart` field shape and the fuzzy corpus
 
-`LineTexts` has exactly the two fields this task specifies
+`LineTexts` has exactly the two fields this change specifies
 (`part_number_text`, `description_text`) - not a third field for
 `QuoteLine.quoted_mpn`. `services/matching_service.py` is responsible for
 choosing what text to pass as `part_number_text` when building this from a
@@ -90,13 +90,13 @@ number is absent) - see that service's module docstring. Strategies 1
 test `part_number_text` against the catalog's identifier columns; strategy 5
 (`fuzzy`) additionally folds in `description_text`.
 
-`CatalogPart` likewise has exactly this task's specified fields - no
+`CatalogPart` likewise has exactly the specified fields - no
 `description` field, unlike §10's "fuzzy ... on description + MPN" text.
 Fuzzy compares `part_number_text + description_text` (the line's own texts)
 against `name + internal_part_number + manufacturer_part_number` (the
 catalog side) via `rapidfuzz.fuzz.token_set_ratio` - `name` standing in for
 "description" on the catalog side, since `Part.name` is `NOT NULL` (always
-present) while `Part.description` is nullable and not part of this task's
+present) while `Part.description` is nullable and not part of the
 own `CatalogPart` field list; the numeric identifiers are folded in too so a
 line whose description already names its part number scores well against a
 short-name catalog entry.

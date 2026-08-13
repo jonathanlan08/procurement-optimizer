@@ -4,7 +4,7 @@ Extends OrgScopedRepository, so every query is filtered by organization_id
 before any other predicate (isolation control #2).
 
 `PartAlternativeRepository` lives here too, rather than in its own module
-like `SupplierContactRepository`/`SupplierPerformanceRepository`: this task's
+like `SupplierContactRepository`/`SupplierPerformanceRepository`: the
 file-creation allowlist names only `repositories/part_repository.py`, so the
 sub-resource repository is co-located instead of getting its own file. It
 follows the same org-scoped pattern as everything else.

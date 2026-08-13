@@ -3,7 +3,7 @@
  * rendering, scenario-history role gating (Clone & re-run / Archive), and
  * saved-result version stamps. Companion to comparison.test.tsx, which keeps
  * the landed-cost comparison table + scoring-result rendering tests; split
- * out per this task's own instruction ("extend comparison.test.tsx or add
+ * out per the instruction ("extend comparison.test.tsx or add
  * allocation.test.tsx") to keep each file focused on one half of the page.
  *
  * Fixtures are intentionally self-contained (not shared with

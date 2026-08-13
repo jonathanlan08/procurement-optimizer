@@ -1,5 +1,5 @@
 /** Audit-log data layer - TanStack Query hooks against the FROZEN wire
- * contract given in this task's brief. The backend is being built
+ * contract given in the spec. The backend is being built
  * concurrently (see ../reports/api.ts's file header for the same
  * "code to the frozen contract" situation) - this file documents the two
  * places the contract leaves a shape ambiguous:

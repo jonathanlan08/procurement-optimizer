@@ -28,7 +28,7 @@
  *    honest "showing the first N of `rows_total` rows" caveat
  *    PartImportPanel.tsx renders when the file has more rows than the
  *    sample. `usePartImportBatch` (cursor-paginated) is still exported here
- *    for completeness against the contract, but is unused by this task's UI.
+ *    for completeness against the contract, but is unused by the UI.
  *  - **`disposition` is typed as the 3-value domain the service actually
  *    emits** (`create`/`skip_duplicate`/`error` - app/models/part_imports.py's
  *    own module docstring: `update` is "documented but not emitted by any
@@ -46,7 +46,7 @@
  *    button pre-emptively; the server re-validates regardless, so a stale
  *    preview can never bypass it.
  *  - **Commit invalidates the Parts list** (`partKeys.lists()`, imported
- *    from ../parts/api - within this task's own ownership) so a successful
+ *    from ../parts/api - within the ownership) so a successful
  *    import's newly created parts show up in PartsPage.tsx's table without
  *    a manual refresh, the same "mutation invalidates the list it affects"
  *    convention every other feature's api.ts already follows.
@@ -203,7 +203,7 @@ export function useCancelPartImport() {
 }
 
 /** `GET /part-imports/{id}` - cursor-paginated full row list. Exported
- * for contract completeness; not used by this task's preview-table UI
+ * for contract completeness; not used by the preview-table UI
  * (see this file's header for the scope call). */
 export function usePartImportBatch(batchId: string | null, cursor: string | null, limit = 50) {
   return useQuery({

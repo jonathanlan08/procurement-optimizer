@@ -1,6 +1,6 @@
 # 05 - Calculation Methodology
 
-Status: **DRAFT FOR PRINCIPAL REVIEW**
+Status: **DRAFT**
 Implements SPEC §Landed-cost engine, §Vendor comparison engine, §9 currency, §10 units, §11 price
 breaks. Everything here is **pure**: `app/domain/**` has no database, no clock, no network.
 
@@ -9,7 +9,7 @@ breaks. Everything here is **pure**: `app/domain/**` has no database, no clock, 
 ## 1. Decimal policy
 
 ```python
-# app/core/money.py  - PRINCIPAL-OWNED
+# app/core/money.py
 from decimal import Decimal, Context, ROUND_HALF_EVEN, localcontext
 
 CALC_PRECISION   = 34                       # working precision, never a storage scale
@@ -116,10 +116,10 @@ Decisions the SPEC leaves open, resolved here (each is a documented assumption, 
 | Is tax included? | **Excluded by default** (`tax_is_recoverable=true` assumed) with a scenario flag to include | VAT-style tax is usually recoverable and would distort comparison; but the assumption must be shown. |
 | Fixed-cost amortization | Charged **fully to the awarded quantity in this RFQ**, not amortized over forecast volume | Amortizing requires a volume forecast the product does not have; inventing one would be fabrication. |
 
-Code contract (principal-owned interface, implementation delegable):
+Code contract (core interface, implementation routine):
 
 ```python
-# app/domain/landed_cost/contracts.py  - PRINCIPAL-OWNED
+# app/domain/landed_cost/contracts.py
 CALCULATION_VERSION: Final[str] = "1.0.0"
 
 @dataclass(frozen=True, slots=True)
@@ -382,7 +382,7 @@ strings, not approximate equality. Any change to these numbers must be a deliber
 
 ---
 
-## 10. Edge cases and gaps flagged to the principal
+## 10. Edge cases and gaps flagged to the maintainer
 
 1. **All-units vs incremental price breaks** - assumed all-units (§6). Confirm.
 2. **Financing as a benefit** (negative component) - I recommend it; it is the only signed component

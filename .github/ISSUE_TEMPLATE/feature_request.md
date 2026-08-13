@@ -25,7 +25,7 @@ Other approaches you considered and why you didn't pick them.
       honesty, or document security (these are never descopeable per
       `docs/planning/00-decisions.md`)
 - [ ] Touches a `contracts.py`, `core/`, `deps.py`, or tenancy-related migration
-      (flag for principal review if so)
+      (flag for careful review if so)
 
 ## Additional context
 

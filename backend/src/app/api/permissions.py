@@ -1,4 +1,4 @@
-"""Permission matrix - PRINCIPAL-OWNED. Isolation/authorization control #4.
+"""Permission matrix. Isolation/authorization control #4.
 
 Every API route MUST have an entry here. A contract test walks the FastAPI
 route table and fails when a route has no declaration, so forgetting to think
@@ -60,7 +60,7 @@ PERMISSIONS: dict[tuple[str, str], PermissionLevel] = {
     ("GET", "/api/v1/part-imports/{batch_id}"): Role.VIEWER,
     ("POST", "/api/v1/part-imports/{batch_id}/commit"): Role.ANALYST,
     ("POST", "/api/v1/part-imports/{batch_id}/cancel"): Role.ANALYST,
-    # BOMs (03-api-contract.md §4.7 + this task's stated default "viewer
+    # BOMs (03-api-contract.md §4.7 + the stated default "viewer
     # reads, analyst mutates, admin archives"). `activate` has no contract-
     # table entry of its own (see api/v1/boms.py module docstring for why
     # this router still implements it); gated analyst+ like create/versions,
@@ -130,7 +130,7 @@ PERMISSIONS: dict[tuple[str, str], PermissionLevel] = {
     # for every field-review/materialize mutation, "O A N V" for every read
     # route (run history, run detail, field list). See
     # api/v1/extractions.py's own module docstring for why these paths
-    # follow the contract's literal route table rather than this task's own
+    # follow the contract's literal route table rather than the
     # paraphrase (POST .../extractions, POST .../confirm+.../correct,
     # POST .../materialize).
     ("POST", "/api/v1/quote-documents/{document_id}/extraction-runs"): Role.ANALYST,
@@ -145,7 +145,7 @@ PERMISSIONS: dict[tuple[str, str], PermissionLevel] = {
     # Part matching (03-api-contract.md §4.12): "O A N" for generate/
     # confirm/unmatch, "O A N V" for the ranked-candidates read route. See
     # api/v1/matching.py's own module docstring for why these paths follow
-    # the contract's literal route table rather than this task's own
+    # the contract's literal route table rather than the
     # paraphrase (POST/GET .../match-candidates, POST
     # /match-candidates/{id}/confirm|reject).
     ("POST", "/api/v1/quotes/{quote_id}/match"): Role.ANALYST,
@@ -154,10 +154,10 @@ PERMISSIONS: dict[tuple[str, str], PermissionLevel] = {
     ("DELETE", "/api/v1/quote-lines/{quote_line_id}/match"): Role.ANALYST,
     # Landed cost (03-api-contract.md §4.15). Preview is the contract's own
     # literal "O A N V" - a stateless calculator, no audit row, viewer-
-    # readable (§6 gap #2), NOT the analyst+ this task's own paraphrase
+    # readable (§6 gap #2), NOT the analyst+ the paraphrase
     # states; see api/v1/analysis.py module docstring point 1 for why the
     # contract's literal role wins. Persisting and the per-RFQ latest-per-
-    # line listing follow this task's own explicit "analyst+"/"viewer+"
+    # line listing follow the explicit "analyst+"/"viewer+"
     # split.
     ("POST", "/api/v1/landed-costs:preview"): Role.VIEWER,
     ("POST", "/api/v1/rfqs/{rfq_id}/landed-costs"): Role.ANALYST,
@@ -190,7 +190,7 @@ PERMISSIONS: dict[tuple[str, str], PermissionLevel] = {
     # archivable resource's archive route - see api/v1/briefs.py's own
     # module docstring for why there is no PATCH edit route and no
     # `/email-draft` route in this build (the latter deliberately: SPEC
-    # "never auto-send", and this task's own test requirement is "assert no
+    # "never auto-send", and the test requirement is "assert no
     # such route exists").
     ("POST", "/api/v1/comparison-scenarios/{scenario_id}/negotiation-briefs"): Role.ANALYST,
     ("GET", "/api/v1/comparison-scenarios/{scenario_id}/negotiation-briefs"): Role.VIEWER,

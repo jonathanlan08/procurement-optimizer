@@ -3,10 +3,10 @@ implementations, and `build_storage_provider()` - the factory that turns
 `app.core.config.Settings` into a concrete provider.
 
 **Not a FastAPI dependency in `app/api/deps.py`.** `deps.py` is
-PRINCIPAL-OWNED and off limits to this task; per the delegating task's own
+ and off limits to this change; per the delegating task's own
 instruction, `api/v1/documents.py` calls `build_storage_provider(settings)`
 directly inside its own `get_document_service` dependency function (using the
-already-principal-owned `SettingsDep`), building a fresh provider once per
+shared `SettingsDep`), building a fresh provider once per
 request and handing it to `DocumentService` as a constructor argument -
 mirroring how every other per-request service dependency in this codebase is
 already assembled (`get_quote_service`, `get_part_import_service`, ...).

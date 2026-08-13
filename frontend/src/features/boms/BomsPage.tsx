@@ -30,7 +30,7 @@
  *  - **Part numbers/units are resolved per-row.** `BomLineResponse` only
  *    carries `part_id`/`unit_definition_id` UUIDs. Each line row resolves
  *    its own part via `usePart` (imported from `../parts/api` - mirrors how
- *    PartsPage itself queries parts, per this task's brief - rather than
+ *    PartsPage itself queries parts, by design - rather than
  *    duplicating that fetch/cache logic here) and units via `useUnits()`.
  *  - **Line-array validation errors use a bracket-key lookup**, not
  *    `errors.lines?.[i]?.field`. lib/zodResolver.ts's minimal zod<->RHF

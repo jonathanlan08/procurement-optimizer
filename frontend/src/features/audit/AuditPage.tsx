@@ -1,5 +1,5 @@
 /** Audit log workspace - routed at `/audit` (replaces the `PlaceholderPage`,
- * per this task's ALLOWED App.tsx edit): a dense, filterable, cursor-paged
+ * per the allowed App.tsx edit): a dense, filterable, cursor-paged
  * table of every recorded audit event, with a row drawer showing the
  * explanation plus a before/after state diff.
  *

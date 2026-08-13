@@ -1,4 +1,4 @@
-"""Engine and session management - PRINCIPAL-OWNED.
+"""Engine and session management.
 
 Transaction rule (docs/planning/01-architecture.md §5): one HTTP request = at most
 one DB transaction, opened and committed by the application service via the unit

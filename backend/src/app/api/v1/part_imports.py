@@ -1,13 +1,13 @@
 """Part import routes (docs/planning/03-api-contract.md §4.5). Sync `def` by
 policy, mirroring api/v1/parts.py.
 
-Route naming follows the contract exactly rather than this task's brief:
+Route naming follows the contract exactly rather than the spec:
 `POST /part-imports/{id}/cancel`, not `/discard` - §4.5's own route table
 says `cancel`, and the resulting state is `rolled_back`
 (app.models.part_imports.PartImportState), not "discarded"; the brief used
 different words for the same route, and the contract wins per instructions.
 
-Security (this task's brief, non-negotiable):
+Security (the spec, non-negotiable):
 - File size is checked with a **streamed** read against `settings.
   max_upload_bytes`, aborting with `413` the moment the running total is
   exceeded, before the whole file is ever handed to the parser

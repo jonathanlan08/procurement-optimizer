@@ -9,7 +9,7 @@ decimal/currency parsing, formula-injection rejection, and in-file duplicate
 detection unit-testable without a database
 (backend/tests/unit/test_part_import_parser.py).
 
-Canonical import columns (this task's brief; the API contract does not
+Canonical import columns (the spec; the API contract does not
 define its own column list, so the brief's list is authoritative here,
 reconciled against `app.models.parts.Part`'s own nullability):
 `internal_part_number` and `name` are required (matching `Part.
@@ -28,7 +28,7 @@ by definition) as the sensible default for "no unit of measure specified",
 and only *that* resolution failing (e.g. an org whose catalogue was never
 seeded) makes the row invalid. See PartImportService._resolve_unit_code.
 
-Security (this task's brief, non-negotiable):
+Security (the spec, non-negotiable):
 - **CSV formula injection.** A cell whose first character is one of
   ``=+-@`` is rejected as a row-level error *unless* the entire cell is a
   plain signed number (``-10.5``, ``+5`` are legitimate negative/positive
@@ -54,8 +54,8 @@ Security (this task's brief, non-negotiable):
   the workbook a *second* time with `data_only=False` (still `read_only`,
   still not evaluating anything - this second pass only reads which cells
   store an `=`-prefixed formula string) purely to detect "formula, no
-  cached value", which is reported as a row error per this task's brief.
-  Defined names and macros are not detectable via openpyxl (this task's
+  cached value", which is reported as a row error by design.
+  Defined names and macros are not detectable via openpyxl (the
   brief says so explicitly) and `.xlsm` is outside the accepted extensions
   (`app.api.v1.part_imports._EXTENSION_FORMAT`), so macros never reach this
   parser at all.
@@ -70,7 +70,7 @@ from dataclasses import dataclass, field
 from datetime import date, datetime
 from decimal import Decimal
 
-# no bundled type stubs, and pyproject.toml's mypy overrides are off-limits for this task
+# no bundled type stubs, and pyproject.toml's mypy overrides are off-limits for this change
 import openpyxl  # type: ignore[import-untyped]
 
 from app.core.money import UNIT_PRICE_SCALE, MoneyError, parse_at_scale

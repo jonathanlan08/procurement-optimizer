@@ -27,7 +27,7 @@ uv run mypy
 
 - [ ] No secrets, credentials, or API keys committed (checked diff, not just `.env`)
 - [ ] New/changed migrations reviewed by hand (autogenerate output is never merged
-      unread); migrations touching tenancy or composite FKs flagged for principal review
+      unread); migrations touching tenancy or composite FKs flagged for careful review
 - [ ] Organization isolation respected (queries scoped through `OrgScopedRepository`;
       no cross-org data path introduced or widened)
 - [ ] Decimal-as-string respected (money/quantity fields serialize as strings in

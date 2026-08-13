@@ -1,7 +1,7 @@
 /** Negotiation-briefs data layer - TanStack Query hooks over the live API.
  *
  * The backend for this surface already exists (committed ahead of this
- * task, per this task's own brief - unlike ../reports/api.ts and
+ * task, by design - unlike ../reports/api.ts and
  * ../audit/api.ts, which code against a frozen contract for a backend still
  * landing concurrently). Shapes mirror the wire contract given in this
  * task's brief field-for-field:
@@ -50,7 +50,7 @@ export interface BriefSectionResponse {
   data: Record<string, unknown> | null;
 }
 
-/** Fixed display order from this task's brief - the 18 section keys a full
+/** Fixed display order from the spec - the 18 section keys a full
  * brief's `sections` map may carry. */
 export type BriefSectionKey =
   | "procurement_objective"

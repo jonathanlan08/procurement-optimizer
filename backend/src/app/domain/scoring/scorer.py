@@ -1,4 +1,4 @@
-"""ScorerV1 - implementation of the principal-owned `VendorScorer` contract.
+"""ScorerV1 - implementation of the frozen `VendorScorer` contract.
 
 Implements `VendorScorer` (`contracts.py`, FROZEN). Pure domain code: no
 database, no clock, no network, no randomness. See

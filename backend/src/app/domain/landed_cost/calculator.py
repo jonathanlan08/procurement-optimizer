@@ -1,4 +1,4 @@
-"""Landed-cost calculator - implementation of the principal-owned contract.
+"""Landed-cost calculator - implementation of the frozen contract.
 
 Implements `LandedCostCalculator` (`contracts.py`, FROZEN). Pure domain code:
 no database, no clock, no network, no randomness. See
@@ -40,7 +40,7 @@ contract's docstring is normative but not exhaustive pseudocode):
   `0.035 * (5706.521740 + 375.000000)`), and only when neither of those two
   components is itself `is_missing`.
 - `AmountOutOfRangeError` (mentioned in 05 §10 point 10) is intentionally not
-  implemented: it is not part of the frozen `contracts.py`, and this task's
+  implemented: it is not part of the frozen `contracts.py`, and the
   extreme-value requirement is only that the calculator not blow up - the 34
   digits of `CALC_PRECISION` comfortably cover quantity 10^12 and price
   10^-8.

@@ -13,7 +13,7 @@
  *    instead of a table (there is no `allocations[]` to show); `error` gets
  *    the raw `error_message` in the shared `.banner-error` destructive
  *    style. `status_explanation` (backend-composed, already the exact prose
- *    this task's brief paraphrases - "proven optimal" / "optimality not
+ *    the spec paraphrases - "proven optimal" / "optimality not
  *    proven") is rendered verbatim rather than re-derived client-side.
  *  - **"% of spend" is computed client-side with pure BigInt division**
  *    (`percentOfTotal` below) - `line_landed_cost` and the objective total

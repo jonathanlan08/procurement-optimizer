@@ -1,5 +1,5 @@
 /* Overview workspace - dense KPI row + a two-column "recent activity /
-   quick links" section. No gradients, no charts, per MASTER.md +this task's
+   quick links" section. No gradients, no charts, per MASTER.md +the
    own "lean and dense" instruction. */
 
 .overview-kpi-row {
@@ -24,7 +24,7 @@
 /* v2 hue extension: each KPI card gets its workspace hue - tint background,
    hue border-top (3px), hue-colored count (below, `.overview-kpi-value--*`).
    Tint values already verified >=4.5:1 for the count text against them
-   (this task's own report). */
+   (the report). */
 .overview-kpi-card--suppliers {
   background: var(--hue-suppliers-tint);
   border-top-color: var(--hue-suppliers);

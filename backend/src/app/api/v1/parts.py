@@ -9,7 +9,7 @@ conflict_version` on mismatch, exactly like suppliers.
 Alternatives (`GET/POST /parts/{id}/alternatives`, `DELETE
 /parts/{id}/alternatives/{aid}`) are folded into this single router rather
 than split into a separate module the way `supplier_contacts.py`/
-`supplier_performance.py` split off from `suppliers.py` - this task's
+`supplier_performance.py` split off from `suppliers.py` - the
 file-creation allowlist names only one new API module for parts.
 `DELETE .../alternatives/{aid}` returns `204` with no body: unlike supplier
 contacts ("delete = archive", a soft delete with a resulting state worth
@@ -18,7 +18,7 @@ app.models.parts.PartAlternative docstring - "a decision record ... not a
 mutable aggregate with a lifecycle of its own"), so removal is a genuine hard
 delete with nothing left to show the caller.
 
-Deviations from this task's prose (contract wins, per instructions):
+Deviations from the prose (contract wins, per instructions):
 1. The contract's route table (§4.5) lists only `PATCH /parts/{id}`, not
    `PUT` - same deviation already recorded in `api/v1/suppliers.py`.
 2. The contract's route table (§4.5) lists only `POST /parts/{id}/archive` -
@@ -32,7 +32,7 @@ Deviations from this task's prose (contract wins, per instructions):
    `Supplier`, with the same reversible `archived_at`/`archived_by_id`/
    `archive_reason` shape and no DB constraint preventing un-archiving.
    This router still implements `POST /parts/{id}/unarchive`, mirroring
-   suppliers 1:1, per this task's explicit instruction. Worth the same
+   suppliers 1:1, per the explicit instruction. Worth the same
    principal confirmation the contract already asks for on its own listed
    gaps (§6).
 """

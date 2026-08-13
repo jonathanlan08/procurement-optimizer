@@ -1,4 +1,4 @@
-/** Workspace shell: sidebar navigation + header. PRINCIPAL-OWNED structure.
+/** Workspace shell: sidebar navigation + header.  structure.
  *
  * Mobile (<=768px) fix for the audit's P0 release blocker: app-shell.css used
  * to `display: none` the sidebar at <=768px with no replacement navigation
@@ -32,15 +32,15 @@ import "./app-shell.css";
 // the seven workspaces the design director actually assigned a hue to.
 // BOMs and FX rates have none - they keep today's plain accent-blue active
 // state unchanged (app-shell.css's base `.shell-nav-link.is-active` rule),
-// rather than this task inventing colors the design spec doesn't define.
+// rather than this change inventing colors the design spec doesn't define.
 const NAV: { to: string; label: string; end?: boolean; hue?: string }[] = [
   { to: "/", label: "Overview", end: true, hue: "overview" },
   { to: "/suppliers", label: "Suppliers", hue: "suppliers" },
   { to: "/parts", label: "Parts", hue: "parts" },
   { to: "/boms", label: "BOMs" },
   { to: "/rfqs", label: "RFQs", hue: "rfqs" },
-  { to: "/fx", label: "FX rates" }, // ALLOWED insertion: one NAV entry
-  { to: "/scenarios", label: "Compare", hue: "compare" }, // ALLOWED insertion: clarifies this is the comparison workspace
+  { to: "/fx", label: "FX rates" }, // one NAV entry
+  { to: "/scenarios", label: "Compare", hue: "compare" }, // clarifies this is the comparison workspace
   { to: "/reports", label: "Reports", hue: "reports" },
   { to: "/audit", label: "Audit log", hue: "audit" },
 ];

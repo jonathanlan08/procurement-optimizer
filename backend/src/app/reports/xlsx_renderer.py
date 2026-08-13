@@ -21,7 +21,7 @@ import io
 from typing import Any
 
 # no bundled type stubs, and pyproject.toml's mypy overrides are off-limits
-# for this task - same accepted precedent app/importing/part_import_parser.py
+# for this change - same accepted precedent app/importing/part_import_parser.py
 # already documents for its own openpyxl import.
 import openpyxl  # type: ignore[import-untyped]
 from openpyxl.styles import Font  # type: ignore[import-untyped]

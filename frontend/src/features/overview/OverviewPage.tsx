@@ -1,11 +1,11 @@
 /** Overview workspace - routed at "/" (replaces the `PlaceholderPage` that
- * used to sit at the index route, per this task's ALLOWED App.tsx edit; P1
+ * used to sit at the index route, per the allowed App.tsx edit; P1
  * audit finding: "the Overview screen is still an under-construction
  * placeholder").
  *
  * Design decisions:
  *  - **Three KPI tiles, not a dashboard of charts.** MASTER.md's "KPI
- *    cards" spec ("compact, label + value") plus this task's own "keep it
+ *    cards" spec ("compact, label + value") plus the "keep it
  *    lean and dense; no charts" instruction - suppliers/parts/open-RFQ
  *    totals are each a `page.total` from a `limit=1` list call (./api.ts),
  *    the cheapest honest count without a dedicated stats endpoint.
@@ -19,7 +19,7 @@
  *    independently invented set of destinations.
  *  - **The "Demo - synthetic data" posture is not duplicated as a second
  *    badge.** AppShell.tsx's header already renders that badge globally
- *    (layout/** is out of scope for this task); this page's subtitle only
+ *    (layout/** is out of scope for this change); this page's subtitle only
  *    echoes the same fact in one line of text when `session.demo_mode` is
  *    true, rather than re-implementing the badge.
  */

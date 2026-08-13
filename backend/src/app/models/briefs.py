@@ -14,8 +14,8 @@ SPEC §Negotiation brief: "Clearly label: supplier-provided vs
 user-assumption vs calculated vs AI narrative vs missing." This is a
 distinct, smaller vocabulary from `app.domain.values.Provenance` (six
 members, built for landed-cost *component* provenance, e.g.
-`DEFAULT`/`USER_INPUT`), and that module is PRINCIPAL-OWNED/frozen and not
-on this task's edit allowlist - reusing it here would silently import two
+`DEFAULT`/`USER_INPUT`), and that module is /frozen and not
+on the edit allowlist - reusing it here would silently import two
 extra members no negotiation-brief section can ever legitimately carry.
 Defined here, next to the model that persists sections labelled with it,
 rather than in `app/services/brief_service.py`, so `app/schemas/briefs.py`
@@ -75,7 +75,7 @@ class SectionProvenance(StrEnum):
 class NegotiationBrief(TimestampedMixin, VersionedMixin, ArchivableMixin, OrgOwnedBase):
     """One negotiation brief, grounded in one `ComparisonScenario` for one
     scored `Supplier` within it. See module docstring for naming/column
-    reconciliation against the ERD box and this task's paraphrase."""
+    reconciliation against the ERD box and the paraphrase."""
 
     __tablename__ = "negotiation_briefs"
     __table_args__ = (

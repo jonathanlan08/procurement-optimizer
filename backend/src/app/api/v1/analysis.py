@@ -11,12 +11,12 @@ table** (contract wins per instructions; every deviation recorded here):
    `landed-costs` segment itself (§4.15's own Google-style `resource:verb`
    spelling). Gated `viewer+` (§4.15's own route table: "O A N V" - a
    stateless calculator with no audit row, §6 gap #2), **not** the
-   "analyst+" this task's own paraphrase states; the contract's literal role
+   "analyst+" the paraphrase states; the contract's literal role
    column wins.
 2. `POST /rfqs/{rfq_id}/landed-costs` persists **one** quote line's result
    per call (`quote_line_id` in the body), not "all matched lines" as the
    contract's prose describes - see `app/services/landed_cost_service.py`
-   module docstring: `LandedCostService.calculate_and_store` is this task's
+   module docstring: `LandedCostService.calculate_and_store` is the
    own explicit per-line service surface, and this route is a thin wrapper
    over it. A future task can add a batch loop over matched lines without
    changing this route's shape.

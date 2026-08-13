@@ -5,7 +5,7 @@ api/v1/suppliers.py.
 Roles per the contract's route table: `GET /suppliers/{id}/performance` is
 `O A N V`; `POST /suppliers/{id}/performance` is `O A N`.
 
-Deviation from this task's prose (contract wins, per instructions): the
+Deviation from the prose (contract wins, per instructions): the
 contract's route table (§4.4) lists only GET and POST for this sub-resource -
 no PATCH/PUT/DELETE. Performance records are point-in-time history (no
 `version`/`archived_at` - see app.models.suppliers.SupplierPerformanceRecord),

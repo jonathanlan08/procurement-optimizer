@@ -1,4 +1,4 @@
-"""Application factory - PRINCIPAL-OWNED."""
+"""Application factory."""
 
 from __future__ import annotations
 

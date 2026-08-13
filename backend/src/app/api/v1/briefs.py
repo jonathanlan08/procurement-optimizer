@@ -10,7 +10,7 @@ Sync `def` by policy, mirroring every other router in this codebase.
 
 **No `PATCH /negotiation-briefs/{id}` and no `GET .../email-draft` route are
 mounted here** - see `brief_service.py` module docstring "Deviation 2"/
-"Deviation 3" for why: this task's own OBJECTIVE scopes the route set to
+"Deviation 3" for why: the OBJECTIVE scopes the route set to
 generate/get/review/archive/list and explicitly requires "NO send/email
 endpoint (assert in tests that no such route exists)"; the draft email text
 is already part of the full `GET /negotiation-briefs/{id}` response
@@ -19,7 +19,7 @@ entry under `sections`). There is no route anywhere in this module - or
 this codebase - that sends an email; `never auto-send` (SPEC §Negotiation
 brief) holds structurally, not just by convention.
 
-**`POST .../{id}/archive` is this task's own explicit addition**, not in
+**`POST .../{id}/archive` is the explicit addition**, not in
 §4.17's literal table at all - added per 02-erd.md §1/§11's global
 "archived_at + archived_by_id + archive_reason ... never hard-delete ...
 briefs" convention, gated administrator+ exactly like every other

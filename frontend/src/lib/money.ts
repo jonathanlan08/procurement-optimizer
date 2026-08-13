@@ -1,4 +1,4 @@
-/** Money rendering - PRINCIPAL-OWNED.
+/** Money rendering.
  *
  * Monetary values arrive from the API as decimal STRINGS and must never pass
  * through Number()/parseFloat, which silently corrupt precision. Formatting is

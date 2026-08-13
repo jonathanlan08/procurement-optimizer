@@ -7,7 +7,7 @@ commits on success and rolls back on any raised exception. Every mutation
 writes exactly one audit event in the same transaction as the data change it
 describes (`scoring_configuration.created`/`.updated`/`.archived`).
 
-**Weight validation** (this task's brief): every `weights[]` entry must name
+**Weight validation** (the spec): every `weights[]` entry must name
 a known `Criterion` (`app.domain.scoring.contracts.Criterion`), its `weight`
 must be a fraction in `[0, 1]`, and its `direction` must be a valid
 `Direction`. For every criterion except `USER_DEFINED`, `direction` must
@@ -18,7 +18,7 @@ later (`VendorScorer` trusts `CriterionSpec.direction` as given).
 `USER_DEFINED` entries require a non-blank `label` (the domain's own
 `CriterionSpec.label` docstring: "required for USER_DEFINED"). A weight sum
 that is not exactly `1` is **not** rejected (02-erd.md §8: "weights are
-stored raw... normalized at calculation time" - the same policy this task's
+stored raw... normalized at calculation time" - the same policy the
 brief describes as "warn-note"); instead a human-readable note is returned
 alongside the created/updated row so the UI can surface it without the
 write being blocked.

@@ -106,7 +106,7 @@ see it. Filtering would be worse - it would hide the attack instead of recording
 
 ## 3. The prompt-injection trust boundary
 
-`backend/src/app/providers/extraction/envelope.py` - principal-owned.
+`backend/src/app/providers/extraction/envelope.py` - core.
 
 **Structural defense - the nonce fence.** Document text is wrapped between per-request
 fences built from `secrets.token_hex(16)`:

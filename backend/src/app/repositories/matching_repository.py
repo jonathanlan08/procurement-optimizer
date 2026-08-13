@@ -13,7 +13,7 @@ quote-line accessor in this codebase (`QuoteRepository.get_line`) requires
 the parent `quote_id` up front, but `docs/planning/03-api-contract.md`
 §4.12's literal routes address a quote line directly
 (`POST/DELETE /quote-lines/{id}/match`, no `quote_id` in the path at all).
-`QuoteRepository` is not on this task's edit allowlist, so rather than widen
+`QuoteRepository` is not on the edit allowlist, so rather than widen
 its API, this file adds the one missing "by id alone" lookup as its own
 tiny, non-duplicative repository bound to the same `QuoteLine` model -
 `services/matching_service.py` reads `line.quote_id` off the fetched row to

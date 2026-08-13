@@ -2,7 +2,7 @@
 
 The worked example (docs/planning/05-calculation-methodology.md §9, corrected
 by docs/planning/00-decisions.md §3) is the first hand-verified test: it
-pins the exact Decimal strings the principal hand-checked, not approximate
+pins the exact Decimal strings the maintainer hand-checked, not approximate
 equality.
 """
 

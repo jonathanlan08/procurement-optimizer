@@ -7,7 +7,7 @@ re-encoded).
 Services never commit: the request-scoped `get_db` dependency (app/api/deps.py)
 commits on success and rolls back on any raised exception. Every mutation
 writes exactly one audit event in the same transaction as the data change it
-describes (this task's brief: `rfq.created/updated/line_added/line_updated/
+describes (the spec: `rfq.created/updated/line_added/line_updated/
 line_removed/supplier_invited/supplier_excluded/supplier_reinstated/
 status_changed`) - bulk operations (`add_lines`, `invite_suppliers`) write one
 event *per row added*, not one event for the whole batch: each row is its own
@@ -28,7 +28,7 @@ active` (else `409 conflict_state` - a draft or superseded BOM is not a
 released bill of materials to quote against), then copies every line of that
 BOM version into `rfq_lines` with `required_quantity = quantity_per_assembly
 * assembly_quantity` (assembly_quantity defaults to `Decimal("1")` when
-omitted, per this task's brief). The multiplication runs at full precision
+omitted, by design). The multiplication runs at full precision
 inside `app.core.money.CALC_CONTEXT` (via `decimal.localcontext`, the same
 mechanism `quantize()` itself uses internally) and is quantized once at
 QTY_SCALE at the boundary, per the decimal policy in `app/core/money.py`'s

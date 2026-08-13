@@ -1,6 +1,6 @@
 # 07 - Security Model
 
-Status: **DRAFT FOR PRINCIPAL REVIEW**
+Status: **DRAFT**
 Implements SPEC §Document and AI security and §General security. STRIDE-lite per trust surface, each
 threat mapped to a concrete, testable mitigation.
 

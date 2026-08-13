@@ -1,6 +1,6 @@
 # 03 - REST API Contract
 
-Status: **DRAFT FOR PRINCIPAL REVIEW**
+Status: **DRAFT**
 Base path: `/api/v1`. Media type: `application/json; charset=utf-8` (uploads: `multipart/form-data`).
 The generated OpenAPI document is committed at `docs/openapi.json` and CI fails on undeclared drift.
 
@@ -409,7 +409,7 @@ There is no write, update, or delete route for audit events, by design.
 
 ---
 
-## 6. Contract gaps I want the principal to rule on
+## 6. Contract gaps I want the maintainer to rule on
 
 1. **Should `viewer` be able to download reports and documents?** I have said yes (read-only includes
    reading artifacts). If the answer is no, the matrix changes in six places.

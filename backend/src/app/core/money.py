@@ -1,4 +1,4 @@
-"""Decimal money policy - PRINCIPAL-OWNED.
+"""Decimal money policy.
 
 Every monetary value in this codebase is a ``decimal.Decimal``. Binary floats are
 forbidden for money and quantities; JSON carries decimals as strings.

@@ -1,4 +1,4 @@
-"""Unit tests for the principal-owned Decimal money policy."""
+"""Unit tests for the frozen Decimal money policy."""
 
 from decimal import Decimal, DivisionByZero, InvalidOperation, localcontext
 

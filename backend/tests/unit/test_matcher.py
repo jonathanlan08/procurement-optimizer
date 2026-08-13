@@ -5,7 +5,7 @@ Each of the five strategies is exercised in isolation, then priority
 ordering/determinism/dedup across strategies, then the fuzzy threshold
 boundary and explanation-string content. See matcher.py's own module
 docstring for why the implemented confidence table/priority order/fuzzy
-formula follow §10's literal text rather than this task's own paraphrase of
+formula follow §10's literal text rather than the paraphrase of
 it - these tests assert the §10 numbers.
 """
 
@@ -182,7 +182,7 @@ class TestFuzzyStrategy:
     """Threshold boundary fixed at MatchConfig's default (0.82) - see
     matcher.py's own module docstring for why 0.82, not §10's stated 0.80.
     Query/corpus pairs below were found empirically to score just under and
-    just over that boundary (~0.81 / ~0.83, per this task's own required
+    just over that boundary (~0.81 / ~0.83, per the required
     test coverage)."""
 
     def test_below_threshold_excluded(self) -> None:

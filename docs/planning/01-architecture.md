@@ -1,6 +1,6 @@
 # 01 - System Architecture
 
-Status: **DRAFT FOR PRINCIPAL REVIEW**
+Status: **DRAFT**
 Scope: whole system. Authority: `docs/SPEC.md` overrides this document wherever they disagree.
 Audience: principal engineer (decisions), junior implementers (boundaries).
 
@@ -17,7 +17,7 @@ Audience: principal engineer (decisions), junior implementers (boundaries).
 4. **Explainability.** Every number carries its inputs, formula, assumptions, source, version.
 5. **Zero-cost demo.** Full workflow runs with no paid API key, no network egress, no Docker.
 6. **Junior-implementable.** Thin, obvious layers; heavy logic in pure functions; contracts owned by
-   the principal.
+   the maintainer.
 
 Non-goals for v0.1.0: horizontal scale, multi-region, real-time collaboration, SSR/SEO, mobile apps,
 streaming AI UX, tenant-configurable schemas.
@@ -105,7 +105,7 @@ backend/
   migrations/               # alembic versions
   src/app/
     main.py                 # app factory, middleware, router mounting
-    core/                   # PRINCIPAL-OWNED
+    core/                   #
       config.py             #   pydantic-settings, typed env
       security.py           #   argon2, session tokens, CSRF, constant-time cmp
       errors.py             #   AppError hierarchy -> HTTP problem shape
@@ -114,20 +114,20 @@ backend/
       clock.py              #   Clock protocol, SystemClock, FrozenClock
       ids.py                #   IdGenerator protocol
     api/
-      deps.py               # PRINCIPAL-OWNED: auth, current_user, OrgScope, role guard
+      deps.py               # : auth, current_user, OrgScope, role guard
       v1/                   # one module per resource
-    schemas/                # PRINCIPAL-OWNED for shared/base; per-resource delegable
+    schemas/                #  for shared/base; per-resource routine
     services/               # application services (orchestration + transactions)
     domain/
-      landed_cost/          # PRINCIPAL-OWNED interfaces, delegable internals
+      landed_cost/          #  interfaces, routine internals
       scoring/
       optimization/
       matching/
       units/
       fx/
     repositories/
-      base.py               # PRINCIPAL-OWNED: OrgScopedRepository
-    models/                 # PRINCIPAL-OWNED base + mixins; per-table delegable
+      base.py               # : OrgScopedRepository
+    models/                 #  base + mixins; per-table routine
     providers/
       extraction/  ocr/  storage/  fx/  reports/
     jobs/                   # job table + runner
@@ -141,7 +141,7 @@ docker-compose.yml
 .github/workflows/
 ```
 
-Agreed with the principal's §6 layout. Additions proposed: `app/core`, `app/jobs`, `app/exports`,
+Agreed with the maintainer's §6 layout. Additions proposed: `app/core`, `app/jobs`, `app/exports`,
 `app/seed`. `app/core` in particular is the natural home for the cross-cutting primitives the
 principal wants to own; without it those primitives get scattered and drift.
 
@@ -194,7 +194,7 @@ diverge from the data is worse than none.
 
 Extraction of a scanned PDF, XLSX parsing, PDF report rendering and optimization runs are all
 seconds-to-tens-of-seconds. The provisional decisions do not name a job strategy. Celery/RQ need
-Redis; Redis needs Docker; the principal's machine has no Docker. Recommendation:
+Redis; Redis needs Docker; the maintainer's machine has no Docker. Recommendation:
 
 - A `jobs` table (id, org_id, kind, state, payload, attempts, locked_by, locked_until, result_ref,
   error, timestamps) as the single source of truth.
@@ -212,7 +212,7 @@ API contract consequence: expensive POSTs return `202 Accepted` with a job resou
 
 ## 7. Organization isolation - defense in depth
 
-The principal's decision ("mandatory `organization_id` filter in the repository layer") is necessary
+The ruling ("mandatory `organization_id` filter in the repository layer") is necessary
 but is a *single* control that fails silently the first time someone writes a raw query or forgets a
 filter on a join. Proposed layering:
 
@@ -224,7 +224,7 @@ filter on a join. Proposed layering:
 | 4 | Route-matrix isolation test: enumerate `app.routes`, and for each, call it as an actor from org B against a fixture resource in org A; assert 404 (not 403 - do not confirm existence) | `tests/integration/test_org_isolation_matrix.py` | new endpoints added without isolation |
 | 5 | *(Phase 7, optional)* Postgres RLS with `SET LOCAL app.current_org_id` per request | DB | ORM bypass, ad-hoc SQL |
 
-Control 3 is the one I most want the principal to adopt: it moves isolation from "every developer
+Control 3 is the one I most want the maintainer to adopt: it moves isolation from "every developer
 remembers" to "the database refuses". It costs one extra `UNIQUE (organization_id, id)` per table and
 a two-column FK. Control 5 is genuinely stronger still but complicates migrations, seeding and
 superuser connections; I recommend documenting it as hardening rather than blocking v0.1.0 on it.
@@ -255,7 +255,7 @@ live*).
 ## 9. Library selection under the environment constraints
 
 The dev machine has **no Docker, no Homebrew, no Node, Python 3.9 system-only**. Anything that needs
-a system binary is effectively unavailable to the principal and is a footgun for contributors.
+a system binary is effectively unavailable to the maintainer and is a footgun for contributors.
 This eliminates several otherwise-obvious choices:
 
 | Need | Choose | Reject, and why |
@@ -267,11 +267,11 @@ This eliminates several otherwise-obvious choices:
 | XLSX read/write | `openpyxl` with `read_only=True`, `data_only=True` | pandas (heavy; and `data_only` semantics matter more than DataFrames here) |
 | Fuzzy matching | `rapidfuzz` (MIT, wheels) | `fuzzywuzzy` (GPL'd Levenshtein path) |
 | Password hashing | `argon2-cffi` directly | `passlib` (maintenance risk; bcrypt backend version friction) |
-| Local Postgres for the principal | `pgserver` pip package (real user-space Postgres) | Docker Compose (unavailable), `testing.postgresql` (unmaintained) |
+| Local Postgres for the maintainer | `pgserver` pip package (real user-space Postgres) | Docker Compose (unavailable), `testing.postgresql` (unmaintained) |
 | Postgres driver | `psycopg[binary]` v3, sync | `psycopg2-binary` (older), asyncpg (not needed, see §10) |
 
 `docker-compose.yml` (Postgres + MinIO) remains the **documented standard path** for other developers
-and mirrors CI. The principal's local path is an explicitly supported alternative, and the two must
+and mirrors CI. The no-Docker local path is an explicitly supported alternative, and the two must
 resolve `DATABASE_URL` through the same code path - see `08-test-strategy.md` §4.
 
 Every dependency choice above must be recorded with its licence in `docs/DEPENDENCIES.md` and
@@ -300,7 +300,7 @@ backend constant that the design tokens reference, not in two documents.
 
 ---
 
-## 10. Critique of the principal's provisional decisions
+## 10. Critique of the maintainer's provisional decisions
 
 Format: **AGREE** / **AGREE WITH CHANGES** / **DISAGREE**, with reasons.
 
@@ -370,7 +370,7 @@ Two changes:
     in and verified in CI.** Otherwise the API contract is duplicated by hand in two languages and
     drifts within a week. This is the single highest-leverage frontend decision.
   - A tiny typed fetch wrapper that attaches the CSRF header and maps the structured error envelope -
-    written once, by the principal.
+    written once, by the maintainer.
 - React 19 is available and stable but React 18 is the safer pin for the TanStack/Playwright ecosystem
   at this size; agreed.
 - Vitest + Testing Library + `msw` for component tests; Playwright for E2E. Agreed.

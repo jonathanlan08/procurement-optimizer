@@ -14,7 +14,7 @@
 /* v2 hue extension (2026-08): workspace-identity chip above the <h1>. Each
    modifier below pairs one hue's text color with its own 10%-alpha tint as
    the pill background - both tokens defined in tokens.css, contrast
-   verified >=4.5:1 for every pair (this task's own report). */
+   verified >=4.5:1 for every pair (the report). */
 .page-eyebrow {
   display: inline-block;
   font-size: 11px;

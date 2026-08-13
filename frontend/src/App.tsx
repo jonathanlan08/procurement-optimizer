@@ -15,7 +15,7 @@ import { LoginPage } from "./pages/LoginPage";
  * routed page becomes its own chunk, fetched only when its route is first
  * visited - AppShell (always needed immediately, every authenticated route
  * renders inside it) and LoginPage (the unauthenticated entry point, so
- * there's nothing to defer it behind) stay eager imports per this task's
+ * there's nothing to defer it behind) stay eager imports per the
  * own scope. `PlaceholderPage` is tiny but is still routed via `path="*"`,
  * so it's split too for consistency rather than as a special case. */
 const OverviewPage = lazy(() =>
@@ -42,7 +42,7 @@ const PlaceholderPage = lazy(() =>
 /** Shared Suspense fallback for every lazy route above - minimal, centered,
  * reusing the existing `.page-loading` layout (app-shell.css) and
  * `.detail-label` text styling (components/workspace.css) rather than new
- * spinner art, per this task's own "no spinner art" instruction. Both
+ * spinner art, per the "no spinner art" instruction. Both
  * classes are already loaded by the time any route can suspend (AppShell is
  * eager and imports app-shell.css; every feature page that imports
  * workspace.css does so at the top of its own already-loaded module graph),
@@ -72,10 +72,10 @@ export function App() {
           <Route path="parts" element={<PartsPage />} />
           <Route path="boms" element={<BomsPage />} />
           <Route path="rfqs" element={<RfqsPage />} />
-          <Route path="fx" element={<FxPanel />} /> {/* ALLOWED insertion */}
-          <Route path="scenarios" element={<ComparisonPage />} /> {/* ALLOWED insertion */}
-          <Route path="reports" element={<ReportsPage />} /> {/* ALLOWED insertion */}
-          <Route path="audit" element={<AuditPage />} /> {/* ALLOWED insertion */}
+          <Route path="fx" element={<FxPanel />} />
+          <Route path="scenarios" element={<ComparisonPage />} />
+          <Route path="reports" element={<ReportsPage />} />
+          <Route path="audit" element={<AuditPage />} />
           <Route path="*" element={<PlaceholderPage title="Not found" />} />
         </Route>
       </Routes>

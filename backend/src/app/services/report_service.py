@@ -48,7 +48,7 @@ this one documented reason.
 
 ## Deviation 3 - `410` on a purged report has no `ErrorCode` member to reuse literally
 
-`app/core/errors.py` is PRINCIPAL-OWNED and off this task's edit list;
+`app/core/errors.py` is  and off the edit list;
 its `AppError.status` is a fixed `ErrorCode -> int` table with no `410`
 entry, and adding one is exactly the "add none" the delegating task's own
 instruction forbids. `get_content` therefore raises `ReportPurgedError`
@@ -57,7 +57,7 @@ reports.py`'s `download_report_content` catches it directly and hand-builds
 a `410` envelope reusing `ErrorCode.NOT_FOUND`'s wire `code` string
 (`"not_found"`) as the closest existing vocabulary ("the thing you asked
 for is not there anymore" is a variant of "not found", not of any conflict/
-validation code), rather than inventing a new code string this task was
+validation code), rather than inventing a new code string this change was
 told not to add.
 
 A report whose `state` is `pending`/`failed` (never produced bytes, and was
@@ -68,7 +68,7 @@ distinct from "was ready, now gone".
 
 Neither `docs/SPEC.md` nor `docs/planning/02-erd.md` states how long a
 report should live before it becomes eligible for the §11 purge job (out of
-this task's scope - no purge route is implemented; §11's "row kept, blob
+the scope - no purge route is implemented; §11's "row kept, blob
 purged, storage_key nulled with purged_at set" shape is exercised only by
 tests writing `purged_at` directly, mirroring how DB-level test setup is
 already done elsewhere in this codebase, e.g. `test_briefs_api.py`'s direct

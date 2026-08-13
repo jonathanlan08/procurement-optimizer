@@ -1,7 +1,7 @@
 """Part-matching routes (docs/planning/03-api-contract.md §4.12). Sync `def`
 by policy, mirroring every other router in this codebase.
 
-**Contract's literal paths, not this task's own paraphrase** - per this
+**Contract's literal paths, not the paraphrase** - per this
 task's own instruction ("Contract's literal paths win") and the same
 resolution `api/v1/extractions.py` already documents for the identical
 class of gap:

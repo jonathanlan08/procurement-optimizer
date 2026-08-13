@@ -74,21 +74,18 @@ you open a PR. Floats are banned in domain/money code - use `Decimal`.
 Per `docs/planning/09-task-decomposition.md` §10 (ratified in
 `docs/planning/00-decisions.md` §6), some paths carry extra review requirements:
 
-- **Principal review required (R):** changes to `app/schemas/*` (decimal-as-string
+- **Extra review required (R):** changes to `app/schemas/*` (decimal-as-string
   and missing-field conventions), `app/models/*` (org FK, constraints, indexes),
   `app/exports/**` (formula-escaping), `app/seed/**`, and any migration -
-  need a principal diff review before merge, even though the underlying work is
-  delegable.
-- **Principal-owned, not delegable:** `app/core/**`, `api/deps.py`,
+  need a careful diff review before merge.
+- **Core, change with care:** `app/core/**`, `api/deps.py`,
   `api/permissions.py`, `repositories/base.py`, `models/base.py`/`mixins.py`,
   `schemas/base.py`/`common.py`/`errors.py`/`pagination.py`,
   `domain/**/contracts.py`, the solver correctness modules
   (`domain/optimization/model_builder.py`, `scaling.py`, `determinism.py`),
   `providers/__init__.py`/`*/base.py`, `services/audit.py`, `jobs/runner.py`,
-  and any migration touching tenancy or composite FKs. Don't modify these
-  directly - propose the change and let the principal make or review it.
-- A PR that needs a change to a principal-owned file should describe the
-  requested change rather than editing the file itself.
+  and any migration touching tenancy or composite FKs. Change these deliberately and
+  document the reasoning.
 
 **Migrations are append-only once merged.** Never edit a migration that has
 already been merged, even to fix a bug in it - write a new migration instead.

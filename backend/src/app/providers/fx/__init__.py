@@ -7,7 +7,7 @@ demo ships deterministic synthetic exchange rates; automated tests must not
 depend on external services"). There is no config-selected provider kind
 (unlike `ExtractionProviderKind` etc. in `app.core.config`): the fixture
 provider is chosen explicitly in code by the service/seed layer, not switched
-by environment - see `app.core.config` module docstring / this task's brief.
+by environment - see `app.core.config` module docstring / the spec.
 """
 
 from __future__ import annotations

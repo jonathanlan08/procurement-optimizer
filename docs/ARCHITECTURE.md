@@ -186,7 +186,7 @@ randomness - so financial correctness is testable without a database (a SPEC req
   `solver.py` (`AllocationSolver`).
 - `domain/fx/normalize.py`, `domain/units/normalize.py`, `domain/matching/matcher.py`.
 
-Modules named `contracts.py` are principal-owned and frozen; implementations state, in
+Modules named `contracts.py` are core and frozen; implementations state, in
 their own module docstrings, every place they interpret the contract's prose.
 
 ## 9. Frontend

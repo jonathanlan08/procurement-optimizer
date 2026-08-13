@@ -3,7 +3,7 @@
 
 ALL DATA IS SYNTHETIC. This module is the single source of truth for the
 demo dataset; `backend/scripts/seed_demo.py` is now a thin CLI wrapper around
-`seed_demo_dataset()` below (restructured per this task's own brief: "allowed
+`seed_demo_dataset()` below (restructured by design: "allowed
 to restructure it into `backend/src/app/seed/demo_dataset.py` with the
 script as a thin wrapper").
 
@@ -11,7 +11,7 @@ script as a thin wrapper").
 the entity by its natural key directly against the ORM (a plain read, no
 service needed for that), and only call the owning service's mutating method
 when nothing was found. Services are used for every actual mutation (per
-this task's brief: "PREFER seeding through services where they exist") -
+the spec: "PREFER seeding through services where they exist") -
 suppliers/parts/BOMs/RFQs/quotes/FX/scoring/scenarios/documents/extraction
 all go through their real service, which gets the seed dataset audit events
 and domain validation for free. The two exceptions are documented at their
@@ -261,7 +261,7 @@ _PERFORMANCE_PERIOD_END: Final[date] = date(2025, 12, 31)
 
 # Six suppliers: the four fixture suppliers (docs/planning §, scripts/
 # generate_fixtures.py) plus two new fictional ones - a US domestic
-# short-lead supplier and a German precision supplier, per this task's
+# short-lead supplier and a German precision supplier, per the
 # brief. Currencies span USD/CNY/MXN/EUR/SEK (5 distinct, exceeding the
 # "at least 3 distinct" requirement and naming all 5 of the SPEC's own
 # examples). Lead times span 7 (Cascade, the domestic short-lead boundary)
@@ -1560,7 +1560,7 @@ def _seed_scoring_configs(
 # scenarios
 # ---------------------------------------------------------------------------
 
-# The sample assumptions this task's brief names by name: tariff 3.5%,
+# The sample assumptions the spec names by name: tariff 3.5%,
 # quality 2%, annual 8%, baseline Net-30. `delay_risk_per_day="0"` +
 # `required_lead_time_days` are also supplied so DELAY_RISK is
 # ASSUMPTION_DEPENDENT (present, zero-cost) rather than MISSING for every

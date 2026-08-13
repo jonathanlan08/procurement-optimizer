@@ -1,4 +1,4 @@
-"""Order-allocation optimization contracts - PRINCIPAL-OWNED.
+"""Order-allocation optimization contracts.
 
 Methodology: docs/planning/06-optimization-methodology.md, rulings in
 00-decisions.md §1.1 (determinism) and §2/§4 (cost-basis concentration,

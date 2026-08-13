@@ -1,5 +1,5 @@
 /** Comparison workspace - routed at `/scenarios` (replaces the
- * `PlaceholderPage`, per this task's ALLOWED App.tsx edit): a per-RFQ-line
+ * `PlaceholderPage`, per the allowed App.tsx edit): a per-RFQ-line
  * landed-cost comparison table, plus the full comparison-scenario surface
  * below it (strategy/constraint controls -> scoring + allocation results ->
  * saved-scenario history).
@@ -59,7 +59,7 @@ import { compareDecimalStrings } from "../../lib/decimalSort";
 import { formatMoney, isDecimalString } from "../../lib/money";
 import { isAdministratorOrAbove, isAnalystOrAbove } from "../../lib/roles";
 import { zodResolver } from "../../lib/zodResolver";
-import { BriefsPanel, type BriefSupplierOption } from "../briefs/BriefsPanel"; // ALLOWED insertion: negotiation briefs entry point
+import { BriefsPanel, type BriefSupplierOption } from "../briefs/BriefsPanel"; // negotiation briefs entry point
 import { usePart } from "../parts/api";
 import { quoteKeys, type QuoteLineResponse, type QuoteResponse } from "../quotes/api";
 import { useRfqQuotes } from "../quotes/api";
@@ -842,9 +842,9 @@ export function ComparisonPage() {
       : null;
 
   // Negotiation-briefs pick-list: the scenario's own scoring result already
-  // carries every scored, non-excluded supplier's name (ALLOWED insertion -
-  // see ../briefs/BriefsPanel.tsx's file header for why this is passed in
-  // rather than re-fetched).
+  // carries every scored, non-excluded supplier's name - see
+  // ../briefs/BriefsPanel.tsx's file header for why this is passed in
+  // rather than re-fetched.
   const briefSupplierOptions: BriefSupplierOption[] = useMemo(
     () =>
       scenario
@@ -955,7 +955,7 @@ export function ComparisonPage() {
                 currency={rfqQuery.data.base_currency}
                 savedResult={savedResultVersions}
               />
-              {/* ALLOWED insertion: negotiation briefs entry point */}
+              {/* negotiation briefs entry point */}
               <BriefsPanel
                 scenarioId={scenario.id}
                 supplierOptions={briefSupplierOptions}

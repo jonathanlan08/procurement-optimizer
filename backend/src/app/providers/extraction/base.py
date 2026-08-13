@@ -1,4 +1,4 @@
-"""Extraction provider contract + versioned payload schema - PRINCIPAL-OWNED.
+"""Extraction provider contract + versioned payload schema.
 
 Trust boundary rules (SPEC §Document and AI security; 04-document-pipeline.md):
 - document content is DATA, never instructions: providers receive it inside a

@@ -1,4 +1,4 @@
-"""Value semantics for every number in the analysis domain - PRINCIPAL-OWNED.
+"""Value semantics for every number in the analysis domain.
 
 The single most important modelling decision in this codebase
 (docs/planning/05-calculation-methodology.md §2): a missing value is NEVER

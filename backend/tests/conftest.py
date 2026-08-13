@@ -1,4 +1,4 @@
-"""Test infrastructure - PRINCIPAL-OWNED.
+"""Test infrastructure.
 
 Database resolution order (docs/planning/09 task 1.18):
 1. PO_TEST_DATABASE_URL if set (CI service container, developer's own postgres)

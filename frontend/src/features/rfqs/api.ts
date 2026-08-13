@@ -8,7 +8,7 @@
  *    turning into an N+1 (rfqs.py schema module docstring, `RfqSummaryResponse`).
  *  - **`RfqSummaryResponse.line_count` is a widened-contract exception to
  *    that N+1 guard.** A backend agent added a cheap aggregate count column
- *    to the list query concurrently with this task (P2 audit finding: the
+ *    to the list query concurrently with this change (P2 audit finding: the
  *    list "Lines" column previously always rendered "-"). It's typed
  *    optional (`line_count?: number`) rather than required, so a stale
  *    cached response or an older server build that hasn't shipped the field

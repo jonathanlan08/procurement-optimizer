@@ -1,4 +1,4 @@
-"""Application error hierarchy and the single HTTP error envelope - PRINCIPAL-OWNED.
+"""Application error hierarchy and the single HTTP error envelope.
 
 Every non-2xx response uses one envelope (docs/planning/03-api-contract.md §3):
 

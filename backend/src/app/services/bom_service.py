@@ -7,7 +7,7 @@ commits on success and rolls back on any raised exception. Every mutation
 writes exactly one audit event in the same transaction as the data change it
 describes.
 
-**Status-transition design (contract gap, filled here - see this task's
+**Status-transition design (contract gap, filled here - see the
 brief: "if genuinely undefined: draft on create, activate endpoint promotes
 draft→active and old active→superseded; document it").**
 
@@ -17,7 +17,7 @@ actually specifies *how* a BOM moves from `draft` to `active` in the first
 place, nor when the predecessor it replaces becomes `superseded` - RFQs get
 a whole status-transition table (§4.8) and BOMs do not. `app/models/boms.py`
 (`BomStatus`) confirms the four states (`draft|active|superseded|archived`)
-exist but is likewise silent on the transition rules. This task's brief
+exist but is likewise silent on the transition rules. The spec
 explicitly asks for a `POST /boms/{id}/activate` route to fill that gap
 (not present in the contract's literal route table, the same kind of
 contract-silent-but-reasonable addition already made for
@@ -44,7 +44,7 @@ docstring for the identical judgement call). The design landed on:
    predecessor is moved to `superseded` in the same transaction (unless it
    was independently `archived`, which is left alone - an operator's
    explicit archive decision is not silently overwritten by an unrelated
-   activation). This is exactly this task's brief: "marks the old version
+   activation). This is exactly the spec: "marks the old version
    superseded when the new one is activated."
 4. `archive()` - mirrors `PartService.archive`: sets `archived_at`/
    `archived_by_id`/`archive_reason` (ArchivableMixin) **and**
@@ -55,7 +55,7 @@ docstring for the identical judgement call). The design landed on:
    retiring a specific bad version without touching the rest of the chain
    is a reasonable operation to allow.
 
-Audit events are exactly the four this task's brief names -
+Audit events are exactly the four the spec names -
 `bom.created`, `bom.version_created`, `bom.activated`, `bom.archived` -
 and no more: activation's side effect on the predecessor (marking it
 `superseded`) is folded into the `bom.activated` event's `explanation`

@@ -13,7 +13,7 @@ row per supplier as the ERD's literal box implies), because the task's own
 four-column paraphrase maps directly onto that FROZEN domain contract;
 `allocation_results` mirrors `app.domain.optimization.contracts.
 AllocationResult` field-for-field (also FROZEN, explicitly "the shape you
-persist" per this task's own instructions), including `status` wrapping
+persist" by design), including `status` wrapping
 `AllocationStatus` directly (4 members) rather than the ERD's 5-member
 `solver_status_enum`.
 

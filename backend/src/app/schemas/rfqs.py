@@ -11,7 +11,7 @@ would just be a second place to keep the same rule in sync (§5's "currency
 codes validated against a static ISO-4217 allowlist" and "required
 specifications... nonempty keys, <=100 entries" apply identically here).
 
-**Create: explicit lines XOR BOM explosion.** `RfqCreate` matches this task's
+**Create: explicit lines XOR BOM explosion.** `RfqCreate` matches the
 brief and 03-api-contract.md §4.8 ("optionally `{source_bom_id,
 assembly_quantity}` to explode a BOM into lines"): a caller supplies either
 `lines` (a manually-built RFQ, at least one line - mirrors `BomCreate.lines`

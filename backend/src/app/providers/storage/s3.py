@@ -19,7 +19,7 @@ a no-network unit test, per the delegating task's own instruction.
 `boto3-stubs`, so the import and the client's dynamically-generated methods
 are `Any` from mypy's point of view - `type: ignore[import-untyped]` on the
 import is therefore precise (not a blanket suppression) rather than a
-project-wide mypy config change, which is outside this task's only-permitted
+project-wide mypy config change, which is outside the only-permitted
 `pyproject.toml` edit (the one added dependency line).
 """
 

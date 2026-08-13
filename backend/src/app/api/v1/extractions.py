@@ -2,7 +2,7 @@
 policy, mirroring every other router in this codebase.
 
 **Literal contract paths, not the delegating task's own paraphrase** - per
-this task's own instruction ("Follow the contract's literal paths where they
+the instruction ("Follow the contract's literal paths where they
 differ") and the same resolution `api/v1/documents.py`/`api/v1/quotes.py`
 already document for the identical class of gap:
 
@@ -89,7 +89,7 @@ def get_extraction_service(
     settings: SettingsDep,
 ) -> ExtractionService:
     # Built per request from Settings, not injected via api/deps.py
-    # (principal-owned, off limits) - same pattern api/v1/documents.py's
+    # (frozen) - same pattern api/v1/documents.py's
     # get_document_service already establishes for build_storage_provider.
     storage = build_storage_provider(settings)
     provider = build_extraction_provider(settings)
@@ -196,7 +196,7 @@ def confirm_all_extraction_fields(
     run is confirmed in one call, see `ExtractionService.confirm_all_fields`.
 
     Returns the run detail, not a field (unlike `patch_extraction_field`
-    above): this task's brief explicitly allows either "the same shape the
+    above): the spec explicitly allows either "the same shape the
     single-field confirm returns, or the run detail", and a bulk action over
     an unbounded number of fields has no single field to return - the run
     (now `ready`, or unchanged if there was nothing pending) is the

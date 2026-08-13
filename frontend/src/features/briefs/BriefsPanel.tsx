@@ -1,6 +1,6 @@
 /** Negotiation-briefs panel - attaches to the comparison workspace
  * (../comparison/ComparisonPage.tsx inserts this once a scenario's scoring
- * result is loaded, per this task's ALLOWED insertion point).
+ * result is loaded).
  *
  * Design decisions:
  *  - **Supplier pick-list comes from the caller, not a fresh fetch.** The

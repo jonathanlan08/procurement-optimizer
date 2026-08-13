@@ -1,8 +1,8 @@
 # 00 - Principal's Decision Record (Plan Approval)
 
-Date: 2026-08-10 · Author: principal (Fable 5) · Status: **PLAN APPROVED with the rulings below**
+Date: 2026-08-10 · Status: **PLAN APPROVED with the rulings below**
 
-The planning package (`01`-`09`) produced by the architecture-manager subagent is approved as the
+The planning package (`01`-`09`) in `01`-`09` is approved as the
 basis for implementation, subject to the corrections and rulings in this document. Where this
 document conflicts with `01`-`09`, **this document wins**.
 
@@ -84,9 +84,8 @@ calculation correctness, solver honesty, and document security are never descope
 
 ## 6. File ownership
 
-The map in `09-task-decomposition.md` §10 is **ratified**. In this build, "principal-owned" means
-written by me directly; "delegable" tasks go to sonnet-tier subagents with the task template from
-the operating model; **R**-marked paths require my diff review before commit.
+The map in `09-task-decomposition.md` §10 is **ratified**. Paths marked **R** require a careful diff review before commit; core paths are
+changed deliberately rather than casually.
 
 ## 7. Phase 1 independent-review outcome (2026-08-10)
 

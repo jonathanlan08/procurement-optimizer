@@ -1,11 +1,11 @@
 /** Reports workspace - routed at `/reports` (replaces the `PlaceholderPage`,
- * per this task's ALLOWED App.tsx edit): generate an export for a scenario,
+ * per the allowed App.tsx edit): generate an export for a scenario,
  * then track/download every report this organization has generated.
  *
  * Design decisions:
  *  - **Scenario picker is RFQ-then-scenario, reusing
  *    `useRfqScenarios(rfqId)`** - the exact same two-step picker
- *    ../comparison/ComparisonPage.tsx already uses, per this task's own
+ *    ../comparison/ComparisonPage.tsx already uses, per the
  *    instruction to "reuse whatever scenario-listing call
  *    features/comparison already uses." There is no org-wide
  *    "list every scenario" endpoint in ../comparison/api.ts to pick from

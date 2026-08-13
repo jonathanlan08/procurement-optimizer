@@ -20,7 +20,7 @@ line set at once via `BomVersionCreate`.
 
 `BomCreate`/`BomVersionCreate` both require at least one line
 (`Field(min_length=1)`): a BOM with zero components is not a resource that
-can be exploded into an RFQ or costed, and every scenario in this task's
+can be exploded into an RFQ or costed, and every scenario in the
 brief exercises multi-line BOMs.
 """
 
@@ -77,7 +77,7 @@ class BomLineCreate(BaseModel):
     individually-editable RFQ lines.
 
     `unit_definition_id` is optional: when omitted, `BomService` defaults it
-    to the referenced part's own `unit_definition_id` (per this task's
+    to the referenced part's own `unit_definition_id` (per the
     brief: "unit_definition_id optional - default the part's unit"). When
     provided explicitly it is still validated exactly like
     `Part.unit_definition_id` (global catalogue or this org's own private

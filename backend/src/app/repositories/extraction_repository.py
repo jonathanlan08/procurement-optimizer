@@ -11,7 +11,7 @@ queries to a dedicated `app/repositories/<resource>.py` module rather than
 running `select(...)` directly against the session, and `OrgScopedRepository`
 is this codebase's only sanctioned way to filter by `organization_id`
 (isolation control #2). `document_repository.py` itself is FROZEN for this
-task (an existing file this task may not modify), so a second, purpose-built
+task (an existing file this change may not modify), so a second, purpose-built
 repository lands here rather than growing that one.
 
 **Two repository classes in one file.** `ExtractionRepository` is bound to

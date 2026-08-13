@@ -16,7 +16,7 @@ existing scaled string types from `app.schemas.parts`/`app.schemas.boms`.
 See `app/services/landed_cost_service.py` module docstring for why
 `LandedCostAssumptionsRequest` carries `tariff_rate`/`duty_rate`/
 `promised_lead_time_days`/`required_lead_time_days` in addition to the five
-fields this task's brief names by name.
+fields the spec names by name.
 """
 
 from __future__ import annotations
@@ -111,7 +111,7 @@ class LandedCostPreviewRequest(BaseModel):
 
 
 class LandedCostCalculateRequest(BaseModel):
-    """`POST /rfqs/{rfq_id}/landed-costs` body: this task's `calculate_and_store`
+    """`POST /rfqs/{rfq_id}/landed-costs` body: the `calculate_and_store`
     is per-quote-line, so the request names the line explicitly (the
     contract's own prose describes a batch-all-matched-lines shape; see
     api/v1/analysis.py module docstring for why the narrower, task-specified

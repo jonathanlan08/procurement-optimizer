@@ -1,6 +1,6 @@
 # 08 - Test Strategy
 
-Status: **DRAFT FOR PRINCIPAL REVIEW**
+Status: **DRAFT**
 Implements SPEC §Testing requirements and §Definition of done.
 
 ---

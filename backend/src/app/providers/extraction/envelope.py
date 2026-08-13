@@ -1,4 +1,4 @@
-"""Prompt-injection isolation envelope + canary detector - PRINCIPAL-OWNED.
+"""Prompt-injection isolation envelope + canary detector.
 
 The envelope is the structural defense: document text is wrapped between
 per-request nonce fences, and the instructions outside the fences tell the

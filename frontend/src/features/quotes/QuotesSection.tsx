@@ -1,5 +1,5 @@
 /** Quote entry, mounted inside the RFQ detail drawer (RfqsPage.tsx's
- * `RfqDetail`, per this task's ALLOWED "minimal insertion" edit there).
+ * `RfqDetail`, per the allowed "minimal insertion" edit there).
  *
  * Design decisions, mirroring the freshest established patterns (features/
  * rfqs/RfqsPage.tsx / features/boms/BomsPage.tsx - see those files' headers
@@ -49,7 +49,7 @@
  *    consistent with MASTER.md's "explainability drawers" progressive-
  *    disclosure idiom. One inherited quirk from stacking two independent
  *    `Drawer` instances: each registers its own capture-phase `Escape`
- *    listener on `document`, and Drawer.tsx is outside this task's edit
+ *    listener on `document`, and Drawer.tsx is outside the edit
  *    scope, so pressing Escape while the quote drawer is open closes both
  *    drawers (the RFQ drawer's listener, registered first, still fires).
  *    Clicking the quote drawer's own close button is unaffected and is the

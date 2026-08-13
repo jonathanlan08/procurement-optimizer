@@ -1,4 +1,4 @@
-/* Design tokens - PRINCIPAL-OWNED.
+/* Design tokens.
    Source of truth: design-system/procurement-optimizer/MASTER.md (data-dense
    analytical workspace). Fonts are self-hosted via @fontsource; no CDN. */
 
@@ -82,7 +82,7 @@
      (savings/cost-increase/low-confidence/informational) and the two never
      swap roles. Each hue is design-director-chosen and independently
      verified >=4.5:1 as text on white and on its own 10%-tint pill
-     background (contrast pairs listed in this task's final report). */
+     background (contrast pairs listed in the final report). */
   --hue-overview: #4338ca;
   --hue-overview-tint: rgba(67, 56, 202, 0.1);
   --hue-suppliers: #0f766e;

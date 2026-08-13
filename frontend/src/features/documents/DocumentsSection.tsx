@@ -1,5 +1,5 @@
 /** Quote-document upload + extraction entry point, mounted inside the RFQ
- * detail drawer (RfqsPage.tsx's `RfqDetail`, per this task's ALLOWED
+ * detail drawer (RfqsPage.tsx's `RfqDetail`, per the allowed
  * "minimal insertion" edit there - same mount pattern
  * features/quotes/QuotesSection.tsx already establishes).
  *

@@ -1,4 +1,4 @@
-"""Extraction-confidence bands - single source of truth (PRINCIPAL-OWNED).
+"""Extraction-confidence bands - single source of truth ().
 
 Mirrored by the design system (design-system/procurement-optimizer/MASTER.md);
 this module is authoritative. Thresholds per 00-decisions.md §4 ruling #27.

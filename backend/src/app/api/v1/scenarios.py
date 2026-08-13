@@ -20,7 +20,7 @@ transaction, not two. Route-by-route:
   `AllocationResultRecord` is immutable (module docstring "Immutability"),
   this route simply returns the allocation half of the already-solved
   scenario. Mounted for contract-path compatibility; it never re-solves.
-- `POST /comparison-scenarios/{id}/clone` is this task's own `rerun`
+- `POST /comparison-scenarios/{id}/clone` is the `rerun`
   (scenario_service.py "Deviation 2"): a NEW scenario, freshly solved from
   the original's stored snapshots - not a draft pre-fill.
 - `GET .../results` / `GET .../allocation` are the scoring/allocation

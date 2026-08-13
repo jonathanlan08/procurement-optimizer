@@ -1,7 +1,7 @@
 """Part import request/response schemas (docs/planning/03-api-contract.md
 §4.5 `/part-imports`).
 
-Not in this task's brief's own file-creation list, which named only the
+Not in the spec's own file-creation list, which named only the
 migration/model/importing/service/api/test files - but every other router in
 this codebase (`api/v1/parts.py`, `api/v1/suppliers.py`, `api/v1/supplier_
 contacts.py`, `api/v1/supplier_performance.py`) pulls its Pydantic request/
@@ -18,7 +18,7 @@ calls this endpoint "full row-level preview, cursor-paginated", and up to
 documented as the default for. `prev_cursor` is always `null`: this is a
 forward-only keyset implementation (next by `row_number`), a deliberate
 scope decision - no endpoint in this codebase implements bidirectional
-cursor paging yet to mirror, and nothing in this task's required test list
+cursor paging yet to mirror, and nothing in the required test list
 exercises backward paging.
 
 `POST /part-imports`'s response shape is the contract's own explicit example

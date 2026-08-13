@@ -3,7 +3,7 @@
 
 **No write path here, by design** - §4.19's own prose: "There is no write,
 update, or delete route for audit events." `app.services.audit.AuditRecorder`
-(existing, PRINCIPAL-adjacent, not touched by this task) is the only writer
+(existing, PRINCIPAL-adjacent, not touched by this change) is the only writer
 anywhere in this codebase, and a database trigger installed in migration
 0001 additionally blocks `UPDATE`/`DELETE` on `audit_events` at the SQL
 level (`app/models/audit.py`'s own docstring) - this module cannot violate

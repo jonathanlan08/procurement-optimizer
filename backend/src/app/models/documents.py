@@ -296,7 +296,7 @@ MATCH_STRATEGY_ENUM = SaEnum(
     values_callable=lambda e: [m.value for m in e],
 )
 
-# ConfidenceBand (app.domain.confidence, PRINCIPAL-OWNED) is imported, not
+# ConfidenceBand (app.domain.confidence, ) is imported, not
 # redefined - module docstring point 6. This is the DB-type mirror of that
 # same Python enum, so `extraction_fields.band`'s legal values can never
 # drift from the thresholds module.

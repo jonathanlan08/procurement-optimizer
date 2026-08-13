@@ -12,7 +12,7 @@ envelope to poll.
 `code="not_found"`) when the report has been purged** - see
 `report_service.py` module docstring "Deviation 3" for why this is built by
 hand here rather than routed through `app.core.errors.AppError` (that
-hierarchy has no `410` entry, and `core/errors.py` is off this task's edit
+hierarchy has no `410` entry, and `core/errors.py` is off the edit
 list - "check core/errors.py for the closest code; add none" per the
 delegating task's own instruction: `ErrorCode.NOT_FOUND`'s wire value,
 `"not_found"`, is that closest code). A report that never produced bytes
@@ -63,7 +63,7 @@ def get_report_service(
     settings: SettingsDep,
 ) -> ReportService:
     # Built per request from Settings, not injected via api/deps.py
-    # (principal-owned, off limits) - mirrors api/v1/documents.py's own
+    # (frozen) - mirrors api/v1/documents.py's own
     # get_document_service (providers/storage/__init__.py module docstring).
     storage = build_storage_provider(settings)
     return ReportService(db, principal.organization_id, audit, clock, ids, storage=storage)
@@ -129,7 +129,7 @@ def download_report_content(
         data, content_type, filename = service.get_content(report_id)
     except ReportPurgedError:
         # module docstring: hand-built 410 envelope, no AppError involved -
-        # core/errors.py has no 410 ErrorCode and is off this task's edit
+        # core/errors.py has no 410 ErrorCode and is off the edit
         # list. X-Content-Type-Options: nosniff is already applied globally
         # by SecurityHeadersMiddleware (app/api/middleware.py).
         return JSONResponse(

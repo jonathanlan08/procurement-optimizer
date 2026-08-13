@@ -8,7 +8,7 @@ Services never commit: the request-scoped `get_db` dependency
 
 ## Operates on quote lines, post-materialization - not extraction fields
 
-This task's own OBJECTIVE is explicit that matching runs against
+The spec is explicit that matching runs against
 `QuoteLine` rows (via `matched_rfq_line_id`/`part_id`), not
 `extraction_fields` pre-materialization, documenting this as "matching
 operates on materialized quotes in v0.1." A manually-entered `Quote`
@@ -18,10 +18,10 @@ here means "a real `Quote`/`QuoteLine` exists," not "was extracted."
 
 ## `generate_for_quote`, not `generate_for_run`
 
-This task's own OBJECTIVE names the generation method `generate_for_run
+The spec names the generation method `generate_for_run
 (run_id)`. That does not fit this codebase for two independent reasons: (1)
 `docs/planning/03-api-contract.md` §4.12's own literal route table - which
-this task also cites as authoritative for `api/v1/matching.py` - addresses
+this change also cites as authoritative for `api/v1/matching.py` - addresses
 generation by quote (`POST /quotes/{id}/match`), never by extraction run;
 (2) a manually-entered quote (see above) has no `ExtractionRun` at all to
 key on, yet its lines must be matchable too. Read together with the task's
@@ -35,7 +35,7 @@ name.
 
 ## Catalog scope: the quote's own RFQ lines, not the full org catalog
 
-This task's OBJECTIVE says "loads org part catalog + alternatives." Taken
+The spec says "loads org part catalog + alternatives." Taken
 completely literally (every `Part` row in the organization) that is
 incompatible with the FROZEN schema: `PartMatchCandidate.rfq_line_id` is a
 required (`NOT NULL`) composite FK, so a candidate cannot be persisted for

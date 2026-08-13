@@ -16,7 +16,7 @@ resource, "documented, so contract tests assert both shapes." This codebase
 has no `Job`-row-producing worker anywhere (`app.models.audit.Job` exists as
 a table shape but nothing in `src/app` ever writes to it, and
 `Settings.job_runner` - `inline | thread` - is likewise read by nothing).
-Per this task's own explicit instruction, `start_run` always executes
+Per the explicit instruction, `start_run` always executes
 **synchronously, inline, in every environment** (not merely under test) -
 the `JOB_RUNNER=inline` shape is the *only* shape this v0.1 build implements,
 not a test-only special case layered over a real queue. `api/v1/extractions.py`
@@ -32,7 +32,7 @@ acquisition_conf * validation_penalty` (composed from OCR confidence and a
 coercion penalty) and a "critical field set" (`currency`, `unit_price`, every
 price-break boundary, `quantity`, `unit_of_measure`, `moq`, `tooling_cost`,
 `setup_cost`, and any field on an injection-flagged page) that **always**
-`requires_confirmation` regardless of confidence. This task's own OBJECTIVE
+`requires_confirmation` regardless of confidence. The spec
 text gives a complete, narrower, self-contained formula instead:
 `requires_review = band != HIGH or validation-failed`. That literal formula
 is what is implemented here - the provider's own reported per-field
@@ -40,15 +40,15 @@ is what is implemented here - the provider's own reported per-field
 force-flagged purely for belonging to a "critical" set. This is a deliberate
 scope narrowing, not an oversight: building the fuller composition/critical-
 set machinery is a materially larger addition than the task's own stated
-recipe, and every fixture this task's required tests exercise already lands
+recipe, and every fixture the required tests exercise already lands
 `needs_review` under the simpler formula anyway (each golden fixture has at
 least one sub-HIGH-band field), so no required test result depends on the
 richer behavior.
 
 ## Reuse vs. re-derivation of `QuoteService` logic (all FROZEN)
 
-`QuoteService` is FROZEN for this task. Three pieces of its logic are
-conceptually needed here too - this task's own instruction explicitly
+`QuoteService` is FROZEN for this change. Three pieces of its logic are
+conceptually needed here too - the instruction explicitly
 permits, per piece, either reusing it "if importable without modification"
 or re-deriving it minimally:
 
@@ -81,7 +81,7 @@ or re-deriving it minimally:
 
 ## RESOLVED: `QuoteCorrection.quote_id` is now nullable (migration 0012)
 
-This task's OBJECTIVE instructs `correct_field` to "write a `QuoteCorrection`
+The spec instructs `correct_field` to "write a `QuoteCorrection`
 with before/after." 04-document-pipeline.md's own pipeline diagram places
 Stage 10 (Corrections) *before* Stage 11 (Materialize) - i.e. corrections are
 meant to happen on `extraction_fields` before any `Quote` row exists at all.
@@ -113,13 +113,13 @@ record of every edit regardless).
   table to `app/domain/documents/transitions.py`, a file that does not exist
   in this codebase and is explicitly a different task's responsibility. This
   service never writes `QuoteDocument.state`; its only document-state
-  precondition is that `start_run` requires `state == 'stored'` (this task's
+  precondition is that `start_run` requires `state == 'stored'` (the
   own literal instruction), checked but never advanced.
 - **No cross-run supersession.** `ALLOWED_EXTRACTION_RUN_TRANSITIONS` only
   permits `SUPERSEDED` from `needs_review`/`failed`/`materialized` - notably
   *not* from `ready`, so a blanket "supersede the prior run when a new one
   starts" policy would sometimes violate the frozen transition table itself.
-  This task's own OBJECTIVE recipe for `start_run` never mentions
+  The spec's recipe for `start_run` never mentions
   superseding a prior run, either. `start_run` therefore always allocates the
   next `run_number` for the document and never mutates any other run's
   state; multi-run diffing/carry-forward (04-document-pipeline.md §8) is
@@ -229,7 +229,7 @@ _VT_CURRENCY: Final[str] = "currency"
 _VT_ENUM: Final[str] = "enum"
 
 # Mirrors (inverted) DocumentService's private `_MIME_OF_KIND` mapping.
-# document_service.py is FROZEN for this task and that dict is module-
+# document_service.py is FROZEN for this change and that dict is module-
 # private, so this file defines its own small, stable reverse mapping over
 # the same 5 canonical MIME strings rather than importing a private symbol
 # from another service module.
@@ -263,7 +263,7 @@ _QuoteGraph = tuple[
 
 
 def build_extraction_provider(settings: Settings) -> ExtractionProvider:
-    """Provider selection factory (this task's own instruction: "provider
+    """Provider selection factory (the instruction: "provider
     selection factory in this file"), mirroring
     `app.providers.storage.build_storage_provider`'s shape: a plain function
     over `Settings`, called once per request from the API layer's own
@@ -917,7 +917,7 @@ class ExtractionService:
 
     def _recompute_run_state(self, run_id: uuid.UUID) -> None:
         """Self-loop transition (`needs_review -> needs_review` / `-> ready`)
-        per this task's objective: "run recomputes needs_review->ready when
+        per the objective: "run recomputes needs_review->ready when
         no unconfirmed sub-HIGH fields remain." A no-op for any other run
         state (e.g. a post-materialization correction, see module docstring)
         - `materialized -> needs_review`/`-> ready` are not legal

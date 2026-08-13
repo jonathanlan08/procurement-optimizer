@@ -1,4 +1,4 @@
-"""Upload security core - PRINCIPAL-OWNED. Every uploaded document is untrusted.
+"""Upload security core. Every uploaded document is untrusted.
 
 Pure module (no I/O): callers stream bytes and enforce the size cap at the
 transport layer; this module rules on what the bytes claim to be.

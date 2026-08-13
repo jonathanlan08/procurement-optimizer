@@ -1,10 +1,10 @@
 # 09 - Task Decomposition, Dependencies, and File Ownership
 
-Status: **DRAFT FOR PRINCIPAL REVIEW**
+Status: **DRAFT**
 
 > **Assumption flagged up front:** `docs/SPEC.md` does not define numbered phases. The seven phases
 > below are my construction, derived from the SPEC's required end-to-end workflow and its dependency
-> structure. If the principal has a different phase model, the task list survives; only the grouping
+> structure. If a different phase model is preferred, the task list survives; only the grouping
 > changes.
 
 Task sizing: **S** ≤ half a day, **M** ≈ 1 day, **L** ≈ 2-3 days for a competent junior with the
@@ -53,7 +53,7 @@ entry as a supported format.
 | 1.15 | Security headers, CORS, rate limiting middleware | M | 1.5 | **P** | header assertions; strict CSP with no `unsafe-inline` |
 | 1.16 | `jobs` table + inline/thread runner + `/jobs/{id}` | M | 1.8 | **P** | `JOB_RUNNER=inline` runs synchronously |
 | 1.17 | Providers registry + `StorageProvider` (filesystem + S3) + `Clock`/`IdGenerator` wiring | M | 1.3 | **P** | key regex enforced; both providers pass one shared test suite |
-| 1.18 | `pytest` conftest: DB resolution (env → pgserver → compose), transaction rollback, fakes | M | 1.8 | **P** | suite runs on the principal's machine with no Docker |
+| 1.18 | `pytest` conftest: DB resolution (env → pgserver → compose), transaction rollback, fakes | M | 1.8 | **P** | suite runs on the maintainer's machine with no Docker |
 | 1.19 | Frontend scaffold: Vite, TS strict, TanStack Query/Router, layout shell, auth pages | L | - | **P** (shell) / D (pages) | login works against the real API |
 | 1.20 | `openapi-typescript` generation + typed fetch client + error mapping | M | 1.5, 1.19 | **P** | CI fails on schema/type drift |
 | 1.21 | Design tokens, base component set, money/date formatting utils | M | 1.19 | **P** (tokens) / D (components) | money rendered from strings, never `Number()` |
@@ -111,7 +111,7 @@ document, and every status change is in `rfq_status_history`.
 | ID | Task | Size | Depends on | Owner |
 |---|---|---|---|---|
 | 4.1 | Migration: `quote_documents`, `document_pages`, `extraction_runs`, `extraction_fields`, `quote_corrections`, `part_match_candidates` | M | 3.5 | **P** (review) / D |
-| 4.2 | Upload endpoint: streamed size cap, magic bytes, filename policy, dedupe, quarantine | L | 4.1, 1.17 | **P** | 
+| 4.2 | Upload endpoint: streamed size cap, magic bytes, filename policy, dedupe, quarantine | L | 4.1, 1.17 | **P** |
 | 4.3 | Per-format validators (PDF/PNG/JPEG/CSV/XLSX) incl. bombs, entities, encryption | L | 4.2 | **P** (security core) / D (per format) |
 | 4.4 | Text/table acquisition: pypdf, pdfplumber, pypdfium2 raster, openpyxl, csv sniffing → `document_pages` | L | 4.3 | D |
 | 4.5 | `OcrProvider` interface + mock + optional rapidocr adapter | M | 4.4 | D |
@@ -238,10 +238,10 @@ conflicts and is the best fit for the least-experienced implementer once the con
 
 ## 10. Draft FILE-OWNERSHIP MAP
 
-**P = principal-owned** (only the principal writes; others propose diffs in review).
-**D = delegable.** **R = delegable but principal review required before merge.**
+**P = core** (only the maintainer writes; others propose diffs in review).
+**D = routine.** **R = routine but careful review required before merge.**
 
-### Reserved for the principal
+### Reserved for the maintainer
 
 | Path | Why |
 |---|---|
@@ -269,17 +269,17 @@ conflicts and is the best fit for the least-experienced implementer once the con
 | `docs/SPEC.md`, `docs/SECURITY.md`, `docs/METHODOLOGY.md`, `docs/OPTIMIZATION.md`, `README.md` | claims made to the outside world |
 | `docs/openapi.json` (committed snapshot) | contract of record |
 
-### Delegable
+### Routine
 
 | Path | Notes |
 |---|---|
-| `backend/src/app/api/v1/<resource>.py` | thin routes against principal-owned deps |
+| `backend/src/app/api/v1/<resource>.py` | thin routes against core deps |
 | `backend/src/app/schemas/<resource>.py` | **R** - reviewed for decimal-as-string and missing-field conventions |
 | `backend/src/app/services/<resource>_service.py` | must call `AuditRecorder` |
 | `backend/src/app/repositories/<resource>_repository.py` | must extend `OrgScopedRepository` |
 | `backend/src/app/models/<table>.py` | **R** - reviewed for org FK, constraints, indexes |
-| `backend/src/app/domain/**/` implementations behind contracts | the best delegable work: pure, testable, high-value |
-| `backend/src/app/providers/*/mock_*.py`, `filesystem.py`, `s3.py` | against principal-owned interfaces |
+| `backend/src/app/domain/**/` implementations behind contracts | the best routine work: pure, testable, high-value |
+| `backend/src/app/providers/*/mock_*.py`, `filesystem.py`, `s3.py` | against core interfaces |
 | `backend/src/app/exports/**` | **R** for the formula-escaping helper |
 | `backend/src/app/seed/**` | **R** - must satisfy the SPEC dataset checklist |
 | `backend/migrations/versions/**` (non-tenancy) | **R** - every migration reviewed, autogenerate never merged unread |
@@ -290,9 +290,9 @@ conflicts and is the best fit for the least-experienced implementer once the con
 | `docs/ARCHITECTURE.md`, `DATABASE.md`, `DOCUMENT_PIPELINE.md`, `DATA_DICTIONARY.md`, `DEPLOYMENT.md`, `ROADMAP.md`, `CONTRIBUTING.md` | **R** |
 
 ### Working rules
-1. A delegable task that needs a change to a **P** file becomes a request in the PR description; the
+1. A routine task that needs a change to a **P** file becomes a request in the PR description; the
    principal makes the change. This keeps contract churn visible.
-2. No delegable PR may add a dependency, a migration touching tenancy, or a new route without a
+2. No routine PR may add a dependency, a migration touching tenancy, or a new route without a
    permission-matrix entry.
 3. Every PR runs the full CI matrix; the route-matrix and contract-drift jobs are non-negotiable.
 4. Migration files are append-only once merged; fixes are new migrations.
@@ -342,7 +342,7 @@ Consolidated from all nine documents. Each needs a ruling or an explicit "accept
 |---|---|---|---|---|
 | 1 | **Scope.** ~30 entities, ~120 endpoints, 4 document formats, a solver, 5 report types, 9 docs. This is a multi-month build presented as one spec. | Unfinished repo, worse than a smaller finished one | High | Phase gates with hard exit criteria; the P3-before-P4 ordering so the product is demonstrable early; be willing to ship P4 with 2 formats and label the rest roadmap |
 | 2 | **Solver nondeterminism** silently breaking the reproducibility claim | Core promise falsified | Medium | single worker + seed + deterministic time + `model_hash` assertions (task 6.6) - and these must land with the first solve, not later |
-| 3 | **Environment divergence** between the principal's no-Docker machine and CI/other devs | "Works on my machine", late surprises | Medium-High | one DB-resolution code path; CI is authoritative; MinIO job so the S3 path is real; verify Playwright arm64 in Phase 1 |
+| 3 | **Environment divergence** between the maintainer's no-Docker machine and CI/other devs | "Works on my machine", late surprises | Medium-High | one DB-resolution code path; CI is authoritative; MinIO job so the S3 path is real; verify Playwright arm64 in Phase 1 |
 | 4 | **Org-isolation regression** as endpoint count grows | Spec-breaking security failure | Medium | five-layer defence, composite org FKs, route-matrix test that fails on undeclared routes |
 | 5 | **Decimal leakage to float** at a boundary (JSON, chart library, CSV, ORM) | Wrong money, silently | Medium | strings over the wire, lint ban, ORM `asdecimal`, explicit tests at each boundary |
 | 6 | **Licence contamination** (PyMuPDF AGPL, GPL fuzzy libs) in an MIT repo | Legal/credibility problem in a portfolio piece | Medium | pypdfium2 + rapidfuzz + ReportLab; CI licence gate |

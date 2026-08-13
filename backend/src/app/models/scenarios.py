@@ -11,11 +11,11 @@ ERD's literal box). That reversal is honored deliberately and unevenly
 below, resolved column-by-column against two things the task's paraphrase
 does NOT override: (a) the ERD's own literal box for
 `COMPARISON_SCENARIOS`/`SCENARIO_RESULTS`/`ALLOCATION_RESULTS` (02-erd.md
-§7), and (b) the two FROZEN, principal-owned domain contracts this table
+§7), and (b) the two FROZEN, frozen domain contracts this table
 set exists to persist - `app.domain.optimization.contracts.AllocationResult`
-(explicitly called out in this task's own READ FIRST list as "the shape you
+(explicitly called out in the READ FIRST list as "the shape you
 persist") and `app.domain.scoring.contracts.ScoringResult` (same
-"PRINCIPAL-OWNED"/frozen-dataclass status, discovered while reading
+""/frozen-dataclass status, discovered while reading
 `app/domain/scoring/scorer.py`). Every deviation is called out below as a
 decision, per this codebase's standing convention.
 
@@ -35,7 +35,7 @@ box's own inline comment ("quote ids + revisions") predates
 (`analysis.py`, migration 0011) and could not have anticipated it; folding
 it into this JSONB's shape, rather than adding a new column, is also the
 only structurally available option, since `landed_cost_results` is an
-existing file this task is not permitted to touch and does not itself carry
+existing file this change is not permitted to touch and does not itself carry
 a `scenario_id` FK (see `analysis.py` module docstring point 1).
 
 **2. `ComparisonScenario.scoring_configuration_id` is a genuine ERD-literal
@@ -93,7 +93,7 @@ the task's paraphrase is followed over the ERD's literal shape, because the
 paraphrase's four columns ("scoring output JSONB (ranked scores incl.
 reasons), calculation_version, scoring_version, computed_at") map exactly
 onto `app.domain.scoring.contracts.ScoringResult` - a FROZEN,
-principal-owned dataclass whose `scores: tuple[SupplierScore, ...]` field
+frozen dataclass whose `scores: tuple[SupplierScore, ...]` field
 *is* "ranked scores incl. reasons" (`SupplierScore.criterion_scores` already
 carries a human-auditable `reason` string per criterion) and whose
 `scoring_version` field is the literal name the task paraphrase also uses.
@@ -108,7 +108,7 @@ box has no timestamp or version column for `SCENARIO_RESULTS` at all; both
 supplies and the ERD is simply silent on, not a case of "differs from").
 
 **8. `AllocationResultRecord` mirrors `app.domain.optimization.contracts.
-AllocationResult` field-for-field** (this task's own READ FIRST instruction
+AllocationResult` field-for-field** (the READ FIRST instruction
 calls that dataclass "the shape you persist - FROZEN"), which is also
 exactly what the task's own paraphrase for this table already describes
 column-by-column. Deviations from the ERD's literal `ALLOCATION_RESULTS`

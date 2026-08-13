@@ -79,7 +79,7 @@ validator for this pairing exists in this module.
 /quotes/{id}`) only carries `quote_number`/`quote_date`/`expiration_date`/
 `currency`/`notes` - §4.11's other quote-shaped routes (`PATCH .../lines
 [...]`, `PUT .../price-breaks`, `PUT .../terms`) are separate, later-phase
-sub-resource endpoints not in this task's file-creation brief; a manual
+sub-resource endpoints not in the file-creation brief; a manual
 quote's lines/price-breaks/terms are written once, atomically, at create (or
 `supersede`) time only.
 

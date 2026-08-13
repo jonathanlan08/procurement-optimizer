@@ -351,7 +351,7 @@ class TestRfqsSchema:
             )
 
     def test_allowed_transitions_covers_every_non_terminal_status(self) -> None:
-        """Per the principal's ruling, ARCHIVED is the only terminal status
+        """Per the ruling, ARCHIVED is the only terminal status
         (nothing transitions out of it). Every other status must have at
         least one allowed outgoing transition."""
         non_terminal_statuses = set(RfqStatus) - {RfqStatus.ARCHIVED}

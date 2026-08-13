@@ -29,7 +29,7 @@ import io
 from xml.sax.saxutils import escape as _xml_escape
 
 # no bundled type stubs, and pyproject.toml's mypy overrides are off-limits
-# for this task - same accepted precedent app/importing/part_import_parser.py
+# for this change - same accepted precedent app/importing/part_import_parser.py
 # already documents for its own openpyxl import.
 from reportlab.lib import colors  # type: ignore[import-untyped]
 from reportlab.lib.pagesizes import letter  # type: ignore[import-untyped]

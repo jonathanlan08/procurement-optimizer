@@ -12,7 +12,7 @@ supplier invitations, and status-history rows are queried here directly
 rather than via an eager-loaded collection attribute that does not exist.
 
 Default listing hides archived RFQs (`archived_at IS NULL`) unless
-`include_archived=True` is passed - this task's own filter list
+`include_archived=True` is passed - the filter list
 (03-api-contract.md §4.8: "filters status[], q, due_before, due_after") does
 not name `include_archived` for RFQs specifically, but §1.4's blanket rule
 ("include_archived=true required to see soft-deleted rows") is general and

@@ -12,7 +12,7 @@ codebase's established shape.
 **`DocumentResponse` never includes `storage_key`.** §4.9's own route table:
 `GET /quote-documents/{id}` is "metadata + page summaries; **never** a
 storage URL." Page summaries themselves (`document_pages` rows) belong to
-Stage 4 (text/table acquisition), out of this task's Stage 1-3 scope
+Stage 4 (text/table acquisition), out of the Stage 1-3 scope
 (services/document_service.py's own module docstring) - omitted here for the
 same reason `.../pages/{n}/preview` has no route in `api/v1/documents.py`.
 

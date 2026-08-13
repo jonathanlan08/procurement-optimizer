@@ -26,7 +26,7 @@ live provider to refresh from (`app.core.config` deliberately has no
    row of recorded history).
 3. If neither yields an answer (unknown currency pair): the calculation
    methodology names this `MissingExchangeRateError` and forbids falling back
-   to 1.0. `app.core.errors` is principal-owned and this task may not extend
+   to 1.0. `app.core.errors` is frozen and this change may not extend
    it with a new error code, so it is raised as the existing, closest-fit
    `NotFoundError` (404 `not_found` - "no rate exists for this pair" reads
    naturally as "resource absent").

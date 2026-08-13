@@ -18,7 +18,7 @@ Two changes, both additive/loosening (no data loss on upgrade):
    composite FK on this same table already uses (migration 0010).
 2. `quote_corrections.extraction_run_id` - new nullable composite org FK
    column to `extraction_runs`, since the model did not already have it
-   (checked `app/models/documents.py` first, per this task's own
+   (checked `app/models/documents.py` first, per the
    instruction). Gives *every* correction, pre- or post-materialization, a
    durable, directly queryable link back to the run that produced the field
    it corrects - previously the only place that link existed at all was the

@@ -18,9 +18,9 @@ something other than the actual current state of the BOM.
 `BillOfMaterialLine` has no ORM relationship back to `BillOfMaterials` (see
 app/models/boms.py: the relationships defined there are all one-directional,
 `BillOfMaterialLine.bom`, with no `back_populates`/backref on the
-`BillOfMaterials` side) - this task's edit allowlist does not include
+`BillOfMaterials` side) - the edit allowlist does not include
 models/boms.py, so lines are fetched here with their own explicit queries
-("line helpers" per this task's brief) rather than via eager-loading a
+("line helpers" by design) rather than via eager-loading a
 relationship attribute that does not exist.
 """
 

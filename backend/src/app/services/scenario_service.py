@@ -13,7 +13,7 @@ commits on success and rolls back on any raised exception.
 .../comparison-scenarios` (`202` job, scores only) then a separate `POST
 .../{id}/optimize` (`202` job, allocates). This module does not follow that
 shape. Two independent reasons, both stronger than "the contract's literal
-table wins" (which this task's own READ FIRST list states applies to
+table wins" (which the READ FIRST list states applies to
 §4.16's *routes*, not to whether scoring and allocation are one transaction
 or two):
 
@@ -30,7 +30,7 @@ or two):
    "re-scoring/re-solving creates a NEW scenario entirely" (models/
    scenarios.py module docstring, "Immutability"). There is structurally no
    row shape for "this scenario has been scored but not solved" to live in.
-   `create_and_run` therefore does steps (a)-(e) of this task's own OBJECTIVE
+   `create_and_run` therefore does steps (a)-(e) of the OBJECTIVE
    in one request, one transaction: resolve landed costs, snapshot, score,
    solve, persist all three rows together.
 
@@ -42,7 +42,7 @@ allocation half of the *already-solved* scenario (this service exposes no
 fresh solve, and it always produces a new scenario id, never mutates one in
 place, per the immutability rule above).
 
-## Deviation 2 - `POST .../clone` IS this task's own `rerun`
+## Deviation 2 - `POST .../clone` IS the `rerun`
 
 §4.16 names this route `clone` ("new scenario pre-filled from an old one -
 the supported way to change assumptions without mutating history"); this
@@ -137,7 +137,7 @@ always missing (renormalized away), documented rather than silently omitted.
 Allocation itself needs none of this: `AllocationProblem` is naturally
 per-(RFQ line, offer), so the solver sees every offer individually.
 
-## Price-break tier re-costing (v0.1 simplification, per this task's OBJECTIVE)
+## Price-break tier re-costing (v0.1 simplification, per the OBJECTIVE)
 
 An offer's tiers are built from the landed-cost result's `effective_unit_cost`
 plus a per-unit overhead spread: `overhead_per_unit = effective_unit_cost -
@@ -146,7 +146,7 @@ result, read back off the `extended_material` component's own `inputs`).
 When the quote line has price breaks, each tier's `landed_unit_cost =
 tier.unit_price + overhead_per_unit` (assumes fixed/logistics/import/risk/
 financing overhead is flat across tiers - a documented approximation, not a
-re-run of the calculator at each tier's quantity, which is out of this task's
+re-run of the calculator at each tier's quantity, which is out of the
 scope). When there are no price breaks, this collapses to exactly the
 OBJECTIVE's own stated simplification: one tier at `effective_unit_cost`
 `[1, None)`. `Offer.fixed_cost` is always `Decimal("0")`: `effective_unit_cost`

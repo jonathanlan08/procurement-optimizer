@@ -8,7 +8,7 @@ scale) is used for both the optional request-side overrides and the
 response figures.
 
 `NegotiationBriefResponse.requires_review` is derived (`state ==
-BriefState.DRAFT`), not a stored column - this task's own OBJECTIVE
+BriefState.DRAFT`), not a stored column - the OBJECTIVE
 explicitly asks the `GET` response to "prominently include review state and
 narrative_is_generated"; `requires_review` makes "is this safe to act on
 yet" a single boolean a client can check without knowing the state enum's

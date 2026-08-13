@@ -2,7 +2,7 @@
 product-audit remediation: "Add documentation and handling inputs").
 
 **Why now, and why these two exactly.** `app.domain.landed_cost.contracts`
-(PRINCIPAL-OWNED, frozen) has always accepted a `documentation` field on
+(frozen) has always accepted a `documentation` field on
 `FixedCosts` and a `handling` field on `LogisticsCosts` - the calculation
 formulas in that module's own docstring have always read
 `allocated_fixed_cost = tooling + setup + documentation + other_fixed` and
@@ -19,7 +19,7 @@ either `INCOMPLETE` or `ASSUMPTION_DEPENDENT`, never `COMPLETE`, because
 these two components could never be anything but missing. This migration
 closes that gap at the only layer that was actually missing it - the domain
 calculator required no change at all, confirmed by reading
-`app/domain/landed_cost/{contracts,calculator}.py` first, per this task's
+`app/domain/landed_cost/{contracts,calculator}.py` first, per the
 own instruction, before writing a single line here.
 
 Both columns follow the sibling fixed/logistics-cost columns' shape

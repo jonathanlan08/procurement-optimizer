@@ -1,5 +1,5 @@
 /** Reports data layer - TanStack Query hooks against the FROZEN wire
- * contract given in this task's brief. The backend is being built
+ * contract given in the spec. The backend is being built
  * concurrently (unlike ../briefs/api.ts, whose backend already exists) -
  * this file codes to the contract exactly as specified, documenting the two
  * places the contract leaves a shape ambiguous:

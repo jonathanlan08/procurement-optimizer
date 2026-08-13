@@ -10,7 +10,7 @@
  *    mounted and resolves it to `{code, name, dimension, is_global}`.
  *    PartsPage.tsx resolves this the same way RfqsPage.tsx/BomsPage.tsx
  *    already do, via `useUnits()` (../boms/api.ts) - the "no /units
- *    endpoint" note that used to live here was stale by the time this task
+ *    endpoint" note that used to live here was stale by the time this change
  *    landed (a units-catalog audit finding fixed elsewhere added the
  *    route); Parts was simply the one workspace that hadn't been wired to
  *    it yet.
@@ -21,7 +21,7 @@
  *  - `DELETE /parts/{id}/alternatives/{aid}` returns `204 No Content`. The
  *    shared `api()` helper always does `return (await resp.json()) as T`,
  *    which throws on an empty body - a real footgun for any 204 response,
- *    but client.ts is read-only for this task. `deleteAlternative` below
+ *    but client.ts is read-only for this change. `deleteAlternative` below
  *    re-implements just enough of `api()`'s fetch/error-envelope handling
  *    (same CSRF/credentials rules) to stop short of parsing a body that
  *    was never sent.

@@ -1,6 +1,6 @@
 # 04 - Document and Extraction Pipeline
 
-Status: **DRAFT FOR PRINCIPAL REVIEW**
+Status: **DRAFT**
 Implements SPEC §6 (uploads), §7 (extraction fields), §8 (part matching), §Document and AI security.
 
 **Governing principle: an uploaded document is hostile input that happens to contain useful data.**
@@ -289,7 +289,7 @@ Rules:
 | domain → export | extracted strings | CSV/XLSX formula prefixing, PDF text escaping | none material |
 | storage → browser | original document | authorized streaming, `attachment`, `nosniff`, CSP sandbox | user opens it locally - out of scope, documented |
 
-## 12. Edge cases the SPEC does not address (flagged for the principal)
+## 12. Edge cases the SPEC does not address (flagged for the maintainer)
 
 1. **Multi-quote documents** - one PDF containing quotes for two RFQs or from two suppliers. v0.1.0:
    extract as one quote, flag `multiple_quote_numbers_detected` for review. Splitting is roadmap.

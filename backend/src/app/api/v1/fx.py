@@ -13,8 +13,8 @@ paginated listing of this org's stored override rows
 - it cannot also mean "effective lookup with `as_of` defaulted to today",
 because a plain filtered list is a real, distinct need (an audit/history
 view) that requiring all three params keeps unambiguous. The contract has no
-separate `/exchange-rates/effective` path, so this task's own brief (which
-proposed one) yields to the contract here, per this task's "contract wins"
+separate `/exchange-rates/effective` path, so the spec (which
+proposed one) yields to the contract here, per the "contract wins"
 instruction.
 """
 

@@ -24,7 +24,7 @@ as a decision:
 
 1. `RfqStatusHistory` renames three ERD columns: `reason` -> `note`,
    `changed_by_id` -> `actor_user_id`, `changed_at` -> `occurred_at`. The
-   renames come verbatim from the principal's status-transition ruling text
+   renames come verbatim from the status-transition ruling text
    ("Every transition writes an rfq_status_history row (from_status,
    to_status, actor_user_id, note, occurred_at)"), stated twice in the task,
    so treated as intentional rather than a paraphrase.

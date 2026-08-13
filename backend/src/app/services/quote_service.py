@@ -6,14 +6,14 @@ Services never commit: the request-scoped `get_db` dependency (app/api/deps.py)
 commits on success and rolls back on any raised exception. Every mutation
 writes exactly one audit event in the same transaction as the data change it
 describes (`quote.created`/`quote.updated`/`quote.superseded`/
-`quote.archived`, this task's brief).
+`quote.archived`, the spec).
 
 **Scope: manual entry only.** §4.11's route table also lists
 `GET/POST/PATCH/DELETE .../lines[...]`, `PUT .../price-breaks`,
 `PUT .../terms`, `GET .../corrections`, and `POST .../confirm` - all of them
 belong to the extraction/correction/confirmation pipeline (00-decisions.md
 §2 ruling #6: "manual quotes before extraction", a later phase) and are out
-of this task's file-creation brief. A manually-entered quote's `source` is
+of the file-creation brief. A manually-entered quote's `source` is
 always `QuoteSource.MANUAL`, and its lines/price-breaks/terms are written
 once, atomically, at `create()` (or `supersede()`) time - there is no
 route anywhere in this module that edits a line, a price break, or the terms
@@ -42,7 +42,7 @@ pre-confirmation statuses: `update()` is allowed while a quote is `draft` or
 `in_review`, blocked (`409 conflict_state`) once `confirmed`, `superseded`,
 or `rejected`.
 
-**Price-break validation matrix - this task IS the deferred validator.**
+**Price-break validation matrix - this change IS the deferred validator.**
 app/models/quotes.py's own module docstring states the gap explicitly: the
 DB's `uq_quote_price_breaks_org_line_min_quantity` "does not catch a tier
 whose range partially overlaps a different min_quantity... deferred to an
@@ -622,7 +622,7 @@ class QuoteService:
         old.updated_at = now
         self._db.flush()
 
-        # A single audit event, per this task's brief ("audit quote.
+        # A single audit event, by design ("audit quote.
         # superseded") - entity_id is the OLD quote (the event name
         # describes what happened *to it*, the same semantics as the event
         # name itself, mirroring how BomService.activate() keys its own

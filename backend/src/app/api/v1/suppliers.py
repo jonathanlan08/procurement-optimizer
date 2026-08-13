@@ -5,7 +5,7 @@ and returns `409 conflict_version` on mismatch. Archive/unarchive are
 restricted to administrator+ per the contract's route table (`O A`, not
 analyst) - analysts may create/read/update but not archive.
 
-Deviation from this task's prose (contract wins, per instructions): the
+Deviation from the prose (contract wins, per instructions): the
 contract's route table lists `PATCH /suppliers/{id}`, not `PUT`; this router
 implements PATCH.
 """

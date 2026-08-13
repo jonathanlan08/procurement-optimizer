@@ -1,4 +1,4 @@
-"""Request-id, security headers, and rate limiting - PRINCIPAL-OWNED."""
+"""Request-id, security headers, and rate limiting."""
 
 from __future__ import annotations
 

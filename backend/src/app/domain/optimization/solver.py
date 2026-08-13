@@ -36,7 +36,7 @@ contract's docstring is normative but not exhaustive pseudocode):
   the same solution (asserted by the determinism tests). What is not
   guaranteed is which of several *exactly*-tied optima a future code change
   might surface. The methodology's epsilon tie-break term is real scope but
-  is not part of this task's deliverable; flagged here for the principal
+  is not part of the deliverable; flagged here for follow-up
   rather than silently added or silently skipped.
 - **Assumption-literal groups.** Six relaxable constraint groups -
   `moq`, `capacity`, `supplier_count`, `concentration`, `budget`, `locks` -

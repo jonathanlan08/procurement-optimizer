@@ -1,4 +1,4 @@
-"""Injectable id generation - PRINCIPAL-OWNED.
+"""Injectable id generation.
 
 UUIDv4 in production; a deterministic sequence in tests so snapshots and golden
 files are stable.

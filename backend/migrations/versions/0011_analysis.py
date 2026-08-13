@@ -32,7 +32,7 @@ below exists for exactly that lookup), not a DB constraint.
 functional, case-insensitive partial index, the same no-`citext`-extension
 adaptation `rfqs.internal_reference` and `parts.internal_part_number` already
 use (02-erd.md §7's own box has no explicit uniqueness note for this column,
-but "unique active name per org" is this task's own explicit requirement).
+but "unique active name per org" is the explicit requirement).
 
 Revision ID: 0011
 Revises: 0010
@@ -90,7 +90,7 @@ def upgrade() -> None:
         ),
         sa.Column("calculation_version", sa.Text(), nullable=False),
         # the full assembled LandedCostInput incl. FX/unit normalization
-        # provenance (this task's own explicit column brief).
+        # provenance (the explicit column brief).
         sa.Column("inputs_snapshot", pg.JSONB(), nullable=False),
         sa.Column(
             "missing_inputs", pg.JSONB(), nullable=False, server_default=sa.text("'[]'::jsonb")
@@ -239,7 +239,7 @@ def upgrade() -> None:
         ["organization_id"],
     )
     op.create_index(
-        # "unique active name per org" (this task's explicit requirement);
+        # "unique active name per org" (the explicit requirement);
         # functional + partial, same no-citext-extension adaptation as
         # uq_rfqs_org_ref_active (migration 0007) / uq_parts_org_ipn_active
         # (migration 0004).

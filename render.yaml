@@ -1,0 +1,73 @@
+# Render Blueprint - one web service that serves BOTH the API and the built
+# frontend from a single origin.
+#
+# Why one service and not two: the frontend calls the API with relative paths
+# and the session cookie is SameSite=Lax, so a split across two hostnames
+# breaks login in a way that looks like a wrong password. See
+# backend/src/app/api/spa.py. One service also means one free instance to cold
+# start instead of two.
+#
+# The database is NOT declared here. Render's own free Postgres expires; point
+# PO_DATABASE_URL at an external managed Postgres (Neon's free tier works) and
+# this blueprint stays valid for as long as that database does.
+#
+# Deploy: Render dashboard -> New -> Blueprint -> pick this repo -> Apply,
+# then paste PO_DATABASE_URL when prompted. Details in docs/DEPLOYMENT.md §7.
+
+services:
+  - type: web
+    name: procurement-optimizer
+    runtime: python
+    plan: free
+    region: oregon
+    branch: main
+    # Build the SPA, then install the backend. Node is available on Render's
+    # Python runtime image, so no Docker is required.
+    buildCommand: |
+      set -euo pipefail
+      cd frontend && npm ci && npm run build && cd ..
+      cd backend && pip install uv && uv sync --locked --no-dev
+    # Migrate to head and load the synthetic demo dataset (idempotent) before
+    # serving. preDeployCommand runs after the build and before traffic.
+    preDeployCommand: |
+      set -euo pipefail
+      cd backend
+      uv run alembic upgrade head
+      uv run python scripts/seed_demo.py
+    startCommand: |
+      cd backend && uv run uvicorn app.main:create_app --factory \
+        --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips '*'
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12"
+      - key: PO_ENVIRONMENT
+        value: prod
+      # Generated once by Render and kept across deploys. Production refuses to
+      # boot with the placeholder key (backend/src/app/core/config.py), and
+      # prod also forces Secure cookies.
+      - key: PO_SECRET_KEY
+        generateValue: true
+      # Serve the SPA built above from this same process.
+      - key: PO_STATIC_ROOT
+        value: ../frontend/dist
+      # Paste a managed Postgres connection string (Neon). Must be the
+      # postgresql+psycopg:// form that SQLAlchemy expects.
+      - key: PO_DATABASE_URL
+        sync: false
+      # Demo posture: synthetic data, public demo credentials, banner on.
+      - key: PO_DEMO_MODE
+        value: "true"
+      # No paid providers anywhere: extraction, narrative and storage all stay
+      # on the mock/template/filesystem defaults, so the demo needs no API key.
+      - key: PO_EXTRACTION_PROVIDER
+        value: mock
+      - key: PO_NARRATIVE_PROVIDER
+        value: template
+      - key: PO_STORAGE_PROVIDER
+        value: filesystem
+      # Free instances have an ephemeral disk: uploaded documents do not
+      # survive a restart, while their database rows do. Acceptable for a
+      # demo; switch PO_STORAGE_PROVIDER to s3 (R2 works) to make it durable.
+      - key: PO_STORAGE_ROOT
+        value: /tmp/po-storage

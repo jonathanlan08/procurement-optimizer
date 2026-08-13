@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import logging
+
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -14,6 +16,7 @@ from app.api.middleware import (
     RequestIdMiddleware,
     SecurityHeadersMiddleware,
 )
+from app.api.spa import mount_spa
 from app.api.v1.analysis import landed_cost_router, scoring_config_router
 from app.api.v1.audit import audit_events_router, entity_audit_router
 from app.api.v1.auth import router as auth_router
@@ -156,5 +159,14 @@ def create_app(
     app.include_router(reports_router, prefix=API_PREFIX)
     app.include_router(audit_events_router, prefix=API_PREFIX)
     app.include_router(entity_audit_router, prefix=API_PREFIX)
+
+    # Single-origin deployment: serve the built SPA from this process when a
+    # build is present. Registered LAST so every API route matches first (see
+    # api/spa.py for why the split-origin alternative breaks auth).
+    if settings.static_root and not mount_spa(app, settings.static_root):
+        logging.getLogger("app").warning(
+            "PO_STATIC_ROOT=%s has no index.html; serving API only",
+            settings.static_root,
+        )
 
     return app

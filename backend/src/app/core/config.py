@@ -83,6 +83,14 @@ class Settings(BaseSettings):
 
     demo_mode: bool = True  # demo banner + seeded demo organization
 
+    # Directory holding the built frontend (frontend/dist). When set, this
+    # process also serves the SPA, so the browser talks to ONE origin: the
+    # frontend calls the API with relative paths and the session cookie is
+    # SameSite=Lax, neither of which survives a split across two domains.
+    # Unset (the default) leaves this an API-only server, which is what the
+    # dev setup and the whole test suite expect.
+    static_root: str | None = None
+
     @model_validator(mode="after")
     def _fail_fast(self) -> Self:
         needs_key = (

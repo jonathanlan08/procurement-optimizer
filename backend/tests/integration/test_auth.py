@@ -128,6 +128,34 @@ class TestLogin:
         assert resp.status_code == 403
         assert resp.json()["error"]["code"] == "csrf_failed"
 
+    def test_login_from_the_servers_own_origin_is_allowed(
+        self, client: TestClient, account
+    ) -> None:
+        """Single-origin deploys (app/api/spa.py) serve the SPA from this same
+        host, so the browser sends our own origin. Browsers set Origin and page
+        JS cannot forge it, so this is genuinely same-origin and must work even
+        though the deployed URL is not in PO_ALLOWED_ORIGINS - otherwise a
+        correct password reads as a 403 until that variable is set by hand."""
+        own_origin = "http://testserver"  # TestClient's base_url
+        resp = client.post(
+            "/api/v1/auth/login",
+            json={"email": account["email"], "password": PASSWORD},
+            headers={"Origin": own_origin},
+        )
+        assert resp.status_code == 200, resp.text
+
+    def test_login_from_a_foreign_origin_is_still_rejected(
+        self, client: TestClient, account
+    ) -> None:
+        """The same-origin allowance must not become a blanket bypass."""
+        resp = client.post(
+            "/api/v1/auth/login",
+            json={"email": account["email"], "password": PASSWORD},
+            headers={"Origin": "https://evil.example"},
+        )
+        assert resp.status_code == 403
+        assert resp.json()["error"]["code"] == "csrf_failed"
+
 
 class TestSessionUse:
     def test_me_without_cookie_is_401(self, client: TestClient) -> None:

@@ -15,9 +15,30 @@ from app.core.errors import RateLimitedError
 
 REQUEST_ID_HEADER = "X-Request-ID"
 
-# Strict CSP: the API serves JSON only; the SPA is served separately. No inline
-# anything. Frontend dev server handles its own CSP in dev.
+# Strict CSP for API responses: JSON only, so nothing may be loaded at all.
 _CSP = "default-src 'none'; frame-ancestors 'none'; base-uri 'none'"
+
+# CSP for the built single-page app, when this process also serves it
+# (PO_STATIC_ROOT - see main.py). The strict API policy above would block the
+# SPA's own bundle, so served HTML/assets get a policy scoped to same-origin
+# resources instead of a blanket 'none':
+#   - script/style/font/img limited to 'self' (the bundle is self-hosted,
+#     fonts are vendored via @fontsource, no CDN anywhere)
+#   - 'unsafe-inline' on style only: React sets element styles for the
+#     workspace hues and the motion entrances. No script inlining is allowed.
+#   - connect-src 'self' because the frontend calls this same origin
+#   - object/frame/base still fully denied
+_SPA_CSP = (
+    "default-src 'self'; "
+    "script-src 'self'; "
+    "style-src 'self' 'unsafe-inline'; "
+    "img-src 'self' data:; "
+    "font-src 'self'; "
+    "connect-src 'self'; "
+    "object-src 'none'; "
+    "frame-ancestors 'none'; "
+    "base-uri 'none'"
+)
 
 
 class RequestIdMiddleware(BaseHTTPMiddleware):
@@ -43,7 +64,10 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["Referrer-Policy"] = "no-referrer"
-        response.headers["Content-Security-Policy"] = _CSP
+        # API paths keep the strict JSON-only policy; anything else is the
+        # served SPA and needs to be allowed to load its own bundle.
+        is_api = request.url.path.startswith("/api/")
+        response.headers["Content-Security-Policy"] = _CSP if is_api else _SPA_CSP
         response.headers["Cross-Origin-Opener-Policy"] = "same-origin"
         response.headers["Cross-Origin-Resource-Policy"] = "same-origin"
         if self._hsts:
@@ -56,7 +80,17 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 class OriginCheckMiddleware(BaseHTTPMiddleware):
     """Origin/Referer allowlist for EVERY mutating API request - including login,
     which has no session yet and would otherwise be exposed to login-CSRF.
-    The per-session CSRF token check in deps.py remains as the second factor."""
+    The per-session CSRF token check in deps.py remains as the second factor.
+
+    A request whose `Origin` is this deployment's OWN origin is always allowed,
+    on top of the configured allowlist. Browsers set `Origin` themselves and
+    page JavaScript cannot forge it, so `Origin == our own scheme://host` means
+    the request genuinely came from a page this server served - the same-origin
+    case the CSRF token already covers. Without this, a single-origin deploy
+    (app/api/spa.py) rejects every login until `PO_ALLOWED_ORIGINS` is set to
+    the deployed URL, and the failure surfaces to the user as a generic 403 on
+    a correct password.
+    """
 
     def __init__(self, app: ASGIApp, *, settings: Settings) -> None:
         super().__init__(app)
@@ -71,7 +105,8 @@ class OriginCheckMiddleware(BaseHTTPMiddleware):
             from app.core.security import origin_allowed
 
             origin = request.headers.get("origin") or request.headers.get("referer")
-            if not origin_allowed(origin, self._allowed):
+            own = f"{request.url.scheme}://{request.url.netloc}"
+            if not origin_allowed(origin, [*self._allowed, own]):
                 from datetime import UTC, datetime
 
                 from starlette.responses import JSONResponse

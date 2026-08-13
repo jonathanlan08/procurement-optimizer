@@ -2,7 +2,7 @@
 
 Repository: `procurement-optimizer` (working title). Portfolio-quality, database-backed
 procurement intelligence platform. Public repo uses **synthetic demonstration data only**.
-Not a commercial launch. Never include real Ameri-Rack data, real supplier documents,
+Not a commercial launch. Never include real company data, real supplier documents,
 real negotiated prices, or real BOMs.
 
 ## Mission

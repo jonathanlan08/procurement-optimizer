@@ -227,7 +227,7 @@ future PR that adds one fails CI.
 
 `AuditRecorder` (`backend/src/app/services/audit.py`) is the **only** writer anywhere in the
 codebase, and it never opens its own transaction: an audit row is written inside the same
-transaction as the change it describes, so the trail cannot diverge from the data. 59 event
+transaction as the change it describes, so the trail cannot diverge from the data. 60 event
 types are recorded, including `security.injection_suspected`.
 
 At the database level, migration `0001` installs `audit_events_append_only()` plus

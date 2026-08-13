@@ -105,7 +105,7 @@ document model. Every figure is read from stored rows — nothing is recomputed 
 from what the API already returned. CSV and XLSX cells pass through a shared
 formula-injection escape.
 
-**9 · Complete audit trail.** 59 event types on an append-only table protected by database
+**9 · Complete audit trail.** 60 event types on an append-only table protected by database
 triggers that reject `UPDATE`, `DELETE`, and `TRUNCATE`. Browsable with keyset (cursor)
 pagination on `(occurred_at, id)`, filterable by event type, entity, actor, and time range,
 with before/after state diffs.

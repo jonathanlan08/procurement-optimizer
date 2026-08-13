@@ -142,6 +142,7 @@ export interface RfqStatusHistoryResponse {
   from_status: RfqStatus;
   to_status: RfqStatus;
   actor_user_id: string;
+  actor_full_name?: string | null;
   note: string | null;
   occurred_at: string;
 }

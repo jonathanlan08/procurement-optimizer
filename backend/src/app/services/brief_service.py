@@ -84,23 +84,40 @@ narrative provider, so there is nothing for the cross-check to police there
 
 ## Price target / stretch / walk-away (CALCULATED, formulas disclosed)
 
-`target = best-alternative landed unit cost` — the lowest `effective_unit_cost`
-among this scenario's OTHER scored, non-excluded suppliers (computed the
-same way `scenario_service._criterion_values_for_supplier` computes
-`EFFECTIVE_UNIT_COST` — quantity-weighted total landed cost / total accepted
-quantity across that supplier's offers in THIS scenario — re-derived here
-rather than read off `ScenarioResult.scoring_output`, because that JSONB's
-`criterion_scores` only ever contains the criteria the scenario's OWN
-`strategy` happened to weight, per `domain/scoring/scorer.py`'s `for spec in
-weights` loop — a `lowest_unit_price` scenario's scoring output carries no
-`EFFECTIVE_UNIT_COST`/`TOTAL_LANDED_COST` entries at all. Recomputing
-directly from `quote_snapshot_refs` + `LandedCostResult` rows makes brief
-generation work identically regardless of which strategy the scenario used
-to rank suppliers). `stretch = target * 0.97`. `walk_away = this supplier's
-OWN current effective unit cost` (the ceiling above which continuing to buy
-from them beats nothing). `price_target`/`stretch_target` are `None`
-(section provenance `MISSING`) when no other scored, non-excluded supplier
-exists on the scenario to benchmark against — never a fabricated number.
+Targets are PER-RFQ-LINE, on a landed basis, never blended across parts
+(2026-08 external review P1: the previous blended cross-part average could
+exceed a supplier's own quoted price, and the draft email then invited a
+price INCREASE). The subject's PRIMARY line is the allocated line with the
+largest landed spend (ties: lowest line number).
+
+`target = best same-line alternative's landed unit cost` — the lowest
+landed unit cost for the PRIMARY line's `rfq_line_id` among this scenario's
+OTHER scored, non-excluded suppliers, computed per line as that line's
+`total_landed_cost / accepted_quantity` from `quote_snapshot_refs` +
+`LandedCostResult` rows (re-derived rather than read off
+`ScenarioResult.scoring_output`, because that JSONB's `criterion_scores`
+only ever contains the criteria the scenario's OWN `strategy` happened to
+weight, per `domain/scoring/scorer.py`'s `for spec in weights` loop — a
+`lowest_unit_price` scenario's scoring output carries no
+`EFFECTIVE_UNIT_COST`/`TOTAL_LANDED_COST` entries at all).
+
+GUARDRAILS: (1) if no other supplier quotes the SAME RFQ line, the target is
+`None` (MISSING) — a different part's price is not a benchmark; (2) if the
+best same-line alternative is NOT cheaper than the subject's own landed unit
+cost on that line, the target is `None` with a CALCULATED explanation — a
+target above the supplier's current cost would invite a price increase;
+(3) the draft email's price ask renders only when the target is also below
+the supplier's bare QUOTED price (`email_price_target` fact) — a
+landed-basis target above the quoted price reads as an invitation to raise
+it, so those gaps are pursued via the concessions list instead.
+
+`stretch = target * 0.97`. `walk_away = the subject's OWN landed unit cost
+on the primary line` (the ceiling above which continuing to buy from them
+beats nothing). The blended `effective_unit_cost` (total landed / total
+quantity across the supplier's allocated lines) survives ONLY as an
+offer-total statistic, labelled as blended in its section when the offer
+spans multiple lines, with a `per_line_comparison` section carrying the
+honest per-line numbers.
 """
 
 from __future__ import annotations
@@ -267,20 +284,57 @@ def _find_supplier_score(
 
 
 @dataclass(frozen=True, slots=True)
+class _LineAggregate:
+    """One allocated quote line's landed economics — the unit this brief
+    negotiates in. Mixing lines for DIFFERENT parts into one per-unit figure
+    produced actively misleading targets (2026-08 external review P1: a
+    blended cross-part average exceeded a supplier's own quoted price and the
+    draft email invited a price INCREASE), so per-unit math stays per-line."""
+
+    quote_line_id: uuid.UUID
+    rfq_line_id: uuid.UUID | None
+    line_number: int
+    description: str | None
+    accepted_quantity: Decimal
+    landed_total: Decimal
+    landed_unit_cost: Decimal
+
+    @property
+    def label(self) -> str:
+        base = f"quote line {self.line_number}"
+        return f"{base} ({self.description})" if self.description else base
+
+
+@dataclass(frozen=True, slots=True)
 class _OfferAggregate:
     supplier_id: uuid.UUID
     total_landed_cost: Decimal
     total_accepted_quantity: Decimal
-    effective_unit_cost: Decimal
+    effective_unit_cost: Decimal  # blended across lines — offer TOTALS only, never a target
     currency: str
     quote_lines: tuple[QuoteLine, ...]
     quote_currency: str | None
-    quoted_unit_price: Decimal | None  # primary (first) line's quoted price
+    quoted_unit_price: Decimal | None  # PRIMARY line's quoted price (see primary_line)
     quoted_unit_price_is_stated: bool  # False when derived from a price-break tier
     lead_time_days: int | None  # max across offers (order isn't done until the slowest ships)
     payment_terms_days: int | None
     payment_terms_text: str | None
+    line_aggregates: tuple[_LineAggregate, ...] = ()
     matched_rfq_line_ids: frozenset[uuid.UUID] = field(default_factory=frozenset)
+
+    @property
+    def primary_line(self) -> _LineAggregate | None:
+        """The line carrying the largest landed spend — the headline
+        negotiation subject (ties broken by line number for determinism)."""
+        if not self.line_aggregates:
+            return None
+        return min(self.line_aggregates, key=lambda la: (-la.landed_total, la.line_number))
+
+    def line_for_rfq_line(self, rfq_line_id: uuid.UUID) -> _LineAggregate | None:
+        for la in self.line_aggregates:
+            if la.rfq_line_id == rfq_line_id:
+                return la
+        return None
 
 
 class BriefService:
@@ -328,13 +382,31 @@ class BriefService:
         quoted_unit_price_is_stated = False
 
         supplier_id = uuid.UUID(refs[0]["supplier_id"])
+        line_aggregates: list[_LineAggregate] = []
+        quotes_for_lines: dict[uuid.UUID, Quote] = {}
 
-        for i, ref in enumerate(refs):
+        for ref in refs:
             line = self._quote_line_repo.get_or_raise(uuid.UUID(ref["quote_line_id"]))
             row, _components = self._landed_cost.get(uuid.UUID(ref["landed_cost_result_id"]))
             with localcontext(CALC_CONTEXT):
                 total_landed = total_landed + row.total_landed_cost
                 total_qty = total_qty + row.accepted_quantity
+                line_unit = (
+                    quantize_unit_price(row.total_landed_cost / row.accepted_quantity)
+                    if row.accepted_quantity
+                    else Decimal("0")
+                )
+            line_aggregates.append(
+                _LineAggregate(
+                    quote_line_id=line.id,
+                    rfq_line_id=line.matched_rfq_line_id,
+                    line_number=line.line_number,
+                    description=line.description,
+                    accepted_quantity=row.accepted_quantity,
+                    landed_total=quantize_money(row.total_landed_cost),
+                    landed_unit_cost=line_unit,
+                )
+            )
             currency = row.currency
             lines.append(line)
             if line.matched_rfq_line_id is not None:
@@ -345,7 +417,7 @@ class BriefService:
             quote_id = uuid.UUID(ref["quote_id"])
             if quote_id not in quotes_by_id:
                 quotes_by_id[quote_id] = self._quote_repo.get_or_raise(quote_id)
-            quote = quotes_by_id[quote_id]
+            quotes_for_lines[line.id] = quotes_by_id[quote_id]
 
             if payment_terms_days is None:
                 terms = self._quote_repo.get_terms(quote_id)
@@ -353,26 +425,36 @@ class BriefService:
                     payment_terms_days = terms.payment_terms_days
                     payment_terms_text = terms.payment_terms
 
-            if i == 0:  # primary line: "quoted unit price" is this offer's headline figure
-                quote_currency = quote.currency
-                if line.unit_price is not None:
-                    quoted_unit_price = line.unit_price
-                    quoted_unit_price_is_stated = True
-                else:
-                    price_breaks = self._quote_repo.list_price_breaks(line.id)
-                    if price_breaks:
-                        tiers = tuple(
-                            PriceBreakTier(
-                                min_quantity=pb.min_quantity,
-                                max_quantity=pb.max_quantity,
-                                unit_price=pb.unit_price,
-                            )
-                            for pb in price_breaks
+        # "Quoted unit price" is the PRIMARY line's stated figure — the line
+        # carrying the largest landed spend, not whichever ref happened to come
+        # first (2026-08 review P1: the headline price must belong to the same
+        # line every target below is computed on).
+        primary = (
+            min(line_aggregates, key=lambda la: (-la.landed_total, la.line_number))
+            if line_aggregates
+            else None
+        )
+        if primary is not None:
+            primary_quote_line = next(ql for ql in lines if ql.id == primary.quote_line_id)
+            quote_currency = quotes_for_lines[primary.quote_line_id].currency
+            if primary_quote_line.unit_price is not None:
+                quoted_unit_price = primary_quote_line.unit_price
+                quoted_unit_price_is_stated = True
+            else:
+                price_breaks = self._quote_repo.list_price_breaks(primary_quote_line.id)
+                if price_breaks:
+                    tiers = tuple(
+                        PriceBreakTier(
+                            min_quantity=pb.min_quantity,
+                            max_quantity=pb.max_quantity,
+                            unit_price=pb.unit_price,
                         )
-                        selection = select_price_break(tiers, row.accepted_quantity)
-                        if selection.tier is not None:
-                            quoted_unit_price = selection.tier.unit_price
-                            quoted_unit_price_is_stated = False
+                        for pb in price_breaks
+                    )
+                    selection = select_price_break(tiers, primary.accepted_quantity)
+                    if selection.tier is not None:
+                        quoted_unit_price = selection.tier.unit_price
+                        quoted_unit_price_is_stated = False
 
         with localcontext(CALC_CONTEXT):
             effective_unit_cost = (
@@ -392,6 +474,7 @@ class BriefService:
             lead_time_days=max(lead_times) if lead_times else None,
             payment_terms_days=payment_terms_days,
             payment_terms_text=payment_terms_text,
+            line_aggregates=tuple(line_aggregates),
             matched_rfq_line_ids=frozenset(matched_rfq_line_ids),
         )
 
@@ -474,6 +557,22 @@ class BriefService:
         missing_questions = _missing_field_questions(subject_offer)
 
         # -- price target / stretch / walk-away (module docstring) --------
+        # Per-line benchmark (2026-08 review P1). Targets are computed on the
+        # subject's PRIMARY line against alternatives' landed unit cost for the
+        # SAME RFQ line — same part, same landed basis. A blended cross-part
+        # average is never used as a per-unit figure, and a benchmark that is
+        # not cheaper than the subject's own cost yields NO target rather than
+        # an invitation to raise prices.
+        primary_line = subject_offer.primary_line
+        same_line_alts: list[tuple[dict[str, Any], _LineAggregate]] = []
+        if primary_line is not None and primary_line.rfq_line_id is not None:
+            for entry, agg in alt_pairs:
+                alt_line = agg.line_for_rfq_line(primary_line.rfq_line_id)
+                if alt_line is not None:
+                    same_line_alts.append((entry, alt_line))
+        same_line_alts.sort(key=lambda pair: pair[1].landed_unit_cost)
+        best_line_alt = same_line_alts[0] if same_line_alts else None
+
         price_target: Decimal | None
         if price_target_override is not None:
             computed_price_target = quantize_unit_price(price_target_override)
@@ -483,20 +582,35 @@ class BriefService:
                 f"Price target set by user override: {to_wire(computed_price_target)} "
                 f"{subject_offer.currency}."
             )
-        elif best_alt is not None:
-            price_target = best_alt[1].effective_unit_cost
-            price_target_provenance = SectionProvenance.CALCULATED
-            price_target_text = (
-                f"Price target: {to_wire(price_target)} {subject_offer.currency} per unit "
-                f"— CALCULATED as the best alternative scored supplier's "
-                f"({best_alt[0]['supplier_name']}) effective (landed) unit cost."
-            )
-        else:
+        elif primary_line is None or best_line_alt is None:
             price_target = None
             price_target_provenance = SectionProvenance.MISSING
             price_target_text = (
                 "No price target could be calculated: no other scored, non-excluded "
-                "supplier exists on this scenario to benchmark against."
+                "supplier offers the same RFQ line"
+                + (f" as {primary_line.label}" if primary_line is not None else "")
+                + " on this scenario to benchmark against."
+            )
+        elif best_line_alt[1].landed_unit_cost >= primary_line.landed_unit_cost:
+            price_target = None
+            price_target_provenance = SectionProvenance.CALCULATED
+            price_target_text = (
+                f"No benchmark-driven price target for {primary_line.label}: the best "
+                f"alternative on the same RFQ line ({best_line_alt[0]['supplier_name']}, "
+                f"{to_wire(best_line_alt[1].landed_unit_cost)} {subject_offer.currency} "
+                f"landed per unit) is not cheaper than {supplier.name}'s own "
+                f"{to_wire(primary_line.landed_unit_cost)} {subject_offer.currency} — a "
+                "target above the supplier's current cost would invite a price increase, "
+                "so none is set."
+            )
+        else:
+            price_target = best_line_alt[1].landed_unit_cost
+            price_target_provenance = SectionProvenance.CALCULATED
+            price_target_text = (
+                f"Price target for {primary_line.label}: {to_wire(price_target)} "
+                f"{subject_offer.currency} per unit (landed) — CALCULATED as the best "
+                f"alternative scored supplier's ({best_line_alt[0]['supplier_name']}) "
+                "landed unit cost for the SAME RFQ line."
             )
 
         stretch_target: Decimal | None
@@ -531,6 +645,16 @@ class BriefService:
                 f"Walk-away threshold set by user override: "
                 f"{to_wire(computed_walk_away)} {subject_offer.currency}."
             )
+        elif primary_line is not None:
+            walk_away_threshold = primary_line.landed_unit_cost
+            walk_away_provenance = SectionProvenance.CALCULATED
+            walk_away_text = (
+                f"Walk-away threshold for {primary_line.label}: "
+                f"{to_wire(walk_away_threshold)} {subject_offer.currency} per unit — "
+                f"CALCULATED as {supplier.name}'s OWN current landed unit cost on that "
+                "line: continuing to buy from them above this price provides no "
+                "advantage over their current pricing."
+            )
         else:
             walk_away_threshold = subject_offer.effective_unit_cost
             walk_away_provenance = SectionProvenance.CALCULATED
@@ -543,14 +667,19 @@ class BriefService:
 
         # -- recommended concessions (rule-based, module docstring) --------
         concessions: list[str] = []
-        if price_target is not None and subject_offer.effective_unit_cost > price_target:
+        if (
+            price_target is not None
+            and primary_line is not None
+            and primary_line.landed_unit_cost > price_target
+        ):
             with localcontext(CALC_CONTEXT):
-                gap = quantize_unit_price(subject_offer.effective_unit_cost - price_target)
+                gap = quantize_unit_price(primary_line.landed_unit_cost - price_target)
             concessions.append(
-                f"Ask for a unit price reduction toward the calculated price target of "
-                f"{to_wire(price_target)} {subject_offer.currency} (current effective unit "
-                f"cost is {to_wire(subject_offer.effective_unit_cost)} "
-                f"{subject_offer.currency}, a gap of {to_wire(gap)} {subject_offer.currency})."
+                f"Ask for a unit price reduction on {primary_line.label} toward the "
+                f"calculated price target of {to_wire(price_target)} "
+                f"{subject_offer.currency} (current landed unit cost on that line is "
+                f"{to_wire(primary_line.landed_unit_cost)} {subject_offer.currency}, "
+                f"a gap of {to_wire(gap)} {subject_offer.currency})."
             )
         if (
             best_alt is not None
@@ -662,6 +791,7 @@ class BriefService:
                 "data": None,
             }
 
+        multi_line = len(subject_offer.line_aggregates) > 1
         sections["effective_unit_cost"] = {
             "provenance": SectionProvenance.CALCULATED.value,
             "text": (
@@ -670,25 +800,90 @@ class BriefService:
                 f"unit — CALCULATED as total landed cost / accepted quantity "
                 f"({to_wire(subject_offer.total_landed_cost)} / "
                 f"{to_wire(subject_offer.total_accepted_quantity)})."
+                + (
+                    " NOTE: blended across "
+                    f"{len(subject_offer.line_aggregates)} lines for different parts — an "
+                    "offer-total figure, not a negotiable per-part price; see the per-line "
+                    "comparison."
+                    if multi_line
+                    else ""
+                )
             ),
             "data": {"amount": to_wire(subject_offer.effective_unit_cost)},
         }
 
-        if best_alt is not None:
+        # Per-line comparison — the honest unit for every per-part number above.
+        per_line_rows: list[dict[str, str | None]] = []
+        per_line_texts: list[str] = []
+        for la in subject_offer.line_aggregates:
+            best_for_line: tuple[dict[str, Any], _LineAggregate] | None = None
+            if la.rfq_line_id is not None:
+                candidates = [
+                    (entry, alt_la)
+                    for entry, agg in alt_pairs
+                    if (alt_la := agg.line_for_rfq_line(la.rfq_line_id)) is not None
+                ]
+                if candidates:
+                    best_for_line = min(candidates, key=lambda pair: pair[1].landed_unit_cost)
+            if best_for_line is None:
+                alt_text = "no other scored supplier quotes this line"
+            else:
+                alt_text = (
+                    f"best alternative {best_for_line[0]['supplier_name']} at "
+                    f"{to_wire(best_for_line[1].landed_unit_cost)} {subject_offer.currency}"
+                )
+            per_line_texts.append(
+                f"{la.label}: {to_wire(la.accepted_quantity)} units at "
+                f"{to_wire(la.landed_unit_cost)} {subject_offer.currency} landed per unit "
+                f"— {alt_text}."
+            )
+            per_line_rows.append(
+                {
+                    "line": la.label,
+                    "accepted_quantity": to_wire(la.accepted_quantity),
+                    "landed_unit_cost": to_wire(la.landed_unit_cost),
+                    "best_alternative_supplier": (
+                        best_for_line[0]["supplier_name"] if best_for_line else None
+                    ),
+                    "best_alternative_landed_unit_cost": (
+                        to_wire(best_for_line[1].landed_unit_cost) if best_for_line else None
+                    ),
+                }
+            )
+        sections["per_line_comparison"] = {
+            "provenance": SectionProvenance.CALCULATED.value,
+            "text": " ".join(per_line_texts)
+            if per_line_texts
+            else "No allocated lines to compare.",
+            "data": {"lines": per_line_rows},
+        }
+
+        if primary_line is not None and best_line_alt is not None:
             with localcontext(CALC_CONTEXT):
                 diff = quantize_unit_price(
-                    subject_offer.effective_unit_cost - best_alt[1].effective_unit_cost
+                    primary_line.landed_unit_cost - best_line_alt[1].landed_unit_cost
                 )
             comparison = "higher than" if diff > 0 else ("lower than" if diff < 0 else "equal to")
             sections["landed_cost_comparison"] = {
                 "provenance": SectionProvenance.CALCULATED.value,
                 "text": (
-                    f"{supplier.name}'s effective unit cost of "
-                    f"{to_wire(subject_offer.effective_unit_cost)} {subject_offer.currency} is "
-                    f"{comparison} the best alternative scored supplier's "
-                    f"({best_alt[0]['supplier_name']}) "
-                    f"{to_wire(best_alt[1].effective_unit_cost)} {subject_offer.currency} "
+                    f"On {primary_line.label}, {supplier.name}'s landed unit cost of "
+                    f"{to_wire(primary_line.landed_unit_cost)} {subject_offer.currency} is "
+                    f"{comparison} the best same-line alternative's "
+                    f"({best_line_alt[0]['supplier_name']}) "
+                    f"{to_wire(best_line_alt[1].landed_unit_cost)} {subject_offer.currency} "
                     f"by {to_wire(abs(diff))} {subject_offer.currency} per unit."
+                ),
+                "data": None,
+            }
+        elif best_alt is not None:
+            sections["landed_cost_comparison"] = {
+                "provenance": SectionProvenance.MISSING.value,
+                "text": (
+                    "No same-line landed-cost comparison is possible: no other scored "
+                    "supplier quotes the same RFQ line"
+                    + (f" as {primary_line.label}" if primary_line is not None else "")
+                    + ". Offer totals are compared per line in the per-line comparison."
                 ),
                 "data": None,
             }
@@ -1033,6 +1228,24 @@ def _build_facts(
             else None
         ),
         "price_target": to_wire(price_target) if price_target is not None else None,
+        "primary_line_label": subject_offer.primary_line.label
+        if subject_offer.primary_line is not None
+        else None,
+        # The draft email asks for a price move ONLY when the target is an
+        # actual reduction of the number the supplier wrote on the quote —
+        # a landed-basis target above the bare quoted price reads as an
+        # invitation to raise the price (2026-08 review P1). When the gap is
+        # in landed components rather than the quoted price, the email leans
+        # on the concessions list instead.
+        "email_price_target": (
+            to_wire(price_target)
+            if price_target is not None
+            and (
+                subject_offer.quoted_unit_price is None
+                or price_target < subject_offer.quoted_unit_price
+            )
+            else None
+        ),
         "missing_fields_list": missing_questions,
         "recommended_concessions_list": concessions,
     }

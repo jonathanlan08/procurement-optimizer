@@ -81,12 +81,14 @@ BomServiceDep = Annotated[BomService, Depends(get_bom_service)]
 def list_boms(
     service: BomServiceDep,
     _principal: Annotated[Principal, Depends(require_role(Role.VIEWER))],
+    q: str | None = Query(default=None, max_length=200),
     all_versions: bool = Query(default=False),
     include_archived: bool = Query(default=False),
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),
 ) -> BomListResponse:
     items, total = service.list(
+        q=q,
         all_versions=all_versions,
         include_archived=include_archived,
         limit=limit,

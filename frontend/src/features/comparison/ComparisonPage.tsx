@@ -381,10 +381,12 @@ function ComparisonTable({
   columns,
   resultFor,
   onOpenExplain,
+  showsStoredResults,
 }: {
   columns: ComparisonColumn[];
   resultFor: (quoteLineId: string) => LandedCostResultResponse | undefined;
   onOpenExplain: (quoteLineId: string) => void;
+  showsStoredResults: boolean;
 }) {
   const winningLineId = useMemo(() => {
     let bestId: string | null = null;
@@ -421,6 +423,16 @@ function ComparisonTable({
           </tr>
         </thead>
         <tbody>
+          {showsStoredResults && (
+            <tr>
+              <td colSpan={columns.length + 1} className="comparison-not-like-for-like">
+                Showing previously calculated results — they were computed with the
+                assumptions in force at the time, which may differ from the form above
+                (each column&rsquo;s Explain panel discloses what it used). Press Calculate
+                to recompute every column under the current assumptions.
+              </td>
+            </tr>
+          )}
           {notLikeForLike && (
             <tr>
               <td colSpan={columns.length + 1} className="comparison-not-like-for-like">
@@ -909,7 +921,17 @@ export function ComparisonPage() {
           {columns.length === 0 ? (
             <p className="detail-label">No comparable quotes are matched to this RFQ line yet.</p>
           ) : (
-            <ComparisonTable columns={columns} resultFor={resultFor} onOpenExplain={setExplainLineId} />
+            <ComparisonTable
+              columns={columns}
+              resultFor={resultFor}
+              onOpenExplain={setExplainLineId}
+              // 2026-08 external review P1: stored results render while the
+              // assumptions form sits blank — say so instead of letting users
+              // compare numbers computed under invisible, differing assumptions.
+              showsStoredResults={columns.some(
+                (c) => !freshResults[c.line.id] && resultFor(c.line.id) !== undefined,
+              )}
+            />
           )}
 
           <ScenarioControls

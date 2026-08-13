@@ -77,6 +77,7 @@ from app.schemas.rfqs import (
     RfqUpdate,
 )
 from app.services.rfq_service import RfqService
+from app.services.user_lookup import resolve_user_names
 
 router = APIRouter(prefix="/rfqs", tags=["rfqs"])
 
@@ -208,11 +209,18 @@ def change_rfq_status(
 def get_rfq_status_history(
     rfq_id: UUID,
     service: RfqServiceDep,
-    _principal: Annotated[Principal, Depends(require_role(Role.VIEWER))],
+    principal: Annotated[Principal, Depends(require_role(Role.VIEWER))],
+    db: DbDep,
 ) -> RfqStatusHistoryListResponse:
     history = service.status_history(rfq_id)
+    names = resolve_user_names(
+        db, principal.organization_id, (h.actor_user_id for h in history)
+    )
     return RfqStatusHistoryListResponse(
-        items=[RfqStatusHistoryResponse.from_model(h) for h in history]
+        items=[
+            RfqStatusHistoryResponse.from_model(h, actor_full_name=names.get(h.actor_user_id))
+            for h in history
+        ]
     )
 
 

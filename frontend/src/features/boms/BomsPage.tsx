@@ -782,29 +782,25 @@ export function BomsPage() {
 
   useEffect(() => {
     setOffset(0);
-  }, [allVersions]);
+  }, [allVersions, debouncedSearch]);
 
   const listParams = useMemo(
     () => ({
+      // Server-side search (2026-08 external review P2: the old client-side
+      // filter only scanned the loaded page while the pagination footer kept
+      // reporting the unfiltered server total).
+      q: debouncedSearch.trim() || undefined,
       all_versions: allVersions,
       include_archived: true,
       limit: LIMIT,
       offset,
     }),
-    [allVersions, offset],
+    [allVersions, offset, debouncedSearch],
   );
 
   const bomsQuery = useBoms(listParams);
-  const allItems = bomsQuery.data?.items ?? [];
-
-  // Client-side filter — GET /boms has no `q` param, see api.ts's header.
-  const items = useMemo(() => {
-    const q = debouncedSearch.trim().toLowerCase();
-    if (!q) return allItems;
-    return allItems.filter(
-      (b) => b.name.toLowerCase().includes(q) || b.product_name.toLowerCase().includes(q),
-    );
-  }, [allItems, debouncedSearch]);
+  // The server filters and counts — items and the pagination total always agree.
+  const items = bomsQuery.data?.items ?? [];
 
   const columns = useMemo<ColumnDef<BomSummaryResponse>[]>(
     () => [

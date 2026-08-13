@@ -254,17 +254,23 @@ class RfqStatusHistoryResponse(BaseModel):
     from_status: str
     to_status: str
     actor_user_id: str
+    # resolved display name (org-scoped); None when the actor is unknown —
+    # raw UUIDs in the status timeline were a 2026-08 external-review P3
+    actor_full_name: str | None = None
     note: str | None
     occurred_at: datetime
 
     @classmethod
-    def from_model(cls, entry: RfqStatusHistory) -> RfqStatusHistoryResponse:
+    def from_model(
+        cls, entry: RfqStatusHistory, *, actor_full_name: str | None = None
+    ) -> RfqStatusHistoryResponse:
         return cls(
             id=str(entry.id),
             rfq_id=str(entry.rfq_id),
             from_status=entry.from_status.value,
             to_status=entry.to_status.value,
             actor_user_id=str(entry.actor_user_id),
+            actor_full_name=actor_full_name,
             note=entry.note,
             occurred_at=entry.occurred_at,
         )

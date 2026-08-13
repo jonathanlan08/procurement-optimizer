@@ -928,7 +928,12 @@ function StatusTimeline({ id }: { id: string }) {
             {statusLabel(h.from_status)} → {statusLabel(h.to_status)}
           </span>
           <span className="status-timeline-meta">
-            {new Date(h.occurred_at).toLocaleString()} · <span className="mono">{h.actor_user_id}</span>
+            {new Date(h.occurred_at).toLocaleString()} ·{" "}
+            {/* resolved name when the actor is a member of this org, else the
+                truncated id (2026-08 external review P3) */}
+            <span className="mono" title={h.actor_user_id}>
+              {h.actor_full_name ?? `${h.actor_user_id.slice(0, 8)}…`}
+            </span>
           </span>
           {h.note && <span className="status-timeline-note">{h.note}</span>}
         </li>

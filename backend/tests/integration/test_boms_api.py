@@ -207,6 +207,30 @@ def _three_parts(client: TestClient, headers: dict[str, str], unit_id: str) -> l
 
 
 class TestBomCrudRoundTrip:
+    def test_search_filters_and_total_agree(
+        self, client: TestClient, org_a: dict[str, Any], migrated_engine: Engine
+    ) -> None:
+        """Regression (2026-08 external review P2): search was client-side over
+        the loaded page while the pagination footer kept the unfiltered server
+        total. `q` now filters server-side on name AND product name, and the
+        reported total counts the SAME filtered set."""
+        unit_id = _seed_unit(migrated_engine, organization_id=org_a["org_id"])
+        headers = _headers(_login_as(client, org_a, Role.ANALYST))
+        part_ids = _three_parts(client, headers, unit_id)
+        _create_bom(client, headers, part_ids, name="Rack Assembly", product_name="Server Rack")
+        _create_bom(client, headers, part_ids, name="Panel Kit", product_name="Enclosure")
+        _create_bom(client, headers, part_ids, name="Cable Loom", product_name="Rack Wiring")
+
+        body = client.get("/api/v1/boms?q=rack", headers={"Origin": ORIGIN}).json()
+        names = sorted(item["name"] for item in body["items"])
+        # matches on name ("Rack Assembly") AND product_name ("Rack Wiring")
+        assert names == ["Cable Loom", "Rack Assembly"]
+        assert body["page"]["total"] == 2
+
+        none = client.get("/api/v1/boms?q=zzz-no-match", headers={"Origin": ORIGIN}).json()
+        assert none["items"] == []
+        assert none["page"]["total"] == 0
+
     def test_create_v1_with_three_lines_and_get(
         self, client: TestClient, org_a: dict[str, Any], migrated_engine: Engine
     ) -> None:

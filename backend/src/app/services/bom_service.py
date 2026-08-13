@@ -237,18 +237,21 @@ class BomService:
     def list(
         self,
         *,
+        q: str | None = None,
         all_versions: bool = False,
         include_archived: bool = False,
         limit: int = 50,
         offset: int = 0,
     ) -> _BomPage:
         items = self._repo.search(
+            q=q,
             all_versions=all_versions,
             include_archived=include_archived,
             limit=limit,
             offset=offset,
         )
         total = self._repo.count_matching(
+            q=q,
             all_versions=all_versions, include_archived=include_archived
         )
         return items, total

@@ -92,6 +92,7 @@ export interface BomVersionChainResponse {
 export interface BomListParams {
   // `| undefined` (not just `?`) so callers building this from a ternary
   // satisfy `exactOptionalPropertyTypes`, matching parts/suppliers api.ts.
+  q?: string | undefined;
   all_versions?: boolean | undefined;
   include_archived?: boolean | undefined;
   limit?: number | undefined;
@@ -123,6 +124,7 @@ export interface BomVersionCreateInput {
 
 function buildListQuery(params: BomListParams): string {
   const sp = new URLSearchParams();
+  if (params.q) sp.set("q", params.q);
   if (params.all_versions !== undefined) sp.set("all_versions", String(params.all_versions));
   if (params.include_archived !== undefined) {
     sp.set("include_archived", String(params.include_archived));

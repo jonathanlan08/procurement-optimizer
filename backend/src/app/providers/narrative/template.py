@@ -169,11 +169,16 @@ class TemplateNarrativeProvider:
                 "responses and would like to discuss your pricing and terms further."
             ),
         ]
-        price_target = f.get("price_target")
-        if price_target:
+        # email_price_target is only set when the target is a real reduction of
+        # the supplier's own quoted price (brief_service._build_facts) — asking
+        # to "move toward" a number above their quote invites a price increase.
+        email_price_target = f.get("email_price_target")
+        if email_price_target:
+            line_label = f.get("primary_line_label")
+            scope = f" on {line_label}" if line_label else ""
             lines.append(
-                f"We are looking for a unit price closer to {price_target} "
-                f"{_get(f, 'currency')} to remain competitive on this order."
+                f"We are looking for a unit price closer to {email_price_target} "
+                f"{_get(f, 'currency')}{scope} to remain competitive on this order."
             )
         payment_terms_days = f.get("payment_terms_days")
         cohort_best = f.get("cohort_best_payment_terms_days")

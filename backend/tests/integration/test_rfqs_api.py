@@ -513,6 +513,34 @@ class TestRfqStatusWorkflow:
             ("awarded", "closed"),
         ]
         assert [h["note"] for h in items] == [r for _, r in walk]
+        # 2026-08 external review P3: the timeline resolves the actor's name
+        # (org-scoped) instead of showing a bare UUID.
+        assert all(h["actor_full_name"] for h in items), items
+        assert all(h["actor_user_id"] for h in items)
+
+    def test_status_history_actor_name_is_org_scoped(
+        self,
+        client: TestClient,
+        org_a: dict[str, Any],
+        org_b: dict[str, Any],
+        migrated_engine: Engine,
+    ) -> None:
+        """Name resolution joins through this org's memberships only — an
+        actor id belonging to another organization must never resolve to that
+        org's user name (isolation control, 2026-08 review P3 fix)."""
+        from sqlalchemy.orm import Session as SaSession
+
+        from app.services.user_lookup import resolve_user_names
+
+        b_user_id = uuid.UUID(next(iter(org_b["users"].values()))["user_id"])
+        a_user_id = uuid.UUID(next(iter(org_a["users"].values()))["user_id"])
+        with SaSession(migrated_engine) as session:
+            names = resolve_user_names(
+                session, uuid.UUID(org_a["org_id"]), [a_user_id, b_user_id]
+            )
+        # org A's own member resolves; org B's member is absent, never named
+        assert a_user_id in names
+        assert b_user_id not in names
 
     def test_reopen_from_under_review_to_open(
         self, client: TestClient, org_a: dict[str, Any], migrated_engine: Engine

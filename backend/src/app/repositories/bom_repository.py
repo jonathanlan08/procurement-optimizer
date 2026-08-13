@@ -29,7 +29,7 @@ from __future__ import annotations
 import uuid
 from typing import Any
 
-from sqlalchemy import Select, func, select
+from sqlalchemy import Select, func, or_, select
 
 from app.models.boms import BillOfMaterialLine, BillOfMaterials
 from app.repositories.base import OrgIsolationViolation, OrgScopedRepository
@@ -71,21 +71,44 @@ class BomRepository(OrgScopedRepository[BillOfMaterials]):
     def search(
         self,
         *,
+        q: str | None = None,
         all_versions: bool = False,
         include_archived: bool = False,
         limit: int = 50,
         offset: int = 0,
     ) -> list[BillOfMaterials]:
+        stmt = self._scoped_statement(all_versions=all_versions, include_archived=include_archived)
+        if q:
+            pattern = f"%{q.strip()}%"
+            stmt = stmt.where(
+                or_(
+                    BillOfMaterials.name.ilike(pattern),
+                    BillOfMaterials.product_name.ilike(pattern),
+                )
+            )
         stmt = (
-            self._scoped_statement(all_versions=all_versions, include_archived=include_archived)
-            .order_by(BillOfMaterials.root_bom_id, BillOfMaterials.version_number.desc())
+            stmt.order_by(BillOfMaterials.root_bom_id, BillOfMaterials.version_number.desc())
             .limit(min(limit, 200))
             .offset(offset)
         )
         return list(self.session.execute(stmt).scalars().all())
 
-    def count_matching(self, *, all_versions: bool = False, include_archived: bool = False) -> int:
+    def count_matching(
+        self,
+        *,
+        q: str | None = None,
+        all_versions: bool = False,
+        include_archived: bool = False,
+    ) -> int:
         stmt = self._scoped_statement(all_versions=all_versions, include_archived=include_archived)
+        if q:
+            pattern = f"%{q.strip()}%"
+            stmt = stmt.where(
+                or_(
+                    BillOfMaterials.name.ilike(pattern),
+                    BillOfMaterials.product_name.ilike(pattern),
+                )
+            )
         count_stmt = select(func.count()).select_from(stmt.subquery())
         return int(self.session.execute(count_stmt).scalar_one())
 

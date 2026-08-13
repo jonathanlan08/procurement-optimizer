@@ -204,17 +204,17 @@ prompt-injection string.
 ```bash
 # backend
 export PATH="$HOME/Library/Python/3.9/bin:$PATH"
-cd backend && uv run pytest                 # 967 passed
+cd backend && uv run pytest                 # 972 passed
 
 # frontend
 export PATH="$HOME/.local/node22/bin:$PATH"
-cd frontend && npm test                     # 86 passed in 17 files
+cd frontend && npm test                     # 90 passed in 17 files
 ```
 
-**967 backend tests, all passing** — 472 unit (pure domain: money, landed cost, price
-breaks, scoring, solver, matching, normalization, file validation, storage), 490 integration
+**972 backend tests, all passing** — 472 unit (pure domain: money, landed cost, price
+breaks, scoring, solver, matching, normalization, file validation, storage), 495 integration
 against a **real PostgreSQL** (no SQLite anywhere), and 5 contract tests that fail if any
-route's declared permissions drift from what its dependencies actually enforce. **86 frontend
+route's declared permissions drift from what its dependencies actually enforce. **90 frontend
 tests** (Vitest + Testing Library) and a **25-test Playwright E2E suite** (full journey on
 Chromium, smoke on Firefox and WebKit, a mobile-viewport navigation spec, and an axe-core
 accessibility sweep of every page at WCAG 2a/2aa with zero violations), all passing.

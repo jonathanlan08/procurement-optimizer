@@ -61,6 +61,7 @@ _SPEC_SECTION_KEYS = frozenset(
         "quoted_unit_price",
         "effective_unit_cost",
         "landed_cost_comparison",
+        "per_line_comparison",
         "price_target",
         "stretch_target",
         "walk_away_threshold",
@@ -449,6 +450,69 @@ class TestGenerateBrief:
         # recommended concessions should flag the price gap (Acme is priced
         # above the calculated target)
         assert "price target" in body["sections"]["recommended_concessions"]["text"].lower()
+
+    def test_cheapest_supplier_gets_no_target_instead_of_price_increase_invite(
+        self, client: TestClient, org_a: dict[str, Any], migrated_engine: Engine
+    ) -> None:
+        """Regression (2026-08 external review P1): for the supplier who is
+        ALREADY the cheapest on the line, every alternative benchmark is more
+        expensive — the old blended math emitted that higher figure as the
+        'price target', and the draft email invited a price increase. The
+        guardrail must emit NO target with a disclosed explanation instead."""
+        headers = _headers(_login_as(client, org_a, Role.ANALYST))
+        ctx = _setup_two_supplier_case(client, headers, migrated_engine, org_a)
+        scenario = _create_and_complete_scenario(client, headers, ctx["rfq"]["id"])
+
+        # Beta Premium is the LOWER-landed-cost supplier in this fixture.
+        resp = _generate_brief(client, headers, scenario["id"], ctx["supplier_b"]["id"])
+        assert resp.status_code == 201, resp.text
+        body = resp.json()
+
+        assert body["price_target"] is None
+        assert body["stretch_target"] is None
+        section = body["sections"]["price_target"]
+        assert section["provenance"] == "calculated"
+        assert "invite a price increase" in section["text"]
+        assert "closer to" not in body["sections"]["draft_supplier_email"]["text"]
+
+    def test_email_price_ask_suppressed_when_target_exceeds_quoted_price(
+        self, client: TestClient, org_a: dict[str, Any], migrated_engine: Engine
+    ) -> None:
+        """Regression (2026-08 external review P1): Acme quoted 8.00 bare;
+        the landed-basis target (Beta's same-line landed unit cost, ~11.x) is
+        a valid brief figure but is ABOVE the number Acme wrote on the quote —
+        the draft email must NOT ask Acme to move 'closer to' it."""
+        headers = _headers(_login_as(client, org_a, Role.ANALYST))
+        ctx = _setup_two_supplier_case(client, headers, migrated_engine, org_a)
+        scenario = _create_and_complete_scenario(client, headers, ctx["rfq"]["id"])
+
+        resp = _generate_brief(client, headers, scenario["id"], ctx["supplier_a"]["id"])
+        assert resp.status_code == 201, resp.text
+        body = resp.json()
+
+        # the brief itself still carries the same-line landed target...
+        assert body["price_target"] is not None
+        assert Decimal(body["price_target"]) > Decimal("8.00")
+        # ...but the email contains no price ask (concessions carry the gap)
+        assert "closer to" not in body["sections"]["draft_supplier_email"]["text"]
+        assert "price target" in body["sections"]["recommended_concessions"]["text"].lower()
+
+    def test_per_line_comparison_section_lists_each_allocated_line(
+        self, client: TestClient, org_a: dict[str, Any], migrated_engine: Engine
+    ) -> None:
+        headers = _headers(_login_as(client, org_a, Role.ANALYST))
+        ctx = _setup_two_supplier_case(client, headers, migrated_engine, org_a)
+        scenario = _create_and_complete_scenario(client, headers, ctx["rfq"]["id"])
+
+        resp = _generate_brief(client, headers, scenario["id"], ctx["supplier_a"]["id"])
+        assert resp.status_code == 201, resp.text
+        section = resp.json()["sections"]["per_line_comparison"]
+        assert section["provenance"] == "calculated"
+        rows = section["data"]["lines"]
+        assert len(rows) == 1
+        assert rows[0]["best_alternative_supplier"] == "Beta Premium"
+        assert rows[0]["landed_unit_cost"] is not None
+        assert rows[0]["best_alternative_landed_unit_cost"] is not None
 
     def test_missing_quote_fields_appear_under_questions(
         self, client: TestClient, org_a: dict[str, Any], migrated_engine: Engine

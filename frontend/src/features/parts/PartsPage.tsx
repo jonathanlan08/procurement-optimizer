@@ -245,6 +245,18 @@ function PartForm({
   );
 }
 
+/** Resolve an internal-alternative part id to its human identity — raw UUIDs
+ * in the list were a 2026-08 external-review P2 (same resolve-at-render
+ * convention as extraction's MatchCandidatePartLabel). */
+function InternalAltLabel({ partId }: { partId: string }) {
+  const q = usePart(partId);
+  return (
+    <span title={partId}>
+      {q.data ? `Internal · ${q.data.internal_part_number} — ${q.data.name}` : "Internal · …"}
+    </span>
+  );
+}
+
 function PartAlternativesSection({ partId, canWrite }: { partId: string; canWrite: boolean }) {
   const { data, isLoading, isError, error } = usePartAlternatives(partId);
   const addMutation = useAddPartAlternative(partId);
@@ -317,9 +329,11 @@ function PartAlternativesSection({ partId, canWrite }: { partId: string; canWrit
             <li key={alt.id} className="alt-row">
               <div className="alt-row-main">
                 <span>
-                  {alt.alternative_part_id
-                    ? `Internal · ${alt.alternative_part_id}`
-                    : `External MPN · ${alt.alternative_mpn ?? "—"}`}
+                  {alt.alternative_part_id ? (
+                    <InternalAltLabel partId={alt.alternative_part_id} />
+                  ) : (
+                    `External MPN · ${alt.alternative_mpn ?? "—"}`
+                  )}
                 </span>
                 <span className="detail-label">
                   {alt.approval_status}

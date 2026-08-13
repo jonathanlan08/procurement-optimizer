@@ -356,6 +356,32 @@ describe("ReviewPane", () => {
       ).toBeInTheDocument();
     });
 
+    it("arming shows an explicit warning and can be cancelled without confirming", async () => {
+      installFetchMock([
+        AUTH_HANDLER("analyst"),
+        DOCUMENT_HANDLER,
+        runHandler(runFixture()),
+        FIELDS_HANDLER,
+      ]);
+
+      renderPane("analyst");
+
+      fireEvent.click(
+        await screen.findByRole("button", { name: /confirm all remaining \(2\)/i }),
+      );
+      expect(
+        screen.getByText(/including values the document never stated/i),
+      ).toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole("button", { name: /^cancel$/i }));
+      expect(
+        await screen.findByRole("button", { name: /confirm all remaining \(2\)/i }),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByRole("button", { name: /yes, confirm/i }),
+      ).not.toBeInTheDocument();
+    });
+
     it("hides the button for a viewer even though fields remain unconfirmed", async () => {
       installFetchMock([
         AUTH_HANDLER("viewer"),
@@ -423,8 +449,15 @@ describe("ReviewPane", () => {
 
       renderPane("analyst");
 
+      // Two-step arm/confirm (2026-08 external review P1/P2: one-click bulk
+      // confirmation encouraged blind approval) — arming alone must NOT post.
       const button = await screen.findByRole("button", { name: /confirm all remaining \(2\)/i });
       fireEvent.click(button);
+      expect(confirmAllCalled).toBe(false);
+      expect(
+        screen.getByText(/marks all 2 remaining flagged fields as human-confirmed/i),
+      ).toBeInTheDocument();
+      fireEvent.click(screen.getByRole("button", { name: /yes, confirm 2 fields/i }));
 
       // Pane refreshes to the returned run state (run-state badge flips to
       // Ready) and the fields-list invalidation this mutation triggers

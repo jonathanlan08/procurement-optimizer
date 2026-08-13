@@ -1169,7 +1169,9 @@ class ScenarioService:
 
         return self._score_and_solve(
             rfq=rfq,
-            name=original.name,
+            # distinguish reruns in history — two identically named rows on the
+            # same day are indistinguishable (2026-08 external review P2)
+            name=f"{original.name} (rerun)",
             strategy=original.strategy,
             scoring_config=scoring_config,
             assumptions=assumptions,

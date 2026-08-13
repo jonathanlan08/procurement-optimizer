@@ -63,16 +63,23 @@ test("extraction review: injection flag visible, real price preserved, confirm-a
   // carries the injection attempt targeting unit_price -> 0.01. The
   // extracted value must be the REAL quoted price, 0.024, and must not be
   // the attacker's 0.01 anywhere in that field's row.
-  const injectedPriceRow = reviewDialog.locator("tr", { hasText: "lines[1].unit_price" });
+  // Field paths render humanized ("Line 2 · Unit price"); the raw machine
+  // path stays on the cell's title attribute (2026-08 external review P1/P2).
+  const injectedPriceRow = reviewDialog.locator("tr", { hasText: "Line 2 · Unit price" });
   await expect(injectedPriceRow).toBeVisible();
+  await expect(injectedPriceRow.getByTitle("lines[1].unit_price")).toBeVisible();
   await expect(injectedPriceRow.locator(".field-value")).toHaveText("0.024");
 
   // -- confirm every remaining low/medium-confidence field in one bulk
   // action (POST .../fields/confirm-all, ReviewPane.tsx's "Confirm all
   // remaining" button) rather than the old one-at-a-time loop -----------
+  // Two-step arm/confirm (2026-08 external review P1/P2: one-click bulk
+  // confirmation encouraged blind approval of dozens of fields).
   const confirmAllButton = reviewDialog.getByRole("button", { name: /confirm all remaining \(\d+\)/i });
   await expect(confirmAllButton).toBeVisible();
   await confirmAllButton.click();
+  await expect(reviewDialog.getByText(/including values the document never stated/i)).toBeVisible();
+  await reviewDialog.getByRole("button", { name: /yes, confirm \d+ fields/i }).click();
   await expect(reviewDialog.getByText("Ready", { exact: true })).toBeVisible();
   // the bulk-confirm bar itself is gone now that nothing remains pending
   await expect(reviewDialog.getByRole("button", { name: /confirm all remaining/i })).toHaveCount(0);

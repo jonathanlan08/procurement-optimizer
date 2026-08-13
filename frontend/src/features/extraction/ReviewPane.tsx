@@ -176,6 +176,21 @@ function RunStateBadge({ state }: { state: ExtractionRunState }) {
   return <span className={`badge badge--run-${state}`}>{statusLabel(state)}</span>;
 }
 
+/** "lines[0].country_of_origin" -> "Line 1 · Country of origin" — raw
+ * machine paths overwhelmed reviewers (2026-08 external review P1/P2). The
+ * machine path stays available on the element's title attribute. */
+function humanizeFieldPath(path: string): string {
+  const lineMatch = /^lines\[(\d+)\]\.(.+)$/.exec(path);
+  const humanize = (raw: string): string => {
+    const words = raw.replace(/_/g, " ");
+    return words.charAt(0).toUpperCase() + words.slice(1);
+  };
+  if (lineMatch?.[1] !== undefined && lineMatch[2] !== undefined) {
+    return `Line ${Number(lineMatch[1]) + 1} · ${humanize(lineMatch[2])}`;
+  }
+  return humanize(path);
+}
+
 function ConfidenceBadge({ band }: { band: ConfidenceBand }) {
   const labels: Record<ConfidenceBand, string> = { high: "High", medium: "Medium", low: "Low" };
   return <span className={`badge badge--conf-${band}`}>{labels[band]}</span>;
@@ -316,7 +331,9 @@ function FieldRow({
       <td className="field-path">
         {field.field_name}
         <br />
-        <span className="field-path">{field.field_path}</span>
+        <span className="field-path" title={field.field_path}>
+          {humanizeFieldPath(field.field_path)}
+        </span>
       </td>
       <td>
         <span className={`field-value${field.normalized_value === null ? " is-missing" : ""}`}>
@@ -433,6 +450,7 @@ function FieldsSection({
  * once the count drops to zero. */
 function ConfirmAllBar({ runId, remainingCount }: { runId: string; remainingCount: number }) {
   const confirmAllMutation = useConfirmAllExtractionFields();
+  const [armed, setArmed] = useState(false);
 
   async function handleConfirmAll() {
     try {
@@ -444,21 +462,51 @@ function ConfirmAllBar({ runId, remainingCount }: { runId: string; remainingCoun
 
   if (remainingCount === 0) return null;
 
+  // Two-step arm/confirm (2026-08 external review P1/P2: the one-click bulk
+  // action encouraged blind confirmation of dozens of fields).
   return (
     <div className="confirm-all-bar">
-      <button
-        type="button"
-        className="btn-secondary-sm"
-        disabled={confirmAllMutation.isPending}
-        onClick={() => void handleConfirmAll()}
-      >
-        {confirmAllMutation.isPending
-          ? "Confirming…"
-          : `Confirm all remaining (${remainingCount})`}
-      </button>
-      <p className="detail-label confirm-all-caution">
-        Confirms every remaining flagged field at once — review the values above first.
-      </p>
+      {!armed ? (
+        <button
+          type="button"
+          className="btn-secondary-sm"
+          disabled={confirmAllMutation.isPending}
+          onClick={() => setArmed(true)}
+        >
+          {`Confirm all remaining (${remainingCount})…`}
+        </button>
+      ) : (
+        <>
+          <p className="detail-label confirm-all-caution">
+            This marks all {remainingCount} remaining flagged fields as human-confirmed —
+            including values the document never stated. Only proceed if you have reviewed
+            them above.
+          </p>
+          <button
+            type="button"
+            className="btn-danger-sm"
+            disabled={confirmAllMutation.isPending}
+            onClick={() => void handleConfirmAll()}
+          >
+            {confirmAllMutation.isPending
+              ? "Confirming…"
+              : `Yes, confirm ${remainingCount} fields`}
+          </button>
+          <button
+            type="button"
+            className="btn-ghost-sm"
+            disabled={confirmAllMutation.isPending}
+            onClick={() => setArmed(false)}
+          >
+            Cancel
+          </button>
+        </>
+      )}
+      {!armed && (
+        <p className="detail-label confirm-all-caution">
+          Confirms every remaining flagged field at once — review the values above first.
+        </p>
+      )}
       <ApiErrorBanner error={confirmAllMutation.error} />
     </div>
   );

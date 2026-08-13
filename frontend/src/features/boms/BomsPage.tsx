@@ -5,12 +5,12 @@
  *
  * BOM-specific design decisions:
  *  - **Search is client-side.** `GET /boms` has no `q` parameter (see
- *    features/boms/api.ts's file header) — the toolbar's search box filters
+ *    features/boms/api.ts's file header) - the toolbar's search box filters
  *    `name`/`product_name` over whatever page is currently loaded, same
  *    caveat DataTable.tsx documents for client-side sort.
  *  - **`include_archived` is always `true`, with no toolbar toggle.** The
  *    task brief's toolbar list is exactly "search, all-versions toggle, New
- *    BOM" — no archived-visibility control. Superseded/archived rows must
+ *    BOM" - no archived-visibility control. Superseded/archived rows must
  *    still be reachable to see their muted styling, so rather than adding
  *    an unrequested fourth toolbar control, archived versions are always
  *    included and rendered muted (`rowClassName`) alongside active/draft
@@ -24,19 +24,19 @@
  *    shape.
  *  - **Status badges are drawn from `status` directly** (draft/active/
  *    superseded/archived, four distinct styles per boms.css), not
- *    reconstructed from `is_active`/`is_archived` — see api.ts's header for
+ *    reconstructed from `is_active`/`is_archived` - see api.ts's header for
  *    why that's different from the shared `StatusBadge` component Parts/
  *    Suppliers use.
  *  - **Part numbers/units are resolved per-row.** `BomLineResponse` only
  *    carries `part_id`/`unit_definition_id` UUIDs. Each line row resolves
- *    its own part via `usePart` (imported from `../parts/api` — mirrors how
- *    PartsPage itself queries parts, per this task's brief — rather than
+ *    its own part via `usePart` (imported from `../parts/api` - mirrors how
+ *    PartsPage itself queries parts, per this task's brief - rather than
  *    duplicating that fetch/cache logic here) and units via `useUnits()`.
  *  - **Line-array validation errors use a bracket-key lookup**, not
  *    `errors.lines?.[i]?.field`. lib/zodResolver.ts's minimal zod<->RHF
  *    bridge stores every issue under a flat dotted-path property name
  *    (`"lines.0.quantity_per_assembly"`) rather than react-hook-form's
- *    usual nested tree — see that file's header. It never had to support
+ *    usual nested tree - see that file's header. It never had to support
  *    array fields before this form; `BomLineFormRow`'s `err()` helper reads
  *    errors the way the resolver actually writes them.
  */
@@ -100,7 +100,7 @@ const decimalQtyField = z
 
 const lineFormSchema = z.object({
   part_id: z.string().trim().min(1, "Select a part"),
-  // Display-only — never sent to the API (see `toLineInput`). Kept inside
+  // Display-only - never sent to the API (see `toLineInput`). Kept inside
   // the RHF field array (rather than separate component state) so
   // useFieldArray's append/remove keeps it in sync by index automatically.
   part_label: z.string(),
@@ -225,9 +225,9 @@ function PartPicker({
               <button
                 type="button"
                 className="btn-ghost-sm"
-                onClick={() => onSelect(p.id, `${p.internal_part_number} — ${p.name}`)}
+                onClick={() => onSelect(p.id, `${p.internal_part_number} - ${p.name}`)}
               >
-                {p.internal_part_number} — {p.name}
+                {p.internal_part_number} - {p.name}
               </button>
             </li>
           ))}
@@ -273,11 +273,11 @@ function BomLineFormRow({
 
   const resolvedPart = usePart(partLabel ? null : partId || null);
   const partDisplay =
-    partLabel || (resolvedPart.data ? `${resolvedPart.data.internal_part_number} — ${resolvedPart.data.name}` : partId);
+    partLabel || (resolvedPart.data ? `${resolvedPart.data.internal_part_number} - ${resolvedPart.data.name}` : partId);
 
   const resolvedSub = usePart(subLabel ? null : subId || null);
   const subDisplay =
-    subLabel || (resolvedSub.data ? `${resolvedSub.data.internal_part_number} — ${resolvedSub.data.name}` : subId);
+    subLabel || (resolvedSub.data ? `${resolvedSub.data.internal_part_number} - ${resolvedSub.data.name}` : subId);
 
   return (
     <div className="bom-line-row">
@@ -326,12 +326,12 @@ function BomLineFormRow({
             inputMode="decimal"
           />
         </FormField>
-        <FormField label="Unit" hint="optional — defaults to the part's own unit">
+        <FormField label="Unit" hint="optional - defaults to the part's own unit">
           <select {...register(`lines.${index}.unit_definition_id`)}>
             <option value="">(same as part)</option>
             {units.map((u) => (
               <option key={u.id} value={u.id}>
-                {u.code} — {u.name}
+                {u.code} - {u.name}
               </option>
             ))}
           </select>
@@ -498,7 +498,7 @@ function BomLineViewRow({
   return (
     <tr>
       <td className="mono">
-        {partQuery.data ? `${partQuery.data.internal_part_number} — ${partQuery.data.name}` : line.part_id}
+        {partQuery.data ? `${partQuery.data.internal_part_number} - ${partQuery.data.name}` : line.part_id}
       </td>
       <td data-align="right" className="mono">
         {formatQuantity(line.quantity_per_assembly)}
@@ -507,12 +507,12 @@ function BomLineViewRow({
       <td>
         {line.substitute_part_id
           ? subQuery.data
-            ? `${subQuery.data.internal_part_number} — ${subQuery.data.name}`
+            ? `${subQuery.data.internal_part_number} - ${subQuery.data.name}`
             : line.substitute_part_id
-          : "—"}
+          : "-"}
         {line.is_optional && <span className="detail-label"> · optional</span>}
       </td>
-      <td>{line.notes ?? "—"}</td>
+      <td>{line.notes ?? "-"}</td>
     </tr>
   );
 }
@@ -676,7 +676,7 @@ function BomDetail({
           <DetailRow label="Version" value={`v${bom.version_number}`} mono />
           <DetailRow label="Status" value={statusLabel(bom.status)} />
           <DetailRow label="Updated" value={new Date(bom.updated_at).toLocaleString()} />
-          <DetailRow label="Notes" value={bom.notes ?? "—"} full />
+          <DetailRow label="Notes" value={bom.notes ?? "-"} full />
         </div>
       </section>
 
@@ -686,9 +686,9 @@ function BomDetail({
           <div className="detail-grid">
             <DetailRow
               label="Archived at"
-              value={bom.archived_at ? new Date(bom.archived_at).toLocaleString() : "—"}
+              value={bom.archived_at ? new Date(bom.archived_at).toLocaleString() : "-"}
             />
-            <DetailRow label="Reason" value={bom.archive_reason ?? "—"} full />
+            <DetailRow label="Reason" value={bom.archive_reason ?? "-"} full />
           </div>
         </section>
       )}
@@ -799,7 +799,7 @@ export function BomsPage() {
   );
 
   const bomsQuery = useBoms(listParams);
-  // The server filters and counts — items and the pagination total always agree.
+  // The server filters and counts - items and the pagination total always agree.
   const items = bomsQuery.data?.items ?? [];
 
   const columns = useMemo<ColumnDef<BomSummaryResponse>[]>(
@@ -845,7 +845,7 @@ export function BomsPage() {
     drawerState?.mode === "create"
       ? "New BOM"
       : drawerState?.mode === "version"
-        ? `New version — ${drawerState.base.name}`
+        ? `New version - ${drawerState.base.name}`
         : drawerState?.mode === "view"
           ? "BOM detail"
           : "";

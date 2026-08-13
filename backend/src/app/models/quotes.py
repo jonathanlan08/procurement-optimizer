@@ -5,7 +5,7 @@ This is a schema-only phase: only the tables named above land here.
 `quote_documents`, `extraction_runs`, `extraction_fields`,
 `part_match_candidates`, and `quote_corrections` (also in ERD §6) belong to
 the document/extraction pipeline (00-decisions.md §2 ruling #6: "manual
-quotes before extraction" — phase P3 vs P4) and are out of scope.
+quotes before extraction" - phase P3 vs P4) and are out of scope.
 
 **Deliberate ERD deviations.** As with `rfqs.py`, the delegating task's field
 enumeration for this phase is narrower than, and in a few places differently
@@ -28,21 +28,21 @@ intentional decision, not an oversight:
 2. **`Quote.superseded_by_id`, not `supersedes_quote_id`.** The ERD's
    `QUOTES.supersedes_quote_id` is *backward*-pointing: the newer (superseding)
    quote row names the older row it replaces. The delegating task explicitly
-   asks for `superseded_by_id` — the opposite, *forward*-pointing direction:
+   asks for `superseded_by_id` - the opposite, *forward*-pointing direction:
    the older (superseded) row names the newer row that replaced it. Taken
    verbatim per the task's explicit spelling of the column name (the same
    kind of verbatim rename `rfqs.py` documents for
    `RfqStatusHistory.actor_user_id`/`note`/`occurred_at`). Manual supersession
    (00-decisions.md §4 "#16 manual supersede for revisions") is expected to
    set the *old* quote's `superseded_by_id` to the new quote's id and move the
-   old quote's `status` to `SUPERSEDED` — a service-layer responsibility
+   old quote's `status` to `SUPERSEDED` - a service-layer responsibility
    (02-erd.md §8: state transitions are enforced in the service layer, not by
    a DB CHECK), so no DB constraint couples `status` and `superseded_by_id`
    here, mirroring how `rfqs.py` leaves `Rfq.status` transitions unenforced
    at the DB layer too.
 3. **`Quote.source`, not `entry_mode`.** The ERD's `QUOTES.entry_mode` is a
    plain `text` column annotated `"extracted|manual"`. The delegating task
-   asks for "source enum manual|extracted per ERD" — a genuine Postgres
+   asks for "source enum manual|extracted per ERD" - a genuine Postgres
    `ENUM` rather than free text. Renamed to `source` (the task's own word for
    it) and typed as `quote_source_enum`, consistent with 02-erd.md §1's
    general preference ("Postgres native ENUM types for closed, stable sets
@@ -69,7 +69,7 @@ intentional decision, not an oversight:
    point 7) without a second, redundant column.
 7. **Money on `quote_lines` is nullable and `>= 0`, never coerced to zero.**
    Per 02-erd.md §6's own explanatory note: "All monetary columns on
-   quote_lines are nullable — NULL means the supplier did not state it, and
+   quote_lines are nullable - NULL means the supplier did not state it, and
    is carried through as MISSING, never coerced to zero (SPEC §7)." Applied
    to `unit_price`, `moq`, every per-line fixed-cost/tariff/duty/customs/tax
    column, and `production_capacity`.
@@ -80,11 +80,11 @@ intentional decision, not an oversight:
    `tariff_amount`, `duty_amount`, `customs_fee`, and `tax_amount`
    unambiguously on `QUOTE_LINES` (they scale with a line's quantity, the
    same reasoning that puts `tooling_cost`/`setup_cost`/etc. there too), and
-   gives `QUOTE_TERMS` no amount columns of any kind — only qualitative
+   gives `QUOTE_TERMS` no amount columns of any kind - only qualitative
    commercial terms (payment/incoterm/shipping/warranty/validity/exceptions/
    exclusions/notes). Resolved in favor of the ERD, per the delegating task's
    own overriding instruction to "FOLLOW THE ERD's placement of every SPEC §7
-   commercial field between quote_lines and quote_terms exactly" — the more
+   commercial field between quote_lines and quote_terms exactly" - the more
    specific, load-bearing instruction wins over the task's own looser
    parenthetical paraphrase of the same field set. This is *not* a case of
    the ERD's placement being "genuinely missing" (the stop condition in the
@@ -92,21 +92,21 @@ intentional decision, not an oversight:
    task author's shorthand description of it.
 9. **`QuoteLine.documentation_cost`/`handling_cost`, added later (migration
    0016, 2026-08 product-audit remediation).** Not in this phase's original
-   field list, and not in the ERD's `QUOTE_LINES` box either — added because
+   field list, and not in the ERD's `QUOTE_LINES` box either - added because
    `app.domain.landed_cost.contracts` (PRINCIPAL-OWNED) has always defined
    `FixedCosts.documentation`/`LogisticsCosts.handling` as real inputs to the
    landed-cost formula, but until this migration nothing anywhere in this
    schema could supply either, so `LandedCostService` always passed both as
    hardcoded-missing (see that service's module docstring and
    `docs/METHODOLOGY.md` §7). Same shape as every sibling fixed/logistics-
-   cost column here — `NUMERIC(18,6)`, nullable, `>= 0`, missing stays
+   cost column here - `NUMERIC(18,6)`, nullable, `>= 0`, missing stays
    missing (point 7 above applies identically).
 
 **Cascades (02-erd.md §11).** The only `ON DELETE CASCADE` pair the ERD
 whitelists among these four tables is `quote_lines` → `quote_price_breaks`
-("the child cannot exist alone"); every other FK here — including
+("the child cannot exist alone"); every other FK here - including
 `quotes` → `quote_lines` and `quotes` → `quote_terms`, despite being just as
-aggregate-internal in spirit — is `RESTRICT` by the ERD's explicit "everything
+aggregate-internal in spirit - is `RESTRICT` by the ERD's explicit "everything
 else is RESTRICT" default. Since business rows are never hard-deleted in
 this system anyway (§11), this only matters for test teardown/purge paths,
 but the letter of the whitelist is followed exactly rather than generalized.
@@ -120,7 +120,7 @@ the no-extensions ruling), so `btree_gist` is not available here. Per the
 delegating task's explicit instruction, the adaptation is:
 `UNIQUE (organization_id, quote_line_id, min_quantity)` (which is also
 exactly 02-erd.md §8's `uq_price_break_min`) catches the most common overlap
-case — two tiers claiming the same starting quantity — at the database layer.
+case - two tiers claiming the same starting quantity - at the database layer.
 It does **not** catch a tier whose range partially overlaps a *different*
 `min_quantity` (e.g. `[100, 500)` and `[300, 900)`); that check is deferred to
 an application-level validator in the quote-line/price-break write path,
@@ -259,7 +259,7 @@ class Quote(TimestampedMixin, VersionedMixin, ArchivableMixin, OrgOwnedBase):
     source: Mapped[QuoteSource] = mapped_column(QUOTE_SOURCE_ENUM)
     notes: Mapped[str | None] = mapped_column(Text(), default=None)
     # part of composite FK #3 above, not a single-column ForeignKey; module
-    # docstring point 2 — forward-pointing (old quote -> replacement quote)
+    # docstring point 2 - forward-pointing (old quote -> replacement quote)
     superseded_by_id: Mapped[uuid.UUID | None] = mapped_column(default=None)
 
 
@@ -289,7 +289,7 @@ class QuoteLine(OrgOwnedBase):
             ondelete="RESTRICT",
             name="fk_quote_lines_organization_id_matched_rfq_line_id",
         ),
-        # composite org FK, nullable: module docstring point 4 — an addition
+        # composite org FK, nullable: module docstring point 4 - an addition
         # beyond the ERD's QUOTE_LINES box, per the delegating task.
         ForeignKeyConstraint(
             ["organization_id", "part_id"],
@@ -311,7 +311,7 @@ class QuoteLine(OrgOwnedBase):
             "unit_price IS NULL OR unit_price >= 0", name="ck_quote_lines_unit_price_nonneg"
         ),
         # a *stated* MOQ of zero is meaningless (equivalent to "no minimum",
-        # which is exactly what NULL already means) — same judgement as
+        # which is exactly what NULL already means) - same judgement as
         # production_capacity below.
         CheckConstraint("moq IS NULL OR moq > 0", name="ck_quote_lines_moq_pos"),
         CheckConstraint(
@@ -350,7 +350,7 @@ class QuoteLine(OrgOwnedBase):
         # migration 0016 (2026-08 product-audit remediation): documentation/
         # handling costs, the two `app.domain.landed_cost.contracts` fields
         # (`FixedCosts.documentation`/`LogisticsCosts.handling`) that
-        # previously had no source column anywhere in this schema — see
+        # previously had no source column anywhere in this schema - see
         # module docstring point 9 above.
         CheckConstraint(
             "documentation_cost IS NULL OR documentation_cost >= 0",
@@ -382,7 +382,7 @@ class QuoteLine(OrgOwnedBase):
     quoted_mpn: Mapped[str | None] = mapped_column(Text(), default=None)
     description: Mapped[str | None] = mapped_column(Text(), default=None)
     quantity: Mapped[Decimal] = mapped_column(Numeric(18, 6))
-    # plain FK, not composite — unit_definitions.organization_id is nullable
+    # plain FK, not composite - unit_definitions.organization_id is nullable
     # (global catalogue), same reasoning as Part.unit_definition_id (parts.py).
     unit_definition_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("unit_definitions.id", ondelete="RESTRICT")
@@ -448,7 +448,7 @@ class QuotePriceBreak(OrgOwnedBase):
         # 02-erd.md §8 uq_price_break_min, scoped to organization_id like
         # every other unique constraint in this schema. Module docstring:
         # this is also the adaptation standing in for the forbidden
-        # btree_gist EXCLUDE no-overlap constraint — it catches same-
+        # btree_gist EXCLUDE no-overlap constraint - it catches same-
         # min_quantity duplicates at the DB layer; a service-layer validator
         # (next task) is responsible for true partial-range overlaps.
         UniqueConstraint(
@@ -472,11 +472,11 @@ class QuoteTerms(OrgOwnedBase):
     """The one-per-quote block of qualitative commercial terms (payment,
     shipping/incoterm, warranty, validity, exceptions/exclusions). See module
     docstring point 8 for why no tax/tariff/duty/customs amount columns live
-    here despite the delegating task's own bullet suggesting otherwise — the
+    here despite the delegating task's own bullet suggesting otherwise - the
     ERD places those on `quote_lines`, and this schema follows the ERD.
 
     Missing-field semantics: every column here is nullable, and `NULL` means
-    *the supplier did not state this term* — it is carried through as
+    *the supplier did not state this term* - it is carried through as
     explicitly missing and must never be silently coerced to a default or to
     zero (SPEC §7).
     """
@@ -485,7 +485,7 @@ class QuoteTerms(OrgOwnedBase):
     __table_args__ = (
         org_identity_constraint("quote_terms"),
         # composite org FK: the quote these terms belong to. RESTRICT, not
-        # CASCADE — see module docstring "Cascades": the ERD's cascade
+        # CASCADE - see module docstring "Cascades": the ERD's cascade
         # whitelist does not include quotes -> quote_terms.
         ForeignKeyConstraint(
             ["organization_id", "quote_id"],
@@ -522,7 +522,7 @@ class QuoteTerms(OrgOwnedBase):
 # participates in several FKs on most mappers here (the plain org FK plus one
 # or more composite FKs each), so `foreign_keys` disambiguates which
 # constraint each relationship follows, and `overlaps` silences SQLAlchemy's
-# warning about the shared organization_id column between them — the same
+# warning about the shared organization_id column between them - the same
 # pattern as rfqs.py/boms.py.
 Quote.organization = relationship(
     "Organization", foreign_keys=[Quote.organization_id], lazy="select"

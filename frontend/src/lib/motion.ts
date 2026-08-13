@@ -1,17 +1,17 @@
-/** Motion system — PRINCIPAL-OWNED. Built on motion.dev's vanilla `animate`.
+/** Motion system - PRINCIPAL-OWNED. Built on motion.dev's vanilla `animate`.
  *
  * Governance (MASTER.md v2.1 "Motion"): this workspace is data-dense and
  * analytical, so motion exists to mark *orientation changes* (arriving on a
  * page, a surface mounting), never to decorate data. Three sanctioned
  * patterns, all defined here:
  *
- *  1. Route entrance — `useRouteEntrance`: opacity-only fade of the routed
+ *  1. Route entrance - `useRouteEntrance`: opacity-only fade of the routed
  *     content. Opacity only, deliberately: a `transform` on <main> would
  *     make it a containing block and silently re-anchor every
  *     `position: fixed` drawer rendered inside it.
- *  2. Staggered surface entrance — `useEntranceStagger`: card-level elements
+ *  2. Staggered surface entrance - `useEntranceStagger`: card-level elements
  *     fade up 10px, 60ms apart. Mount-time only; refetches never animate.
- *  3. Button press — CSS-only (`:active` transforms in the stylesheets);
+ *  3. Button press - CSS-only (`:active` transforms in the stylesheets);
  *     no JS involvement.
  *
  * Everything is inert when the user prefers reduced motion, and in
@@ -20,7 +20,7 @@
  */
 
 // "motion/mini": the WAAPI-only build (a few KB instead of the full hybrid
-// engine's ~60KB — which measurably regressed the code-split main chunk).
+// engine's ~60KB - which measurably regressed the code-split main chunk).
 // `motionEnabled()` below already requires WAAPI, so mini loses nothing here.
 import { animate } from "motion/mini";
 import { stagger } from "motion";

@@ -7,14 +7,14 @@ ERD/task-paraphrase reconciliation (`content_sha256` as `bytea` matching
 on purge; `error_message` and `purged_at` as genuine additions beyond the
 ERD box's own literal columns).
 
-No `TimestampedMixin`/`VersionedMixin`/`ArchivableMixin` — the ERD box lists
+No `TimestampedMixin`/`VersionedMixin`/`ArchivableMixin` - the ERD box lists
 none of `created_at`/`updated_at`/`version`/`archived_at` for this table,
 and a `GeneratedReport` row is never edited after creation in this build:
 `generated_at` is its own creation timestamp, and the only two later
 mutations a row can ever undergo (a purge job nulling `storage_key`/
 `content_sha256` and setting `purged_at`) are ERD §11's own named
 exception to "business data is never hard-deleted" business-as-usual, not
-a mutable aggregate in the `ComparisonScenario`/`Rfq` sense — there is no
+a mutable aggregate in the `ComparisonScenario`/`Rfq` sense - there is no
 purge route in this build's scope (see `app/services/report_service.py`
 module docstring), so that mutation path is exercised only by tests
 writing `purged_at` directly, mirroring how `test_briefs_api.py`-style
@@ -106,7 +106,7 @@ class GeneratedReport(OrgOwnedBase):
     content_sha256: Mapped[bytes | None] = mapped_column(LargeBinary(), default=None)
     size_bytes: Mapped[int] = mapped_column(BigInteger(), default=0)
     parameters: Mapped[dict[str, Any]] = mapped_column(JSONB(), default=dict)
-    # the scenario's OWN calculation_version, copied at generation time —
+    # the scenario's OWN calculation_version, copied at generation time -
     # every figure in the report traces back to that calculation run.
     calculation_version: Mapped[str] = mapped_column(Text())
     state: Mapped[ReportState] = mapped_column(REPORT_STATE_ENUM, default=ReportState.PENDING)
@@ -124,7 +124,7 @@ class GeneratedReport(OrgOwnedBase):
 # UOW insert-ordering relationships (see identity.py comment). organization_id
 # participates in two FKs here (the plain org FK plus the composite scenario
 # FK), so `foreign_keys` disambiguates which constraint each relationship
-# follows, and `overlaps` silences SQLAlchemy's shared-column warning — the
+# follows, and `overlaps` silences SQLAlchemy's shared-column warning - the
 # same pattern as briefs.py/scenarios.py/quotes.py.
 GeneratedReport.organization = relationship(
     "Organization", foreign_keys=[GeneratedReport.organization_id], lazy="select"

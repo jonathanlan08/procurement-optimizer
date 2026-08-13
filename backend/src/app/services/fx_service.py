@@ -1,4 +1,4 @@
-"""FX service — currency normalization lookups and manual overrides
+"""FX service - currency normalization lookups and manual overrides
 (SPEC §9, docs/planning/05-calculation-methodology.md §4,
 docs/planning/03-api-contract.md §4.13).
 
@@ -8,27 +8,27 @@ writes exactly one audit event in the same transaction as the data change it
 describes.
 
 **Only manual-override rows are ever persisted here in v0.1** (see
-`app.models.fx.ExchangeRate` module docstring) — there is no config-selected
+`app.models.fx.ExchangeRate` module docstring) - there is no config-selected
 live provider to refresh from (`app.core.config` deliberately has no
 `FxRateProviderKind`; `SyntheticFxProvider` is wired explicitly, in code).
 `get_effective_rate`'s selection order therefore collapses to:
 
 1. The latest stored row (an org's own manual override) with
-   `effective_date <= as_of` for the exact pair — ties on `effective_date`
+   `effective_date <= as_of` for the exact pair - ties on `effective_date`
    are broken in favour of `is_manual_override` (05-calculation-methodology.md
    §4: "manual overrides win over provider rows on the same date"); this
    tie-break can never actually fire in v0.1 since every stored row already
    has `is_manual_override=True`, but it keeps the query correct for a future
    provider-refresh job that persists non-override rows.
 2. Otherwise, `SyntheticFxProvider` computed fresh and returned transparently
-   — labelled with its own `source` ("synthetic_fixture"), **never persisted**
+   - labelled with its own `source` ("synthetic_fixture"), **never persisted**
    (05-calculation-methodology.md §4 never asks a fixture answer to become a
    row of recorded history).
 3. If neither yields an answer (unknown currency pair): the calculation
    methodology names this `MissingExchangeRateError` and forbids falling back
    to 1.0. `app.core.errors` is principal-owned and this task may not extend
    it with a new error code, so it is raised as the existing, closest-fit
-   `NotFoundError` (404 `not_found` — "no rate exists for this pair" reads
+   `NotFoundError` (404 `not_found` - "no rate exists for this pair" reads
    naturally as "resource absent").
 """
 
@@ -278,7 +278,7 @@ class FxService:
         provider; in demo/fixture mode returns `{source:"fixture",
         simulated:true}` and never touches the network." There is no
         config-selected live provider in v0.1 (see module docstring), so this
-        is always fixture/simulated mode — no rows are written, matching the
+        is always fixture/simulated mode - no rows are written, matching the
         contract's literal "never touches the network"."""
         return self._provider.describe_source(), True
 

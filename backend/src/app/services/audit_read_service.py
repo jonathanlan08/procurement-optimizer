@@ -1,21 +1,21 @@
 """Read-only queries over `app.models.audit.AuditEvent`
 (docs/planning/03-api-contract.md §4.19, docs/SPEC.md §Audit trail).
 
-**No write path here, by design** — §4.19's own prose: "There is no write,
+**No write path here, by design** - §4.19's own prose: "There is no write,
 update, or delete route for audit events." `app.services.audit.AuditRecorder`
 (existing, PRINCIPAL-adjacent, not touched by this task) is the only writer
 anywhere in this codebase, and a database trigger installed in migration
 0001 additionally blocks `UPDATE`/`DELETE` on `audit_events` at the SQL
-level (`app/models/audit.py`'s own docstring) — this module cannot violate
+level (`app/models/audit.py`'s own docstring) - this module cannot violate
 that even by accident, since it never issues anything but `SELECT`.
 
 **Cursor pagination** (§4.19: "cursor pagination on `(occurred_at, id)`"):
-keyset, not offset — stable under concurrent inserts, unlike
+keyset, not offset - stable under concurrent inserts, unlike
 `OFFSET`-based paging, which is exactly what an append-only, high-volume
 audit log needs. The cursor is an opaque base64 encoding of
 `"{occurred_at_iso}|{id}"`; `_AuditEventRepository.list_page_keyset` orders
 `(occurred_at DESC, id DESC)` and filters strictly past the cursor's
-position on that same compound key (never on `occurred_at` alone — two
+position on that same compound key (never on `occurred_at` alone - two
 events in the same instant would otherwise be dropped or repeated across
 pages). One extra row is always fetched to decide `has_more`/`next_cursor`
 without a second round trip.
@@ -106,7 +106,7 @@ class AuditReadService:
     def get(self, event_id: uuid.UUID) -> AuditEvent:
         return self._repo.get_or_raise(event_id)
 
-    # NOT named `list` — a method named identically to the `list` builtin
+    # NOT named `list` - a method named identically to the `list` builtin
     # shadows it for mypy's annotation resolution in every method defined
     # afterward in this same class (a real mypy quirk, not a style
     # preference: `list_for_entity`'s own `-> tuple[list[AuditEvent], ...]`

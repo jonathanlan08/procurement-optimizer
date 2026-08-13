@@ -1,4 +1,4 @@
-"""Supplier contact service — org-scoped business logic for the
+"""Supplier contact service - org-scoped business logic for the
 `/suppliers/{id}/contacts` sub-resource (docs/planning/03-api-contract.md §4.4).
 
 Mirrors supplier_service.py: services never commit (the request-scoped
@@ -7,7 +7,7 @@ exception), and every mutation writes exactly one audit event in the same
 transaction as the data change it describes.
 
 The parent supplier must exist in the caller's organization for every
-operation here — `SupplierRepository.get_or_raise` 404s on both a genuinely
+operation here - `SupplierRepository.get_or_raise` 404s on both a genuinely
 absent supplier and a same-id-different-org supplier, so a contact can never
 be listed, created, read, updated, or archived under a supplier that belongs
 to another organization.

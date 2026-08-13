@@ -172,7 +172,7 @@ class TestEffectiveLookup:
         assert body["is_manual_override"] is True
         assert body["rate"] == "0.850000000000"
         assert body["exchange_rate_id"] is not None
-        # the synthetic fixture would have said 0.920000000000 — the override
+        # the synthetic fixture would have said 0.920000000000 - the override
         # must have actually replaced it, not merely coexisted
         assert body["rate"] != "0.920000000000"
 
@@ -246,7 +246,7 @@ class TestEffectiveLookup:
         self, client: TestClient, org_a: dict[str, Any]
     ) -> None:
         # base+quote alone (no as_of) is the "history for this pair" listing
-        # need, distinct from an effective-rate lookup — see api/v1/fx.py
+        # need, distinct from an effective-rate lookup - see api/v1/fx.py
         # module docstring for why all three params are required together.
         headers = _headers(_login_as(client, org_a, Role.VIEWER))
         resp = client.get(

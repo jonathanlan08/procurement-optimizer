@@ -2,7 +2,7 @@
 §4.5 `/part-imports`).
 
 Not in this task's brief's own file-creation list, which named only the
-migration/model/importing/service/api/test files — but every other router in
+migration/model/importing/service/api/test files - but every other router in
 this codebase (`api/v1/parts.py`, `api/v1/suppliers.py`, `api/v1/supplier_
 contacts.py`, `api/v1/supplier_performance.py`) pulls its Pydantic request/
 response models from a dedicated `app/schemas/<resource>.py` module rather
@@ -12,19 +12,19 @@ shape. See the top-level task report for the explicit call-out.
 
 Wire conventions (§1.2): `GET /part-imports/{id}` uses cursor pagination
 (`items` + `page: {limit, next_cursor, prev_cursor, has_more}`, §1.3) rather
-than the offset pagination `parts`/`suppliers` use — the contract explicitly
+than the offset pagination `parts`/`suppliers` use - the contract explicitly
 calls this endpoint "full row-level preview, cursor-paginated", and up to
 10,000 rows per batch is exactly the "high-volume list" cursor pagination is
 documented as the default for. `prev_cursor` is always `null`: this is a
 forward-only keyset implementation (next by `row_number`), a deliberate
-scope decision — no endpoint in this codebase implements bidirectional
+scope decision - no endpoint in this codebase implements bidirectional
 cursor paging yet to mirror, and nothing in this task's required test list
 exercises backward paging.
 
 `POST /part-imports`'s response shape is the contract's own explicit example
 (§4.5: `{batch_id, rows_total, rows_valid, rows_invalid, rows_duplicate,
 sample_rows[], errors[]}`) and intentionally does not match `GET
-/part-imports/{id}`'s shape — different response models for the two
+/part-imports/{id}`'s shape - different response models for the two
 endpoints, per the contract.
 """
 
@@ -188,7 +188,7 @@ class PartImportBatchDetailResponse(BaseModel):
 class PartImportCommitResponse(BaseModel):
     """`200` response of `POST /part-imports/{id}/commit` (§4.5's own
     explicit shape: `{created, updated, skipped}`). `updated` is always `0`
-    — see app/models/part_imports.py module docstring: this service never
+    - see app/models/part_imports.py module docstring: this service never
     updates an existing part from an import row, only creates or skips."""
 
     created: int

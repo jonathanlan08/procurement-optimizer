@@ -1,7 +1,7 @@
 """Document request/response schemas (docs/planning/03-api-contract.md §4.9
 `/quote-documents`, app/models/documents.py).
 
-Not on the delegating task's own "NEW files" list — the same not-listed-but-
+Not on the delegating task's own "NEW files" list - the same not-listed-but-
 necessary situation `app/schemas/part_imports.py`'s own module docstring
 already documents: every other router in this codebase pulls its Pydantic
 request/response models from a dedicated `app/schemas/<resource>.py` module
@@ -13,16 +13,16 @@ codebase's established shape.
 `GET /quote-documents/{id}` is "metadata + page summaries; **never** a
 storage URL." Page summaries themselves (`document_pages` rows) belong to
 Stage 4 (text/table acquisition), out of this task's Stage 1-3 scope
-(services/document_service.py's own module docstring) — omitted here for the
+(services/document_service.py's own module docstring) - omitted here for the
 same reason `.../pages/{n}/preview` has no route in `api/v1/documents.py`.
 
 **No `ETag`/`If-Match` on `DocumentResponse`.** Unlike `Quote`/`Rfq`/`Bom`,
 `QuoteDocument` does not mix in `VersionedMixin` (app/models/documents.py's
 own module docstring point 3: "gets `ArchivableMixin` but not
-`TimestampedMixin` or `VersionedMixin`") — there is no `version` column to
+`TimestampedMixin` or `VersionedMixin`") - there is no `version` column to
 carry as a concurrency token.
 
-**`content_sha256` is surfaced as a lowercase hex string**, not raw bytes —
+**`content_sha256` is surfaced as a lowercase hex string**, not raw bytes -
 JSON has no binary type, and hex is the natural, greppable representation for
 a value whose entire purpose (duplicate detection) is being compared by eye
 or copy-pasted into a support ticket.

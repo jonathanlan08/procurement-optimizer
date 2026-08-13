@@ -1,4 +1,4 @@
-# Vendor Negotiation and Procurement Optimizer — Project Specification
+# Vendor Negotiation and Procurement Optimizer - Project Specification
 
 Repository: `procurement-optimizer` (working title). Portfolio-quality, database-backed
 procurement intelligence platform. Public repo uses **synthetic demonstration data only**.
@@ -95,7 +95,7 @@ Show conversion assumptions explicitly. Never compare prices until quantities an
 have compatible normalized meanings.
 
 ### 11. Price breaks
-Tiered pricing (e.g. 1–99: $12.00, 100–499: $10.50, 500–999: $9.20, 1000+: $8.60).
+Tiered pricing (e.g. 1-99: $12.00, 100-499: $10.50, 500-999: $9.20, 1000+: $8.60).
 Select applicable break from allocated quantity; recompute when split allocation changes
 quantities. Test boundaries carefully.
 
@@ -103,7 +103,7 @@ quantities. Test boundaries carefully.
 
 ## Landed-cost engine
 
-Explainable, deterministic. **Exact decimal arithmetic for all monetary values — no
+Explainable, deterministic. **Exact decimal arithmetic for all monetary values - no
 binary floating point.**
 
 ```

@@ -3,14 +3,14 @@ quotes.rfq_id/supplier_id, quote_lines.quote_id/matched_rfq_line_id/part_id,
 and quote_price_breaks.quote_line_id; quantity/unit_price/price-break CHECK
 constraints; quote_price_breaks min_quantity uniqueness per line (the
 adaptation standing in for the forbidden btree_gist EXCLUDE no-overlap
-constraint — see app/models/quotes.py module docstring); quote_terms
+constraint - see app/models/quotes.py module docstring); quote_terms
 one-per-quote; the superseded_by_id self-reference supersession chain; and
 quote_status_enum/quote_source_enum/match_status_enum rejecting invalid
 values (docs/planning/02-erd.md §6).
 
 Note: 02-erd.md's constraint catalogue (§8) has no CHECK requiring
 `expiration_date >= quote_date` anywhere, and 00-decisions.md §4 explicitly
-rules that "expired quotes [are] usable with prominent warning" — so no such
+rules that "expired quotes [are] usable with prominent warning" - so no such
 constraint exists in the migration, and none is tested here.
 """
 

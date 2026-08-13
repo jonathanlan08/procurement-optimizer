@@ -1,4 +1,4 @@
-/* Part-import wizard — dense preview table + disposition badges, layered on
+/* Part-import wizard - dense preview table + disposition badges, layered on
    components/workspace.css (toolbar buttons, form-actions) the same way
    every other feature's own css file is (see ../briefs/briefs.css's header). */
 
@@ -125,7 +125,7 @@
   font-weight: 600;
 }
 
-/* disposition badges — never rely on color alone, same MASTER.md rule
+/* disposition badges - never rely on color alone, same MASTER.md rule
    ../briefs/briefs.css's provenance badges follow */
 .badge--import-create {
   background: rgba(21, 128, 61, 0.1);

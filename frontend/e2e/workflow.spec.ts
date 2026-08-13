@@ -1,5 +1,5 @@
 /** The core product journey, against the real backend and the seeded
- * "Enclosure Pilot Build" RFQ (RFQ-2026-ENC-PILOT — see
+ * "Enclosure Pilot Build" RFQ (RFQ-2026-ENC-PILOT - see
  * backend/src/app/seed/demo_dataset.py): scenario comparison workspace ->
  * a feasible (optimal) allocation's honest status banner + split table ->
  * an engineered-infeasible allocation's explainer with a relaxation
@@ -28,12 +28,12 @@ test("comparison workspace: feasible allocation, infeasible explainer, and a rev
 
   // -- feasible scenario: honest "optimal" status + an allocation table
   // that splits the order across the RFQ's suppliers -----------------
-  await scenarioRow("Enclosure Pilot — Lowest Landed Cost").click();
+  await scenarioRow("Enclosure Pilot - Lowest Landed Cost").click();
 
   // deterministic solve (fixed seed, canonical ordering, single search
-  // worker — docs/OPTIMIZATION.md) over the seeded quotes: this scenario
+  // worker - docs/OPTIMIZATION.md) over the seeded quotes: this scenario
   // reliably reports a PROVEN-optimal allocation, never a bare "feasible"
-  // one that only "found something" — the honest status banner text below
+  // one that only "found something" - the honest status banner text below
   // is the backend's own composed prose, asserted verbatim.
   const statusBanner = page.getByRole("status").filter({ hasText: "Optimal" });
   await expect(statusBanner).toBeVisible();
@@ -48,7 +48,7 @@ test("comparison workspace: feasible allocation, infeasible explainer, and a rev
 
   // -- infeasible scenario (engineered: a 500 USD budget ceiling cannot
   // cover the pilot's required quantities at any quoted price) -------
-  await scenarioRow("Enclosure Pilot — Budget Ceiling (Infeasible Demo)").click();
+  await scenarioRow("Enclosure Pilot - Budget Ceiling (Infeasible Demo)").click();
 
   const infeasibleBanner = page.getByRole("status").filter({ hasText: /infeasible/i });
   await expect(infeasibleBanner).toBeVisible();
@@ -62,7 +62,7 @@ test("comparison workspace: feasible allocation, infeasible explainer, and a rev
 
   // -- back to the feasible scenario to generate a negotiation brief for
   // its top-ranked, scored supplier -----------------------------------
-  await scenarioRow("Enclosure Pilot — Lowest Landed Cost").click();
+  await scenarioRow("Enclosure Pilot - Lowest Landed Cost").click();
   await expect(statusBanner).toBeVisible();
 
   await expect(page.getByRole("heading", { name: "Negotiation briefs" })).toBeVisible();
@@ -81,7 +81,7 @@ test("comparison workspace: feasible allocation, infeasible explainer, and a rev
 
   // per-section provenance badges: at minimum a supplier-provided figure,
   // a calculated figure, and an AI-narrative section should each appear
-  // (several sections share each provenance label, so `.first()` — this
+  // (several sections share each provenance label, so `.first()` - this
   // is only asserting presence of the badge kind, not counting them)
   await expect(briefDrawer.getByText("Supplier-provided").first()).toBeVisible();
   await expect(briefDrawer.getByText("Calculated").first()).toBeVisible();
@@ -93,7 +93,7 @@ test("comparison workspace: feasible allocation, infeasible explainer, and a rev
 
   // draft state, requires review
   await expect(briefDrawer.getByText("Draft", { exact: true })).toBeVisible();
-  await expect(briefDrawer.getByText("Draft — requires human review")).toBeVisible();
+  await expect(briefDrawer.getByText("Draft - requires human review")).toBeVisible();
 
   // -- mark reviewed: the state chip updates in place ------------------
   await briefDrawer.getByRole("button", { name: "Mark reviewed" }).click();

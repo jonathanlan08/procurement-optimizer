@@ -1,6 +1,6 @@
 """Part-matching API integration tests (docs/planning/03-api-contract.md
 §4.12, docs/planning/04-document-pipeline.md §10), driven end to end through
-the HTTP API against a manually-entered quote — matching operates on real
+the HTTP API against a manually-entered quote - matching operates on real
 `QuoteLine` rows regardless of whether the quote came from manual entry or
 extraction/materialization (see `services/matching_service.py`'s own module
 docstring), so a manual quote is the simplest fixture that exercises it.
@@ -305,7 +305,7 @@ def _setup_matching_scenario(
 ) -> dict[str, Any]:
     """One org's worth of scaffolding: two catalog parts, an open RFQ
     requesting both, an invited supplier, and a manual quote with two
-    lines — one that will exact-match part A by internal part number, one
+    lines - one that will exact-match part A by internal part number, one
     that only fuzzy-matches part B (ambiguous, no auto-confirm)."""
     unit_id = _seed_unit(migrated_engine, org["org_id"])
     part_a = _create_part(
@@ -479,7 +479,7 @@ class TestConfirmAndUnmatch:
     def test_confirm_without_prior_generate_still_works(
         self, client: TestClient, org_a: dict[str, Any], migrated_engine: Engine
     ) -> None:
-        """A reviewer may confirm a pairing the matcher never proposed —
+        """A reviewer may confirm a pairing the matcher never proposed -
         confirm does not require a pre-existing PartMatchCandidate row (see
         services/matching_service.py's module docstring)."""
         headers = _headers(_login_as(client, org_a, Role.ANALYST))
@@ -657,7 +657,7 @@ class TestCorrectionPreMaterialization:
         )
         run = _start_run(client, headers, document["id"])
 
-        # Correct a field WITHOUT confirming everything / materializing —
+        # Correct a field WITHOUT confirming everything / materializing -
         # no Quote exists for this run yet.
         supplier_name_field = _field_by_path(client, run["id"], "supplier_name")
         resp = client.patch(

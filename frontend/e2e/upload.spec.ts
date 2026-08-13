@@ -1,9 +1,9 @@
 /** Real file upload through the UI: a freshly generated CSV quote document
  * (see helpers/fixtures.ts for why it's generated per run rather than
  * reusing one of the four committed golden fixtures) attached to the
- * seeded draft RFQ "Legacy Gasket Buy" (RFQ-2026-LEGACY-GASKET — has no
+ * seeded draft RFQ "Legacy Gasket Buy" (RFQ-2026-LEGACY-GASKET - has no
  * documents of its own in the seed, so this spec owns a clean slate), then
- * extraction started on it — no golden fixture exists for this file's
+ * extraction started on it - no golden fixture exists for this file's
  * sha256, so the mock provider's regex heuristic handles it
  * (app/providers/extraction/mock.py), which is itself part of what "no paid
  * providers anywhere" means in practice.
@@ -43,14 +43,14 @@ test("upload a real CSV quote document through the UI and start extraction", asy
   await uploadedRow.getByRole("button", { name: "Extract" }).click();
 
   // `POST /quote-documents/{id}/extraction-runs` runs synchronously (no job
-  // queue in this codebase — extraction_service.py's own module docstring),
+  // queue in this codebase - extraction_service.py's own module docstring),
   // so this opens the review panel directly once the run completes.
   const reviewDialog = page.getByRole("dialog", { name: "Extraction review" });
   await expect(reviewDialog).toBeVisible();
 
   await expect(reviewDialog.getByText("mock", { exact: false })).toBeVisible();
   await expect(reviewDialog.getByText("Simulated", { exact: true })).toBeVisible();
-  // never "failed" — an unrecognized document still gets a (low-confidence)
+  // never "failed" - an unrecognized document still gets a (low-confidence)
   // heuristic pass rather than erroring outright
   await expect(reviewDialog.getByText("Failed", { exact: true })).toHaveCount(0);
 

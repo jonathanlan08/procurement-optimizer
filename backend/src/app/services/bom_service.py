@@ -1,4 +1,4 @@
-"""BOM service — org-scoped business logic for copy-on-write BOM
+"""BOM service - org-scoped business logic for copy-on-write BOM
 versioning (docs/planning/02-erd.md §5/§10, app/models/boms.py module
 docstring, docs/planning/03-api-contract.md §4.7).
 
@@ -7,56 +7,56 @@ commits on success and rolls back on any raised exception. Every mutation
 writes exactly one audit event in the same transaction as the data change it
 describes.
 
-**Status-transition design (contract gap, filled here — see this task's
+**Status-transition design (contract gap, filled here - see this task's
 brief: "if genuinely undefined: draft on create, activate endpoint promotes
 draft→active and old active→superseded; document it").**
 
 03-api-contract.md §4.7 lists `PATCH /boms/{id}` ("metadata only while
 draft; line edits on an active BOM require a new version") but never
 actually specifies *how* a BOM moves from `draft` to `active` in the first
-place, nor when the predecessor it replaces becomes `superseded` — RFQs get
+place, nor when the predecessor it replaces becomes `superseded` - RFQs get
 a whole status-transition table (§4.8) and BOMs do not. `app/models/boms.py`
 (`BomStatus`) confirms the four states (`draft|active|superseded|archived`)
 exist but is likewise silent on the transition rules. This task's brief
 explicitly asks for a `POST /boms/{id}/activate` route to fill that gap
 (not present in the contract's literal route table, the same kind of
 contract-silent-but-reasonable addition already made for
-`POST /parts/{id}/unarchive` in `api/v1/parts.py` — see that module's
+`POST /parts/{id}/unarchive` in `api/v1/parts.py` - see that module's
 docstring for the identical judgement call). The design landed on:
 
-1. `create()` — always produces `version_number=1`, `status=draft`,
+1. `create()` - always produces `version_number=1`, `status=draft`,
    `previous_version_id=None`.
-2. `new_version()` — copy-on-write fork. May only be called on the
+2. `new_version()` - copy-on-write fork. May only be called on the
    *current head* of a root's version chain (`BomRepository.
    is_latest_version`) and only while that head is `draft` or `active`
-   (never `superseded` — that state, by definition, is not a head — or
-   `archived` — a deliberately retired BOM should not silently grow a new
+   (never `superseded` - that state, by definition, is not a head - or
+   `archived` - a deliberately retired BOM should not silently grow a new
    descendant). The new row is always `version_number = head.version_number
    + 1`, `previous_version_id = head.id`, `status = draft`. The predecessor
-   is **not** touched yet — it keeps whatever status it had (`draft` or
+   is **not** touched yet - it keeps whatever status it had (`draft` or
    `active`) until the new version is explicitly activated. This means two
    drafts can legally exist back-to-back in a chain (iterating before ever
    publishing), which the contract's silence does not forbid.
-3. `activate()` — the only way a BOM version becomes `active`. Requires
+3. `activate()` - the only way a BOM version becomes `active`. Requires
    `status == draft` (activating an already-active/superseded/archived
-   version is a `409 conflict_state` — there is nothing to promote). If the
+   version is a `409 conflict_state` - there is nothing to promote). If the
    version has a predecessor (`previous_version_id is not None`), that
    predecessor is moved to `superseded` in the same transaction (unless it
-   was independently `archived`, which is left alone — an operator's
+   was independently `archived`, which is left alone - an operator's
    explicit archive decision is not silently overwritten by an unrelated
    activation). This is exactly this task's brief: "marks the old version
    superseded when the new one is activated."
-4. `archive()` — mirrors `PartService.archive`: sets `archived_at`/
+4. `archive()` - mirrors `PartService.archive`: sets `archived_at`/
    `archived_by_id`/`archive_reason` (ArchivableMixin) **and**
    `status = archived` (BOMs, unlike `Part`/`Supplier`, encode "archived"
-   as its own enum member as well as via the soft-delete columns — both are
+   as its own enum member as well as via the soft-delete columns - both are
    kept in sync). Works on any non-archived version, not only the head:
    the contract does not restrict which version may be archived, and
    retiring a specific bad version without touching the rest of the chain
    is a reasonable operation to allow.
 
-Audit events are exactly the four this task's brief names —
-`bom.created`, `bom.version_created`, `bom.activated`, `bom.archived` —
+Audit events are exactly the four this task's brief names -
+`bom.created`, `bom.version_created`, `bom.activated`, `bom.archived` -
 and no more: activation's side effect on the predecessor (marking it
 `superseded`) is folded into the `bom.activated` event's `explanation`
 rather than becoming its own `bom.superseded` event, since the brief's
@@ -65,16 +65,16 @@ transaction as (and only as a consequence of) the activation.
 
 **Concurrent versioning race.** `uq_bills_of_materials_org_root_version`
 (migration 0005) is the DB-level guard the model docstring calls "the
-concurrency guard for 'two analysts create the next version at once' — the
+concurrency guard for 'two analysts create the next version at once' - the
 loser's INSERT simply fails the unique constraint." `new_version()` catches
 that `IntegrityError` and reports it as `ConflictStateError` (409
 `conflict_state`), not `ConflictDuplicateError`: the loser did not attempt
 to create an intentional duplicate the way a repeated supplier code would
-be — the BOM's head moved out from under it mid-request, which is a state
+be - the BOM's head moved out from under it mid-request, which is a state
 race, not a business-rule duplicate. There is no `If-Match`/`version`
 counter on `BillOfMaterials` to make this a `ConflictVersionError` either
 (the model docstring is explicit: "No optimistic-lock `version` column on
-`BillOfMaterials`" — the copy-on-write chain itself is the concurrency
+`BillOfMaterials`" - the copy-on-write chain itself is the concurrency
 control), so `conflict_state` is the closest fit in the error table (§3:
 "illegal state transition").
 """
@@ -102,7 +102,7 @@ from app.services.audit import AuditRecorder
 # Module-level aliases, not inline `list[...]` annotations on methods below:
 # BomService defines a method named `list` (mirrors PartService), which (per
 # `from __future__ import annotations`) shadows the builtin `list` for any
-# bare `list[...]` written later in the same class body — mypy then reads it
+# bare `list[...]` written later in the same class body - mypy then reads it
 # as "BomService.list used as a type" instead of the builtin generic (see
 # app/services/part_service.py for the identical precedent/comment).
 _BomWithLines = tuple[BillOfMaterials, list[BillOfMaterialLine]]
@@ -259,7 +259,7 @@ class BomService:
     def version_chain(self, bom_id: uuid.UUID) -> _VersionChain:
         """Every version of the root chain that `bom_id` belongs to
         (ascending). `bom_id` may be any version's id, not only the root's
-        own — the root's v1 row happens to share its id with `root_bom_id`,
+        own - the root's v1 row happens to share its id with `root_bom_id`,
         so passing either resolves to the same chain."""
         head = self._repo.get_or_raise(bom_id)
         return self._repo.get_version_chain(head.root_bom_id)

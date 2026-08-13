@@ -4,7 +4,7 @@
 See app/models/analysis.py module docstring for the deliberate ERD/task
 deviations: `landed_cost_results` follows the delegating task's own narrower
 column list (no `scenario_id`/`source_currency`/`exchange_rate_id`/
-`manual_overrides` — the ERD's fuller box — since no `comparison_scenarios`
+`manual_overrides` - the ERD's fuller box - since no `comparison_scenarios`
 table exists yet in this phase and the task's own `inputs_snapshot` JSONB is
 explicitly specified to already carry "fx/unit normalization provenance",
 making those columns redundant for now); `landed_cost_components.provenance`
@@ -12,8 +12,8 @@ is a plain `text` column per the task's literal spelling (the ERD calls the
 same concept `data_source`); `scoring_configurations` uses the task's literal
 `weights` JSONB column (not the ERD's `criteria` + `weight_sum`) and
 `created_by_id` (matching the FK-naming convention used by every other
-`created_by`-shaped column in this codebase — `rfqs.created_by_id`,
-`bills_of_materials.created_by_id`, etc. — over the task prose's unsuffixed
+`created_by`-shaped column in this codebase - `rfqs.created_by_id`,
+`bills_of_materials.created_by_id`, etc. - over the task prose's unsuffixed
 "created_by").
 
 Both `landed_cost_result_completeness_enum` and
@@ -24,7 +24,7 @@ truth, the DB type just mirrors it" pattern already established by
 `app/models/documents.py`'s `CONFIDENCE_BAND_ENUM` wrapping
 `app.domain.confidence.ConfidenceBand`.
 
-`landed_cost_results` rows are immutable — recalculation always inserts a new
+`landed_cost_results` rows are immutable - recalculation always inserts a new
 row; "latest wins" is a query-time concern (`ix_landed_cost_results_line_latest`
 below exists for exactly that lookup), not a DB constraint.
 
@@ -170,7 +170,7 @@ def upgrade() -> None:
         sa.UniqueConstraint(
             "organization_id", "id", name="uq_landed_cost_components_org_identity"
         ),
-        # CASCADE: 02-erd.md §11's explicit whitelist — a component cannot
+        # CASCADE: 02-erd.md §11's explicit whitelist - a component cannot
         # exist without the result it breaks down.
         sa.ForeignKeyConstraint(
             ["organization_id", "landed_cost_result_id"],
@@ -209,7 +209,7 @@ def upgrade() -> None:
         sa.Column("name", sa.Text(), nullable=False),
         # list of CriterionSpec-shaped objects (task's literal column name;
         # ERD's box calls the same concept "criteria" + a separate
-        # "weight_sum" column — see module docstring).
+        # "weight_sum" column - see module docstring).
         sa.Column("weights", pg.JSONB(), nullable=False),
         sa.Column("is_sample", sa.Boolean(), nullable=False, server_default=sa.false()),
         sa.Column(

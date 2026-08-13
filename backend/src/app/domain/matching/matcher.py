@@ -1,7 +1,7 @@
 """Pure part-matching logic (docs/planning/04-document-pipeline.md §10,
 `app/models/documents.py`'s FROZEN `PartMatchCandidate`/`MatchStrategy`).
 
-No I/O, no ORM session, no organization scoping here — `generate_candidates`
+No I/O, no ORM session, no organization scoping here - `generate_candidates`
 is a plain function over three small local dataclasses
 (`LineTexts`/`CatalogPart`/`MatchConfig`) and returns a tuple of
 `MatchCandidate`. `services/matching_service.py` is the only caller; it
@@ -11,7 +11,7 @@ quote line, and persists the result as `PartMatchCandidate` rows.
 `MatchStrategy` (the five-member `StrEnum`) is imported directly from
 `app.models.documents` rather than redefined here, the same "one enum, no
 drift" reasoning that module's own docstring already applies to
-`ConfidenceBand`/`CONFIDENCE_BAND_ENUM` — `MatchCandidate.strategy` values
+`ConfidenceBand`/`CONFIDENCE_BAND_ENUM` - `MatchCandidate.strategy` values
 flow straight into `PartMatchCandidate.strategy` with no translation layer,
 so a second, parallel enum would only invite the two to drift apart. It is a
 plain `StrEnum`, not an ORM class, so importing it here does not pull any
@@ -21,8 +21,8 @@ SQLAlchemy/session machinery into this otherwise-pure module.
 
 This task's own instructions describe the five strategies' priority order,
 per-strategy confidence, and the fuzzy scoring formula in terms that
-diverge from 04-document-pipeline.md §10 — the very section the task cites
-as their source — on several concrete points:
+diverge from 04-document-pipeline.md §10 - the very section the task cites
+as their source - on several concrete points:
 
 | Aspect | This task's prose | §10 (implemented here) |
 |---|---|---|
@@ -33,14 +33,14 @@ as their source — on several concrete points:
 
 §10's actual fuzzy formula, implemented in strategy 5 below: raw ratio
 `r = token_set_ratio(query, corpus) / 100`, kept only when `r >= threshold`
-(`t`), confidence `= min(0.80, 0.5 + 0.4 * (r - t) / (1 - t))` — capped at
+(`t`), confidence `= min(0.80, 0.5 + 0.4 * (r - t) / (1 - t))` - capped at
 0.80 regardless of how high `r` climbs, so a fuzzy match can never outrank
 any of strategies 1-4 by confidence alone.
 
 Resolved in favor of §10's literal table throughout, the same "the cited
 planning doc wins over the delegating task's own paraphrase of it" pattern
 already established repeatedly in this codebase for this exact document
-family — see `app/models/documents.py`'s module docstring points 1/7,
+family - see `app/models/documents.py`'s module docstring points 1/7,
 `app/models/parts.py`'s module docstring point 1, and
 `app/models/quotes.py`'s module docstring points 3/8, every one of which
 resolves an identically-shaped conflict the same direction. Confirming
@@ -48,15 +48,15 @@ evidence that §10's *priority order* specifically is the one actually
 enforced at runtime (not merely one of two equally-valid readings): the
 `MatchStrategy` enum's own declaration order in `app/models/documents.py`
 follows the ERD box's listing (`internal_pn, mpn, normalized_text,
-alternative, fuzzy` — the same order this task's prose uses), and that
+alternative, fuzzy` - the same order this task's prose uses), and that
 model's own docstring explicitly calls this out as "differ[ing] from §10's
-execution order" — i.e. the FROZEN model itself already documents that its
+execution order" - i.e. the FROZEN model itself already documents that its
 enum's declaration order is cosmetic and §10's execution order is the real
 one. `_STRATEGY_PRIORITY` below is keyed to §10, not to declaration order.
 
 One field is kept at this task's own explicit, concrete number rather than
 §10's: `MatchConfig.fuzzy_threshold` defaults to `0.82`, not §10's stated
-`0.80`. This is deliberate, not an oversight of the same rule above — this
+`0.80`. This is deliberate, not an oversight of the same rule above - this
 task's own required test coverage ("fuzzy threshold boundary: 0.81 excluded,
 0.83 included") is only satisfiable at all with a 0.82 threshold; at 0.80
 both 0.81 and 0.83 would be *included*, making the stated test case
@@ -75,26 +75,26 @@ distinction to key a split confidence on. `services/matching_service.py`
 builds `alternative_of` from `PartAlternative` rows with
 `approval_status == 'approved'` only; `conditional`/`rejected` rows never
 reach this function at all, so every `alternative` candidate this module
-emits is implicitly the 0.90 (approved) case — the split confidence is
+emits is implicitly the 0.90 (approved) case - the split confidence is
 narrowed away by the task's own dataclass shape, not silently dropped.
 
 ## `LineTexts`/`CatalogPart` field shape and the fuzzy corpus
 
 `LineTexts` has exactly the two fields this task specifies
-(`part_number_text`, `description_text`) — not a third field for
+(`part_number_text`, `description_text`) - not a third field for
 `QuoteLine.quoted_mpn`. `services/matching_service.py` is responsible for
 choosing what text to pass as `part_number_text` when building this from a
 `QuoteLine` (quoted part number, falling back to quoted MPN when the part
-number is absent) — see that service's module docstring. Strategies 1
+number is absent) - see that service's module docstring. Strategies 1
 (`internal_pn`), 2 (`mpn`), 3 (`alternative`), and 4 (`normalized_text`) all
 test `part_number_text` against the catalog's identifier columns; strategy 5
 (`fuzzy`) additionally folds in `description_text`.
 
-`CatalogPart` likewise has exactly this task's specified fields — no
+`CatalogPart` likewise has exactly this task's specified fields - no
 `description` field, unlike §10's "fuzzy ... on description + MPN" text.
 Fuzzy compares `part_number_text + description_text` (the line's own texts)
 against `name + internal_part_number + manufacturer_part_number` (the
-catalog side) via `rapidfuzz.fuzz.token_set_ratio` — `name` standing in for
+catalog side) via `rapidfuzz.fuzz.token_set_ratio` - `name` standing in for
 "description" on the catalog side, since `Part.name` is `NOT NULL` (always
 present) while `Part.description` is nullable and not part of this task's
 own `CatalogPart` field list; the numeric identifiers are folded in too so a
@@ -114,13 +114,13 @@ identifiers happen to coincide there).
 ## Determinism
 
 `generate_candidates` returns candidates sorted by
-`(-confidence, strategy priority, internal_part_number, part_id)` — this
+`(-confidence, strategy priority, internal_part_number, part_id)` - this
 task's own explicit 4-key tuple (the `strategy priority` component is a
 no-op in practice given the five strategies' confidence values never
 collide across strategies, but is implemented literally as specified; it
 only matters for a hypothetical future confidence overlap). `MatchCandidate`
 objects for the same `(part_id, strategy)` pair are deduped within one call,
-keeping the higher-confidence one — needed because `part_number_text` is
+keeping the higher-confidence one - needed because `part_number_text` is
 tested against the same catalog part through more than one comparison inside
 a single strategy (e.g. `alternative` checks both an exact internal-part-
 number and a separator-normalized MPN match against the same alternative
@@ -155,7 +155,7 @@ _FUZZY_FLOOR: Final[Decimal] = Decimal("0.5")
 _FUZZY_SPAN: Final[Decimal] = Decimal("0.4")
 _FUZZY_CAP: Final[Decimal] = Decimal("0.80")
 
-# §10's execution order — see module docstring for why this differs from
+# §10's execution order - see module docstring for why this differs from
 # MatchStrategy's own declaration order.
 _STRATEGY_PRIORITY: Final[dict[MatchStrategy, int]] = {
     MatchStrategy.INTERNAL_PN: 1,
@@ -180,7 +180,7 @@ class LineTexts:
 class CatalogPart:
     """One part in the candidate catalog `generate_candidates` searches.
     `alternative_of` holds the canonical `part_id`s this part is an
-    *approved* alternative for (empty if none) — see module docstring."""
+    *approved* alternative for (empty if none) - see module docstring."""
 
     part_id: uuid.UUID
     internal_part_number: str

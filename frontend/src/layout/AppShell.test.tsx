@@ -1,11 +1,11 @@
-/** Mobile nav drawer tests — audit P0 fix: at <=768px the sidebar used to
+/** Mobile nav drawer tests - audit P0 fix: at <=768px the sidebar used to
  * `display: none` with no replacement navigation. These tests exercise the
  * replacement (hamburger -> slide-in drawer reusing the sidebar's nav
  * markup) at the component level: open/close, aria state, focus in on open
  * / focus back to the trigger on close, scrim-click close, and
  * route-change close. CSS media queries aren't evaluated by jsdom, so both
  * the static desktop nav and the drawer's nav are present in the DOM
- * regardless of viewport — tests scope queries to the dialog via `within`
+ * regardless of viewport - tests scope queries to the dialog via `within`
  * where a query would otherwise be ambiguous.
  */
 
@@ -52,7 +52,7 @@ function installFetchMock() {
  * dom-testing-library's `getByRole` accessible-name computation does not
  * resolve `aria-label` on an `aria-hidden` element even with `{hidden:
  * true}` (that option only stops the *element* from being filtered out of
- * the search, it doesn't change name computation) — so it's queried
+ * the search, it doesn't change name computation) - so it's queried
  * directly here instead of via a role+name filter, and its `aria-label` is
  * asserted separately where it matters. */
 function getDrawerPanel(): HTMLElement {
@@ -85,7 +85,7 @@ describe("AppShell mobile nav drawer", () => {
   afterEach(() => {
     // vite.config.ts sets `test.globals: false`, so @testing-library/react's
     // automatic post-test cleanup never registers (see suppliers.test.tsx's
-    // identical comment) — without this, each render() stacks on the
+    // identical comment) - without this, each render() stacks on the
     // previous test's still-mounted DOM.
     cleanup();
     vi.unstubAllGlobals();
@@ -161,14 +161,14 @@ describe("AppShell mobile nav drawer", () => {
   it("reuses the same nav link list in both the static sidebar and the drawer", async () => {
     renderShell();
     const links = screen.getAllByRole("link", { name: "Suppliers", hidden: true });
-    // One in the static <aside>, one in the drawer panel — "one nav, two presentations".
+    // One in the static <aside>, one in the drawer panel - "one nav, two presentations".
     expect(links).toHaveLength(2);
   });
 
   // Audit P2 fix: "demo badge, username, role, and Sign out wrap awkwardly"
   // at <=768px. jsdom doesn't evaluate CSS media queries (see this file's own
   // header), so the single-row header/compact-badge/compact-button changes
-  // are visual-only and aren't asserted here — instead, per the task's own
+  // are visual-only and aren't asserted here - instead, per the task's own
   // documented fallback, this covers the one piece of new DOM structure the
   // fix adds: the header's name/role chip is hidden (not removed) at that
   // breakpoint, relocated into an identity block at the top of the drawer
@@ -179,7 +179,7 @@ describe("AppShell mobile nav drawer", () => {
     fireEvent.click(menuBtn);
     const dialog = getDrawerPanel();
 
-    // Session loads asynchronously (the `/api/v1/auth/me` fetch above) — the
+    // Session loads asynchronously (the `/api/v1/auth/me` fetch above) - the
     // identity block only renders once `session` is populated, so this must
     // be a `findBy` (retries), not a synchronous `getBy`.
     const identityName = await within(dialog).findByText("Test User");
@@ -211,7 +211,7 @@ describe("AppShell mobile nav drawer", () => {
     // Both spans are always in the DOM (see app-shell.css: exactly one is
     // ever visible per viewport via `display:none`, jsdom can't evaluate
     // that part, but the structural swap itself is what's under test here).
-    expect(await screen.findByText("Demo — synthetic data")).toHaveClass("demo-badge-full");
+    expect(await screen.findByText("Demo - synthetic data")).toHaveClass("demo-badge-full");
     expect(screen.getByText("Demo", { selector: ".demo-badge-compact" })).toBeInTheDocument();
   });
 });

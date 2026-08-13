@@ -2,7 +2,7 @@
 policy, mirroring api/v1/parts.py.
 
 Route naming follows the contract exactly rather than this task's brief:
-`POST /part-imports/{id}/cancel`, not `/discard` — §4.5's own route table
+`POST /part-imports/{id}/cancel`, not `/discard` - §4.5's own route table
 says `cancel`, and the resulting state is `rolled_back`
 (app.models.part_imports.PartImportState), not "discarded"; the brief used
 different words for the same route, and the contract wins per instructions.
@@ -13,7 +13,7 @@ Security (this task's brief, non-negotiable):
   exceeded, before the whole file is ever handed to the parser
   (`_read_upload_within_limit`).
 - The file format is decided from the filename extension only (`.csv` /
-  `.xlsx`) — `415` for anything else, including a missing filename. Content-
+  `.xlsx`) - `415` for anything else, including a missing filename. Content-
   Type headers are not trusted for this decision: browsers and HTTP clients
   disagree wildly on what MIME type a `.csv`/`.xlsx` upload carries, while
   the extension is what `app.importing.part_import_parser.parse_csv`/
@@ -83,7 +83,7 @@ def _determine_format(filename: str | None) -> PartImportFormat:
 
 
 def _read_upload_within_limit(file: UploadFile, max_bytes: int) -> bytes:
-    """Chunked size check bounding what THIS handler holds in memory — not
+    """Chunked size check bounding what THIS handler holds in memory - not
     the first line of defense (Starlette spools multipart file parts to disk
     before the handler runs); oversized declared bodies are rejected
     pre-routing by `BodySizeLimitMiddleware`, and chunked bodies need the

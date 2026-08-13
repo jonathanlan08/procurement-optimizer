@@ -1,4 +1,4 @@
-"""Decimal money policy — PRINCIPAL-OWNED.
+"""Decimal money policy - PRINCIPAL-OWNED.
 
 Every monetary value in this codebase is a ``decimal.Decimal``. Binary floats are
 forbidden for money and quantities; JSON carries decimals as strings.
@@ -28,7 +28,7 @@ from typing import Final
 
 CALC_PRECISION: Final[int] = 34
 
-# The exact wire shape for a decimal string — no exponents, no PEP-515
+# The exact wire shape for a decimal string - no exponents, no PEP-515
 # underscores, no leading '+'; the frontend enforces the same pattern.
 _DECIMAL_STRING_RE: Final[re.Pattern[str]] = re.compile(r"-?\d+(\.\d+)?")
 

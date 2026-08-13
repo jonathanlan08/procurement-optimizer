@@ -6,7 +6,7 @@ transactional import, rollback after failure, import audit event").
 Field names follow 02-erd.md's PART_IMPORT_BATCHES/PART_IMPORT_ROWS boxes
 exactly (`state`, not `status`; `raw_values`/`normalized_values`, not "raw
 payload"/"parsed payload"; `disposition`, not "row status") rather than this
-task's own prose, which used different names for the same concepts — the ERD
+task's own prose, which used different names for the same concepts - the ERD
 is the more authoritative source for the schema shape.
 
 **`PartImportBatch.format` is not in 02-erd.md's box.** Added anyway,
@@ -16,12 +16,12 @@ module docstring for `BillOfMaterials` carrying `TimestampedMixin`/
 explicitly calls for a `format csv|xlsx` column, and every table in this
 schema already carries strictly more structure than its own compact ERD box
 notation shows in at least one place (BOMs is the precedent; `Part` is
-another — 02-erd.md §4's own `PARTS` box omits `created_at` entirely, yet
+another - 02-erd.md §4's own `PARTS` box omits `created_at` entirely, yet
 migration 0004 creates it, per §1's blanket "created_at/updated_at on every
 mutable table" rule). Unlike the BOM case, this module does *not* add
 `TimestampedMixin`/`ArchivableMixin`/`VersionedMixin`: 02-erd.md's
 `PART_IMPORT_BATCHES` box lists `created_at` and `committed_at` and no other
-timestamp, and reads as deliberately minimal rather than merely compact —
+timestamp, and reads as deliberately minimal rather than merely compact -
 there is no `updated_at`-worthy field that mutates outside the two
 transitions those two columns already date (`created_at` for the row's
 insertion, `committed_at` for `commit`); the "when did this become
@@ -39,38 +39,38 @@ documented value set.** The ERD box literally spells out `"create|update|
 skip_duplicate|error"` for this column, but nothing in SPEC §3, this task's
 brief, or docs/planning/03-api-contract.md §4.5 describes an *update*
 policy for a part import (matching-on-internal-part-number-and-overwriting
-existing fields is a real, separate product decision — which fields
+existing fields is a real, separate product decision - which fields
 overwrite? does version/optimistic-locking apply? is there a diff-preview?
-— entirely unspecified). `PartImportRowDisposition` is a 3-value StrEnum
+- entirely unspecified). `PartImportRowDisposition` is a 3-value StrEnum
 (`create`, `skip_duplicate`, `error`); `update` is documented but not
 emitted by any code path here, the same "column stores a slightly wider
 domain than the application currently uses" situation already accepted for
-`PartAlternative.approval_status` (`app/models/parts.py`) — plain `Text()`,
+`PartAlternative.approval_status` (`app/models/parts.py`) - plain `Text()`,
 no CHECK constraint, so adding `update` later is a pure application-layer
 change with no migration required.
 
 **`PartImportRow.batch_id` FK uses `ondelete="CASCADE"`**, the one
 deliberate exception to this schema's `RESTRICT`-by-default rule
-(`app/models/base.py`): 02-erd.md §11 names this exact pair —
-"`part_import_batches`→`part_import_rows`" — in its explicit cascade
+(`app/models/base.py`): 02-erd.md §11 names this exact pair -
+"`part_import_batches`→`part_import_rows`" - in its explicit cascade
 whitelist ("`ON DELETE CASCADE` only inside an aggregate where the child
 cannot exist alone"), the same list that licenses `bill_of_material_lines`'s
 FK to `bills_of_materials` (`app/models/boms.py`).
 
 **`PartImportRow.resulting_part_id`** is a composite org-guard FK to
-`parts` — `(organization_id, resulting_part_id) -> parts(organization_id,
-id)` — following the same pattern as `BillOfMaterialLine.part_id`/
+`parts` - `(organization_id, resulting_part_id) -> parts(organization_id,
+id)` - following the same pattern as `BillOfMaterialLine.part_id`/
 `PartAlternative.alternative_part_id`, not the plain, unqualified FK this
 task's brief guessed at ("no FK per ERD if absent there"): 02-erd.md's own
 `PART_IMPORT_ROWS` box marks the column `FK`, so the composite guard
 applies exactly as everywhere else a row references `parts`. Nullable and
-exempt from the constraint when NULL (`MATCH SIMPLE`, Postgres default) —
+exempt from the constraint when NULL (`MATCH SIMPLE`, Postgres default) -
 every row starts with no resulting part (preview only), and rows with
 `disposition` `skip_duplicate`/`error` never gain one.
 
 `row_number` is unique per batch (`UNIQUE (organization_id, batch_id,
 row_number)`), the same shape as `bill_of_material_lines`'s `line_number`
-uniqueness (`app/models/boms.py`) — 02-erd.md does not spell this out for
+uniqueness (`app/models/boms.py`) - 02-erd.md does not spell this out for
 `PART_IMPORT_ROWS` but two rows claiming the same position within one
 import is exactly the class of bug that constraint exists to catch
 elsewhere in this schema.
@@ -126,7 +126,7 @@ IMPORT_STATE_ENUM = SaEnum(
 
 
 class PartImportRowDisposition(StrEnum):
-    """Plain `Text()` column, not a DB enum — see module docstring for why
+    """Plain `Text()` column, not a DB enum - see module docstring for why
     the ERD's fourth value (`update`) is documented but unimplemented."""
 
     CREATE = "create"
@@ -144,7 +144,7 @@ class PartImportBatch(OrgOwnedBase):
 
     source_filename: Mapped[str] = mapped_column(Text())
     file_sha256: Mapped[bytes] = mapped_column(LargeBinary())
-    # not in 02-erd.md's PART_IMPORT_BATCHES box — see module docstring
+    # not in 02-erd.md's PART_IMPORT_BATCHES box - see module docstring
     format: Mapped[PartImportFormat] = mapped_column(PART_IMPORT_FORMAT_ENUM)
     state: Mapped[PartImportState] = mapped_column(
         IMPORT_STATE_ENUM, default=PartImportState.PREVIEWING
@@ -160,7 +160,7 @@ class PartImportBatch(OrgOwnedBase):
 
 class PartImportRow(OrgOwnedBase):
     """One data row of a batch: what was uploaded, what it normalized to,
-    what (if anything) is wrong with it, and — after a successful commit —
+    what (if anything) is wrong with it, and - after a successful commit -
     which `Part` it produced. See module docstring for the CASCADE FK to
     `part_import_batches`, the composite-org-guard FK to `parts`, and the
     3-value `disposition` domain."""
@@ -208,7 +208,7 @@ class PartImportRow(OrgOwnedBase):
 # participates in several FKs on PartImportRow, so `foreign_keys`
 # disambiguates which constraint each relationship follows, and `overlaps`
 # silences SQLAlchemy's warning about the shared organization_id column
-# between them — the same pattern as BillOfMaterialLine (app/models/boms.py).
+# between them - the same pattern as BillOfMaterialLine (app/models/boms.py).
 PartImportBatch.organization = relationship(
     "Organization", foreign_keys=[PartImportBatch.organization_id], lazy="select"
 )

@@ -125,7 +125,7 @@ def _worked_example_input() -> LandedCostInput:
     tariff 3.5% on (material + logistics), no duty/customs quoted (explicit
     zero, not missing); quality risk 2%; no delay (promised == required);
     Net-60 vs baseline Net-30 at 8% annual. Currency conversion itself is out
-    of the calculator's scope — the input below is already normalized.
+    of the calculator's scope - the input below is already normalized.
     """
     return _complete_input(
         accepted_quantity=Decimal("500"),

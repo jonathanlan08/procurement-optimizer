@@ -3,7 +3,7 @@ EXCHANGE_RATES, SPEC §9, docs/planning/05-calculation-methodology.md §4).
 
 Org-owned, append-only history: no `updated_at`/`version`/`archived_at` (the
 ERD lists none for this table), the same judgement call already made for
-`SupplierPerformanceRecord` (backend/src/app/models/suppliers.py) — a row is a
+`SupplierPerformanceRecord` (backend/src/app/models/suppliers.py) - a row is a
 historical fact (a rate observed or set as-of a date), never edited in place.
 Superseding a rate means inserting a new row with a later `effective_date` (or
 a manual override for the same date), not mutating an old one; §4's rule "the
@@ -12,7 +12,7 @@ historical results" depends on that immutability.
 
 Only manual-override rows are ever persisted here in v0.1. The synthetic
 fixture provider (`app.providers.fx.synthetic.SyntheticFxProvider`) computes
-rates purely functionally and is never written to this table — `fx_service`
+rates purely functionally and is never written to this table - `fx_service`
 returns its answer transparently in API responses without an INSERT (see
 that module's docstring). The ERD's `source "fixture|manual|provider_name"`
 comment is broader than what v0.1 exercises: `provider_name`/`fixture` rows
@@ -36,12 +36,12 @@ class ExchangeRate(OrgOwnedBase):
     """`1 base_currency = rate * quote_currency` (05-calculation-methodology.md
     §4's standard direct quotation). Manual overrides win over any other row
     for the same `(organization_id, base_currency, quote_currency,
-    effective_date)` — enforced by `uq_exchange_rate_natural` (02-erd.md §8)
+    effective_date)` - enforced by `uq_exchange_rate_natural` (02-erd.md §8)
     together with `fx_service.get_effective_rate`'s selection order, not by a
     CHECK (a CHECK cannot express "wins over").
 
     `override_reason` is required whenever `is_manual_override` is true
-    (`ck_exchange_rates_override_reason_required`) — SPEC §9 lists "manual
+    (`ck_exchange_rates_override_reason_required`) - SPEC §9 lists "manual
     override, override reason" as fields every rate preserves, so a flagged
     override with no reason is a data error, not a valid state.
     """

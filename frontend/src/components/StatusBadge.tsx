@@ -1,7 +1,7 @@
 import "./badges.css";
 
 /** Active / inactive / archived indicator, shared by suppliers and parts.
- * Archived always wins visually — an archived-but-active row still reads as archived. */
+ * Archived always wins visually - an archived-but-active row still reads as archived. */
 export function StatusBadge({
   isActive,
   isArchived,

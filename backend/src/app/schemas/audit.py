@@ -2,7 +2,7 @@
 app/models/audit.py FROZEN).
 
 `AuditEventResponse` exposes `app.models.audit.AuditEvent`'s real column
-names verbatim — `occurred_at` is already the model's own column name (not
+names verbatim - `occurred_at` is already the model's own column name (not
 a renamed timestamp needing an `AS occurred_at` alias), so no reconciliation
 was needed there. No request/write schemas exist in this module: §4.19's own
 words, "There is no write, update, or delete route for audit events," mean

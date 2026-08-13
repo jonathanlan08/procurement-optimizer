@@ -13,7 +13,7 @@
 
 /* v2 hue extension (2026-08): workspace-identity chip above the <h1>. Each
    modifier below pairs one hue's text color with its own 10%-alpha tint as
-   the pill background — both tokens defined in tokens.css, contrast
+   the pill background - both tokens defined in tokens.css, contrast
    verified >=4.5:1 for every pair (this task's own report). */
 .page-eyebrow {
   display: inline-block;
@@ -61,7 +61,7 @@
   color: var(--hue-audit);
 }
 
-/* v2 hue extension: 3px hue border-top for a page's PRIMARY card/panel —
+/* v2 hue extension: 3px hue border-top for a page's PRIMARY card/panel -
    one per page, not every card (MASTER.md's own rule). Shared here since
    it's applied to different element types per page: an `.overview-card`
    (OverviewPage.tsx), a `.drawer-panel` via Drawer's `panelClassName` prop
@@ -295,7 +295,7 @@
 }
 
 /* Two columns don't fit a phone-width drawer (review-3 P1: fields and helper
-   text clipped at 360px) — collapse every form grid to a single column. */
+   text clipped at 360px) - collapse every form grid to a single column. */
 @media (max-width: 520px) {
   .form-grid {
     grid-template-columns: 1fr;

@@ -1,4 +1,4 @@
-"""Landed-cost calculator — implementation of the principal-owned contract.
+"""Landed-cost calculator - implementation of the principal-owned contract.
 
 Implements `LandedCostCalculator` (`contracts.py`, FROZEN). Pure domain code:
 no database, no clock, no network, no randomness. See
@@ -24,7 +24,7 @@ contract's docstring is normative but not exhaustive pseudocode):
   silently treating a missing value as zero, which this codebase forbids
   everywhere else. So for these components, ANY missing required input makes
   the whole component `is_missing=True` (amount reported as 0, excluded from
-  the total's real contribution, and excluded from provenance aggregation) —
+  the total's real contribution, and excluded from provenance aggregation) -
   this mirrors the "every input missing" carve-out the contract spells out
   for the additive components, just applied per-formula rather than
   per-component-with-many-fields.
@@ -41,7 +41,7 @@ contract's docstring is normative but not exhaustive pseudocode):
   components is itself `is_missing`.
 - `AmountOutOfRangeError` (mentioned in 05 §10 point 10) is intentionally not
   implemented: it is not part of the frozen `contracts.py`, and this task's
-  extreme-value requirement is only that the calculator not blow up — the 34
+  extreme-value requirement is only that the calculator not blow up - the 34
   digits of `CALC_PRECISION` comfortably cover quantity 10^12 and price
   10^-8.
 """

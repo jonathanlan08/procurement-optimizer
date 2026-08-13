@@ -1,4 +1,4 @@
-"""`TemplateNarrativeProvider` — the only `AiNarrativeProvider` shipped in
+"""`TemplateNarrativeProvider` - the only `AiNarrativeProvider` shipped in
 v0.1 (`base.py`'s own docstring: the optional Anthropic adapter is
 roadmap), mirroring `app.providers.extraction.mock.MockExtractionProvider`'s
 role as "the deterministic default every environment can run without a paid
@@ -7,7 +7,7 @@ AI key").
 
 Purely functional: no network I/O, no randomness, no mutable state, no
 clock. Every sentence is built with plain `str.format`/f-strings, reading
-`brief_facts` ONLY — never inventing a number, name, or date not already a
+`brief_facts` ONLY - never inventing a number, name, or date not already a
 value somewhere in that dict (`app.services.brief_service`'s numeric
 cross-check enforces this mechanically after every call; this module's own
 discipline is the first line of defense, per SPEC §Negotiation brief's "AI
@@ -15,14 +15,14 @@ must not invent market benchmarks, competitor quotes, historical prices,
 supplier behavior, savings, concessions, or delivery promises").
 
 **Expected `brief_facts` keys** (all `str`, pre-formatted by
-`brief_service.py` — `to_wire` decimal strings, or plain text; a `list[str]`
+`brief_service.py` - `to_wire` decimal strings, or plain text; a `list[str]`
 value is rendered here by joining with `"; "`, empty lists render as an
 explicit "none recorded" phrase rather than being silently blank, per the
 "missing is shown, never omitted" convention `app/domain/values.py`
 establishes for the rest of this codebase). Every key below is always
 present (never absent from the dict) though its VALUE may be a plain
 "not stated"/"none"/"not available" string when the underlying data point is
-missing — `render_sections` performs no null-handling of its own beyond
+missing - `render_sections` performs no null-handling of its own beyond
 `.get(..., "not available")` defensive defaults, since `brief_service` is
 the single place that decides what "missing" looks like as text.
 """
@@ -51,12 +51,12 @@ def _get(facts: dict[str, Any], key: str, default: str = "not available") -> str
 
 class TemplateNarrativeProvider:
     """Deterministic template narrative: same `brief_facts` -> same text,
-    forever within this module's version (no version constant needed — the
+    forever within this module's version (no version constant needed - the
     module IS the version; a wording change is a code change, reviewed like
     any other)."""
 
     name = PROVIDER_NAME
-    is_generated = False  # never AI-authored — see base.py module docstring
+    is_generated = False  # never AI-authored - see base.py module docstring
 
     def render_sections(self, brief_facts: dict[str, Any]) -> dict[str, str]:
         f = brief_facts
@@ -170,7 +170,7 @@ class TemplateNarrativeProvider:
             ),
         ]
         # email_price_target is only set when the target is a real reduction of
-        # the supplier's own quoted price (brief_service._build_facts) — asking
+        # the supplier's own quoted price (brief_service._build_facts) - asking
         # to "move toward" a number above their quote invites a price increase.
         email_price_target = f.get("email_price_target")
         if email_price_target:

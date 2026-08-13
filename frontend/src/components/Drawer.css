@@ -42,7 +42,7 @@
 }
 
 /* On phones the 92vw panel left a sliver of page peeking through while its
-   content overflowed — go full-bleed instead (standard mobile sheet). */
+   content overflowed - go full-bleed instead (standard mobile sheet). */
 @media (max-width: 520px) {
   .drawer-panel {
     width: 100vw;

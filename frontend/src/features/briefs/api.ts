@@ -1,12 +1,12 @@
-/** Negotiation-briefs data layer — TanStack Query hooks over the live API.
+/** Negotiation-briefs data layer - TanStack Query hooks over the live API.
  *
  * The backend for this surface already exists (committed ahead of this
- * task, per this task's own brief — unlike ../reports/api.ts and
+ * task, per this task's own brief - unlike ../reports/api.ts and
  * ../audit/api.ts, which code against a frozen contract for a backend still
  * landing concurrently). Shapes mirror the wire contract given in this
  * task's brief field-for-field:
  *  - `GET .../negotiation-briefs` returns lean summaries only (no
- *    `sections`/targets/draft email) — the full brief requires the separate
+ *    `sections`/targets/draft email) - the full brief requires the separate
  *    `GET /negotiation-briefs/{id}` this file also exposes.
  *    BriefsPanel.tsx's list therefore only fetches the full detail once a
  *    row is opened in the drawer, the same "don't N+1 the list, fetch full
@@ -15,7 +15,7 @@
  *  - **`sections` is a `Record<section_key, ...>`, not an array.** The task
  *    brief's own fixed 18-key display order (`SECTION_ORDER` below) is
  *    applied client-side in BriefsPanel.tsx. A brief whose `sections` map
- *    is missing a given key simply renders no row for that section — never
+ *    is missing a given key simply renders no row for that section - never
  *    fabricated as `provenance: "missing"`, which is a real value the
  *    backend writes for a section it chose to include with nothing to say
  *    (a materially different thing from a key the backend never wrote at
@@ -24,10 +24,10 @@
  *    strings (never run through `Number()`/`parseFloat`, lib/money.ts's
  *    file-level rule) with no accompanying currency field anywhere in this
  *    contract (unlike e.g. `AllocationResultResponse.objective_total_cost`
- *    in ../comparison/api.ts) — BriefsPanel.tsx formats them with
+ *    in ../comparison/api.ts) - BriefsPanel.tsx formats them with
  *    `formatMoney()` and no `currency` option rather than inventing one.
  *  - The create request's `objective`/`targets` (and each field within
- *    `targets`) are independently optional — omitted entirely when blank,
+ *    `targets`) are independently optional - omitted entirely when blank,
  *    never sent as `""`/`"0"`, the same "missing stays missing" convention
  *    ../quotes/api.ts's file header documents for quote-line cost fields.
  */
@@ -50,7 +50,7 @@ export interface BriefSectionResponse {
   data: Record<string, unknown> | null;
 }
 
-/** Fixed display order from this task's brief — the 18 section keys a full
+/** Fixed display order from this task's brief - the 18 section keys a full
  * brief's `sections` map may carry. */
 export type BriefSectionKey =
   | "procurement_objective"
@@ -174,7 +174,7 @@ export interface BriefTargetsInput {
 export interface CreateBriefVars {
   scenarioId: string;
   supplierId: string;
-  /** `null` omits `objective` from the request body entirely — see this
+  /** `null` omits `objective` from the request body entirely - see this
    * file's header on "missing stays missing". */
   objective: string | null;
   /** `null` omits `targets` from the request body entirely. */

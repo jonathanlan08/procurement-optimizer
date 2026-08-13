@@ -1,4 +1,4 @@
-/* Design tokens — PRINCIPAL-OWNED.
+/* Design tokens - PRINCIPAL-OWNED.
    Source of truth: design-system/procurement-optimizer/MASTER.md (data-dense
    analytical workspace). Fonts are self-hosted via @fontsource; no CDN. */
 
@@ -9,7 +9,7 @@
   --color-secondary: #334155;
   --color-accent: #0369a1;
   /* v2 hue task checked this against its own instruction ("shifts to
-     #F7F8FB if it is currently pure white") — #F8FAFC is not pure white, so
+     #F7F8FB if it is currently pure white") - #F8FAFC is not pure white, so
      per that instruction's own condition this token is intentionally left
      unchanged; surfaces (--color-surface) are the ones that stay pure
      white, and already do. */
@@ -19,7 +19,7 @@
   --color-muted: #e8ecf1;
   --color-muted-foreground: #55657a;
   --color-border: #e2e8f0;
-  /* darkened alongside --color-negative below (2026-08 a11y remediation —
+  /* darkened alongside --color-negative below (2026-08 a11y remediation -
      see that block's comment); same token value, kept in sync since every
      red/error usage in the app goes through this one, not --color-negative
      (which nothing actually references). */
@@ -28,12 +28,12 @@
 
   /* semantic data colors
      positive/warning/negative darkened from the original #15803d/#b45309/
-     #dc2626 (2026-08 audit remediation, item 5 — a11y automation): every
+     #dc2626 (2026-08 audit remediation, item 5 - a11y automation): every
      badge that uses these as TEXT color pairs them with its own ~8-12%-alpha
      tint of the same hue as its background (badges.css/comparison.css/
      extraction.css/rfqs.css's shared recipe), and axe-core's color-contrast
      rule (wcag2aa, 4.5:1 for this 12-13px text) flagged several real
-     instances at 4.09-4.39:1 — "Active"/"Complete" status badges, the RFQ
+     instances at 4.09-4.39:1 - "Active"/"Complete" status badges, the RFQ
      "Under Review" badge, and comparison-workspace completeness/provenance
      badges (frontend/e2e/a11y.spec.ts). These three tokens back nearly every
      badge in the app via that same tint recipe, so darkening them here
@@ -75,9 +75,9 @@
   --transition-fast: 150ms ease;
   --transition-medium: 200ms ease;
 
-  /* v2 — functional hue extension (2026-08). See design-system/
+  /* v2 - functional hue extension (2026-08). See design-system/
      procurement-optimizer/MASTER.md's own "v2" section for the full rule:
-     these identify WORKSPACES (places), not states — semantic colors above
+     these identify WORKSPACES (places), not states - semantic colors above
      (--color-positive/negative/warning/info) still own every state meaning
      (savings/cost-increase/low-confidence/informational) and the two never
      swap roles. Each hue is design-director-chosen and independently
@@ -100,17 +100,17 @@
 
   /* Sidebar-only derivatives: the seven hues above are calibrated (per
      MASTER.md) for TEXT on white/light-tint surfaces, not for the sidebar's
-     dark navy (--color-primary, #0F172A) — measured contrast of the base
+     dark navy (--color-primary, #0F172A) - measured contrast of the base
      hues against navy ranges ~1.8:1-2.6:1, well under the 4.5:1 text
      minimum. Rather than pick sidebar colors that don't match the spec's
      own hex values, each of these is the same hue lightened (blended
      toward white) by just enough to clear 4.5:1 against the sidebar's
-     ACTIVE-item background specifically — used ONLY for the active
+     ACTIVE-item background specifically - used ONLY for the active
      nav-link text color in AppShell (app-shell.css); the border-left bar
      there uses the base hue above (decorative, not text, so the base hex
      applies unchanged).
      First pass here used plain navy (#0F172A) as the contrast backdrop and
-     failed axe's real sweep at ~4.1:1 (audit) — the active `.shell-nav-
+     failed axe's real sweep at ~4.1:1 (audit) - the active `.shell-nav-
      link.is-active` rule layers `background: rgba(255,255,255,0.08)` OVER
      the navy sidebar, which lightens the actual rendered backdrop to
      #222A3B (axe's own measured `bgColor`), a materially easier-to-fail

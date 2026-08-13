@@ -42,7 +42,7 @@ def upgrade() -> None:
         sa.Column("is_user_defined", sa.Boolean(), nullable=False, server_default=sa.false()),
         sa.UniqueConstraint("organization_id", "id", name="uq_unit_definitions_org_identity"),
         # nullable: count-dimension containers (pack/box/tray/reel) have no
-        # universal ratio to `each` — see UnitDefinition docstring.
+        # universal ratio to `each` - see UnitDefinition docstring.
         sa.CheckConstraint(
             "to_canonical_factor IS NULL OR to_canonical_factor > 0",
             name="ck_unit_definitions_to_canonical_factor_pos",
@@ -56,7 +56,7 @@ def upgrade() -> None:
         # UNIQUE treats NULLs as distinct from one another, so a plain
         # (organization_id, lower(code)) constraint would silently allow
         # duplicate global codes (organization_id IS NULL on every one of
-        # them) — this partial index closes that gap explicitly.
+        # them) - this partial index closes that gap explicitly.
         "uq_unit_definitions_global_code_lower",
         "unit_definitions",
         [sa.text("lower(code)")],
@@ -94,7 +94,7 @@ def upgrade() -> None:
             sa.ForeignKey("unit_definitions.id", ondelete="RESTRICT"),
             nullable=False,
         ),
-        # nullable: part-specific pack size (02-erd.md §4). No FK yet — `parts`
+        # nullable: part-specific pack size (02-erd.md §4). No FK yet - `parts`
         # is created by a later migration (09-task-decomposition.md task 2.6).
         sa.Column("part_id", pg.UUID(as_uuid=True), nullable=True),
         sa.Column("factor", sa.Numeric(24, 12), nullable=False),
@@ -111,7 +111,7 @@ def upgrade() -> None:
         sa.CheckConstraint(
             "from_unit_id <> to_unit_id", name="ck_unit_conversions_distinct_units"
         ),
-        # SPEC §10 "show conversion assumptions explicitly" — enforced, not
+        # SPEC §10 "show conversion assumptions explicitly" - enforced, not
         # merely conventional.
         sa.CheckConstraint(
             "btrim(assumption_note) <> ''",

@@ -1,4 +1,4 @@
-"""Org-scoped repository base — PRINCIPAL-OWNED. Isolation control #2.
+"""Org-scoped repository base - PRINCIPAL-OWNED. Isolation control #2.
 
 Every business-data repository extends OrgScopedRepository. Every query it emits
 is filtered by organization_id; there is no unscoped accessor. Control #1 is the
@@ -57,7 +57,7 @@ class OrgScopedRepository[ModelT: OrgOwnedBase]:
         return select(self.model).where(self.model.organization_id == self.organization_id)
 
     def get(self, entity_id: uuid.UUID) -> ModelT | None:
-        """None for both absent and other-org ids — indistinguishable by design."""
+        """None for both absent and other-org ids - indistinguishable by design."""
         entity = self.session.execute(
             self._base_query().where(self.model.id == entity_id)
         ).scalar_one_or_none()

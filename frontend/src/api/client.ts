@@ -1,4 +1,4 @@
-/** Typed API client — PRINCIPAL-OWNED.
+/** Typed API client - PRINCIPAL-OWNED.
  *
  * - session cookie rides automatically (same-origin via Vite proxy)
  * - CSRF token from login is attached to every mutating request

@@ -1,4 +1,4 @@
-/* Overview workspace — dense KPI row + a two-column "recent activity /
+/* Overview workspace - dense KPI row + a two-column "recent activity /
    quick links" section. No gradients, no charts, per MASTER.md +this task's
    own "lean and dense" instruction. */
 
@@ -21,7 +21,7 @@
   box-shadow: var(--shadow-sm);
 }
 
-/* v2 hue extension: each KPI card gets its workspace hue — tint background,
+/* v2 hue extension: each KPI card gets its workspace hue - tint background,
    hue border-top (3px), hue-colored count (below, `.overview-kpi-value--*`).
    Tint values already verified >=4.5:1 for the count text against them
    (this task's own report). */
@@ -186,7 +186,7 @@
 }
 
 /* v2 hue extension: quick-link cards get a hue left border (only the six
-   workspaces with an assigned hue — BOMs/FX keep the plain gray left
+   workspaces with an assigned hue - BOMs/FX keep the plain gray left
    border above). */
 .overview-link-card--suppliers {
   border-left-color: var(--hue-suppliers);
@@ -218,7 +218,7 @@
   color: var(--color-foreground);
 }
 
-/* Guided workflow ("How it works") — a numbered, deep-linked path for a
+/* Guided workflow ("How it works") - a numbered, deep-linked path for a
    first-time user. Spans both columns above the KPI/quick-link grid. */
 .overview-workflow {
   margin-bottom: var(--space-2xl);

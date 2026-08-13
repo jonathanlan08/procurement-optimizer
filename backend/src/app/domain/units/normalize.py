@@ -1,7 +1,7 @@
 """Pure unit-quantity conversion (docs/planning/05-calculation-methodology.md §5,
 SPEC §10). Pure domain code: no database, no clock, no network, no randomness.
 
-This module does NOT depend on `app.models.units` — the SQLAlchemy
+This module does NOT depend on `app.models.units` - the SQLAlchemy
 `UnitDefinition`/`UnitConversion` rows are a persistence concern (they carry
 `organization_id`, timestamps, audit ids) that has no business being on a
 pure conversion function's call stack. `Unit` below is a lightweight,
@@ -17,10 +17,10 @@ Design notes (interpretations of the methodology's prose):
   a target unit is the inverse operation (divide by the target's factor).
   `convert_quantity` composes both legs in one call:
   `value_canonical = value * from_unit.to_canonical_factor`, then
-  `result = value_canonical / to_unit.to_canonical_factor` — i.e.
+  `result = value_canonical / to_unit.to_canonical_factor` - i.e.
   `value * from_factor / to_factor`, exactly as the objective brief states.
 - **Count-dimension containers with no universal factor** (`pack`, `box`,
-  `tray`, `reel` — `to_canonical_factor is None`, see
+  `tray`, `reel` - `to_canonical_factor is None`, see
   `app.seed.units_catalog.STANDARD_UNIT_CATALOG`) require an explicit
   per-part factor supplied by the caller (`part_factor`), because "1 reel =
   5000 each" is a property of the part, not the word "reel" (§5). The
@@ -29,7 +29,7 @@ Design notes (interpretations of the methodology's prose):
   conversion lack a universal factor (e.g. `pack` -> `reel` directly), a
   single scalar cannot disambiguate two independent unknowns, so this raises
   `ConversionAssumptionMissingError` naming both units and recommending a
-  two-step conversion through `each` — each step supplies its own
+  two-step conversion through `each` - each step supplies its own
   part-specific factor. This case is outside the objective's required test
   matrix but is handled defensively rather than silently misapplying one
   factor to both units.
@@ -41,7 +41,7 @@ Design notes (interpretations of the methodology's prose):
   (§5: "Every applied conversion is recorded ... and rendered in the UI").
 - **Precision policy** matches `app.core.money`: the division runs at full
   `CALC_CONTEXT` precision (34 significant digits) and the quantity result
-  is quantized exactly once, at `QTY_SCALE` (6dp) — never mid-expression.
+  is quantized exactly once, at `QTY_SCALE` (6dp) - never mid-expression.
 """
 
 from __future__ import annotations
@@ -67,7 +67,7 @@ class Dimension(StrEnum):
 class Unit:
     """A domain-only mirror of `UnitDefinition`'s three arithmetic-relevant
     fields. `to_canonical_factor` is `None` exactly for count-dimension
-    containers with no universal each-ratio (pack/box/tray/reel) — see
+    containers with no universal each-ratio (pack/box/tray/reel) - see
     module docstring."""
 
     code: str
@@ -84,7 +84,7 @@ class ConvertedQuantity:
     # The UNQUANTIZED from/to factor ratio, for callers that need it as a
     # divisor/multiplier in further arithmetic. `value` is quantized at
     # QTY_SCALE because it IS a quantity (a boundary), but dividing a price
-    # by the 6-dp-quantized `value` puts a rounded intermediate mid-formula —
+    # by the 6-dp-quantized `value` puts a rounded intermediate mid-formula -
     # the 2026-08 calculation audit (F2) measured a 1.8e-5/unit error on the
     # documented lb->kg example. Use this field instead.
     unit_ratio: Decimal = Decimal(1)
@@ -107,7 +107,7 @@ class DimensionMismatchError(ValueError):
 class ConversionAssumptionMissingError(ValueError):
     """A unit with no universal `to_canonical_factor` (a count-dimension
     container) was used without a `part_factor` to resolve it. Never guess a
-    pack size — that is "the single easiest way to produce a 5000x error"
+    pack size - that is "the single easiest way to produce a 5000x error"
     (05-calculation-methodology.md §5)."""
 
     def __init__(self, unit: Unit, *, detail: str | None = None) -> None:
@@ -141,7 +141,7 @@ def convert_quantity(
 
     `part_factor` supplies the missing `to_canonical_factor` for whichever
     ONE of `from_unit`/`to_unit` is a count-dimension container with no
-    universal factor (pack/box/tray/reel) — e.g. converting `pack` -> `each`
+    universal factor (pack/box/tray/reel) - e.g. converting `pack` -> `each`
     with `part_factor=Decimal("50")` means "1 pack = 50 each" for this part.
 
     Raises `DimensionMismatchError` if the two units are not the same
@@ -157,7 +157,7 @@ def convert_quantity(
             from_unit,
             detail=(
                 f"both '{from_unit.code}' and '{to_unit.code}' have no universal "
-                "to-canonical factor; a single part_factor cannot resolve both — "
+                "to-canonical factor; a single part_factor cannot resolve both - "
                 "convert via 'each' in two explicit steps, each with its own "
                 "part-specific factor"
             ),

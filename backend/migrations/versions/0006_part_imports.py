@@ -35,7 +35,7 @@ def upgrade() -> None:
         ),
         sa.Column("source_filename", sa.Text(), nullable=False),
         sa.Column("file_sha256", sa.LargeBinary(), nullable=False),
-        # not in 02-erd.md's PART_IMPORT_BATCHES box — see app/models/part_imports.py
+        # not in 02-erd.md's PART_IMPORT_BATCHES box - see app/models/part_imports.py
         sa.Column(
             "format",
             pg.ENUM(
@@ -97,7 +97,7 @@ def upgrade() -> None:
         sa.Column("row_number", sa.Integer(), nullable=False),
         sa.Column("raw_values", pg.JSONB(), nullable=False),
         sa.Column("normalized_values", pg.JSONB(), nullable=True),
-        # plain text, not a DB enum — see app/models/part_imports.py module
+        # plain text, not a DB enum - see app/models/part_imports.py module
         # docstring (disposition implements a subset of 02-erd.md's own
         # documented value set: create|skip_duplicate|error, no `update`).
         sa.Column("disposition", sa.Text(), nullable=False),
@@ -108,7 +108,7 @@ def upgrade() -> None:
             "organization_id", "id", name="uq_part_import_rows_org_identity"
         ),
         # 02-erd.md §11 explicit cascade whitelist entry: "part_import_batches
-        # → part_import_rows" — the one deliberate CASCADE in this schema
+        # → part_import_rows" - the one deliberate CASCADE in this schema
         # rather than the RESTRICT-by-default everywhere else.
         sa.ForeignKeyConstraint(
             ["organization_id", "batch_id"],

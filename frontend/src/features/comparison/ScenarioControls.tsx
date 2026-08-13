@@ -1,4 +1,4 @@
-/** Scenario-creation form — strategy + constraints + "Run scenario",
+/** Scenario-creation form - strategy + constraints + "Run scenario",
  * replacing the old single-purpose "Score" button (see ./api.ts's header:
  * `POST /rfqs/{id}/comparison-scenarios` now runs scoring AND allocation in
  * one call, and this form is the control surface for the constraints that
@@ -14,20 +14,20 @@
  *    as if it always mattered.
  *  - **Max concentration is collected as a percent, converted to
  *    `FractionString` wire format (RATIO_SCALE = 6dp) with a pure-string
- *    `percentToFraction`** — mirrors `ComparisonPage.tsx`'s existing
+ *    `percentToFraction`** - mirrors `ComparisonPage.tsx`'s existing
  *    `toPercentDisplay` (its exact inverse), never `Number()`/`parseFloat`
  *    per lib/money.ts's file-level rule.
  *  - **Supplier exclusion is a toggle-chip multi-select over this RFQ's
  *    invited, not-already-excluded suppliers** (`useRfqSuppliers`), tracked
- *    as local `useState` outside react-hook-form — same "toggle chips beat
+ *    as local `useState` outside react-hook-form - same "toggle chips beat
  *    `<select multiple>` for a handful of scannable options" call
  *    `RfqsPage.tsx`'s own file header already makes for its status filter,
  *    applied here to a per-scenario solver constraint
  *    (`excluded_supplier_ids`) rather than an RFQ-wide invitation exclusion
- *    — a supplier excluded here stays invited and can be included in a
+ *    - a supplier excluded here stays invited and can be included in a
  *    later scenario; this is not `useExcludeSupplier`.
  *  - **`max_supplier_count` is a genuine JSON integer** (not a decimal wire
- *    string — see ./api.ts's header), so plain `Number()` on the trimmed
+ *    string - see ./api.ts's header), so plain `Number()` on the trimmed
  *    input is fine here without violating the money-string rule, which is
  *    scoped to decimal/money precision, not small integer counts.
  */
@@ -54,7 +54,7 @@ import {
 import "./comparison.css";
 
 /** Percent input string (e.g. "35", "35.5", "100") -> `FractionString` wire
- * format at RATIO_SCALE (6dp) — pure string/decimal-point shift, the exact
+ * format at RATIO_SCALE (6dp) - pure string/decimal-point shift, the exact
  * inverse of `ComparisonPage.tsx`'s `toPercentDisplay`. Never
  * `Number()`/`parseFloat` (lib/money.ts's file-level rule). */
 function percentToFraction(raw: string): string {
@@ -150,7 +150,7 @@ function ExcludeSupplierChip({
   onToggle: () => void;
 }) {
   const q = useSupplier(supplierId);
-  const label = q.data ? `${q.data.code} — ${q.data.name}` : supplierId;
+  const label = q.data ? `${q.data.code} - ${q.data.name}` : supplierId;
   return (
     <button type="button" className="exclude-supplier-chip" aria-pressed={pressed} onClick={onToggle}>
       {label}
@@ -170,7 +170,7 @@ export function ScenarioControls({
   /** Live values of the workspace's assumption panel (ComparisonPage's
    * AssumptionsForm), included in the create request so a from-scratch UI
    * scenario computes landed costs under the same assumptions the metric
-   * table shows — previously hardcoded empty, which made every UI run on
+   * table shows - previously hardcoded empty, which made every UI run on
    * incomplete quotes presolve-infeasible (2026-08 acceptance finding). */
   assumptions?: LandedCostAssumptionsInput | null;
 }) {
@@ -267,7 +267,7 @@ export function ScenarioControls({
               {configs.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
-                  {c.is_sample ? " — Sample weights (demonstration)" : ""}
+                  {c.is_sample ? " - Sample weights (demonstration)" : ""}
                 </option>
               ))}
             </select>
@@ -305,7 +305,7 @@ export function ScenarioControls({
         <p className="scenario-incomplete-warning">
           By default, quote lines missing a required cost input (with no assumption covering it)
           are excluded from this scenario&apos;s allocation entirely. Enabling this includes them
-          anyway — their landed cost may be understated.
+          anyway - their landed cost may be understated.
         </p>
 
         {excludableSuppliers.length > 0 && (

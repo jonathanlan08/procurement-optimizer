@@ -1,6 +1,6 @@
 # Roadmap
 
-Everything on this page is a real, known gap in v0.1.0 — deliberately deferred, not
+Everything on this page is a real, known gap in v0.1.0 - deliberately deferred, not
 overlooked. Each entry says what exists today so the size of the remaining work is honest.
 
 Related: [SECURITY.md](SECURITY.md) §13 · [METHODOLOGY.md](METHODOLOGY.md) §10 ·
@@ -15,7 +15,7 @@ schema, the nonce-fenced envelope, the canary detector, and the whole validation
 exist and are exercised by the mock provider
 (`backend/src/app/providers/extraction/{base,envelope,mock}.py`). `PO_EXTRACTION_PROVIDER`
 already accepts `anthropic`, and selecting it raises `ProviderUnavailableError` rather than
-silently substituting the mock. What is missing is the adapter itself — and it must build its
+silently substituting the mock. What is missing is the adapter itself - and it must build its
 prompt **only** through `envelope.build_document_envelope`.
 
 **Anthropic narrative adapter.** Same shape:
@@ -41,7 +41,7 @@ swept from the table.
 
 **Report purge scheduler.** `generated_reports` carries `expires_at` and `purged_at`, the
 schema nulls `storage_key`/`content_sha256` together, and `GET /reports/{id}/content`
-already returns `410` for a purged report — but **nothing purges anything**. The retention
+already returns `410` for a purged report - but **nothing purges anything**. The retention
 window itself (`REPORT_RETENTION_DAYS = 90` in
 `backend/src/app/services/report_service.py`) is a documented assumption: neither the SPEC
 nor the ERD states a duration.
@@ -50,11 +50,11 @@ nor the ERD states a duration.
 
 **Audit actor-name resolution.** `audit_events.actor_user_id` is stored and displayed as a
 raw UUID; `frontend/src/features/audit/AuditPage.tsx` renders `actor_user_id` directly
-(falling back to "— system"). Joining to `users.full_name` for display is a small,
+(falling back to "system"). Joining to `users.full_name` for display is a small,
 deliberate follow-up.
 
 **PDF font coverage.** `backend/src/app/reports/pdf_renderer.py` uses ReportLab's built-in
-Helvetica only — no font files, no network fetch. Helvetica is effectively Latin-1, and a
+Helvetica only - no font files, no network fetch. Helvetica is effectively Latin-1, and a
 character outside it raises inside ReportLab (surfacing as a `failed` report row rather than
 mangled output). This is a **deviation from `docs/planning/00-decisions.md` §4 #24**, which
 ruled that DejaVu Sans should be bundled; the shipped code chose the zero-dependency route
@@ -64,17 +64,17 @@ instead. Bundling DejaVu Sans, and then CJK coverage, remain open.
 route for human edits to any section, audited. It is not implemented: `sections` has no
 per-field edit-history column to hang an audited diff off of, so doing it properly is more
 than "add a route". Today a brief can be generated, read, reviewed
-(`draft → human_reviewed`), and archived — but not edited.
+(`draft → human_reviewed`), and archived - but not edited.
 `BriefState.APPROVED` exists in the enum and is unreachable through v0.1 routes.
 
 **Un-archive coverage.** `POST …/unarchive` exists for suppliers and parts and both have a
 "Restore" control in the SPA. BOMs, quotes, documents, scenarios, briefs, and scoring
-configurations can be archived but not un-archived — archive is one-way for those resources
+configurations can be archived but not un-archived - archive is one-way for those resources
 in v0.1.
 
 **Landed-cost inputs with no home.** ~~`documentation_cost` and `handling_cost` have no
 columns on `quote_lines`, which is why `Completeness.COMPLETE` is structurally unreachable~~
-— done: migration 0016 (2026-08 product-audit remediation) added both columns;
+- done: migration 0016 (2026-08 product-audit remediation) added both columns;
 `Completeness.COMPLETE` is now reachable end to end ([METHODOLOGY.md](METHODOLOGY.md) §7).
 Still open: `rfq_lines` has no `required_by_date`, which is why required lead time arrives as
 a scenario assumption and why the lead-time pre-solve eligibility filter of
@@ -116,7 +116,7 @@ are hand-written today.
 avoid AGPL; `rapidfuzz` MIT; fonts self-hosted rather than CDN) but nothing enforces them in
 CI. Planned as a job that blocks AGPL/GPL dependencies.
 
-**End-to-end (Playwright) suite.** ~~No Playwright suite is committed~~ — delivered in two
+**End-to-end (Playwright) suite.** ~~No Playwright suite is committed~~ - delivered in two
 stages: the Phase-7 suite (auth/workflow/documents/reports-audit/upload) and the 2026-08
 audit-remediation expansion (`frontend/e2e/`: mobile-viewport navigation spec, axe-core
 accessibility sweep, Firefox + WebKit smoke projects alongside the full Chromium run;
@@ -135,14 +135,14 @@ beyond the automated checks.
 
 ## Lifecycle and administration
 
-Accepted v0.1 limitations, all from `docs/planning/00-decisions.md` §4 #18–#23:
+Accepted v0.1 limitations, all from `docs/planning/00-decisions.md` §4 #18-#23:
 
 - no data retention or purge policy, and no table partitioning;
-- no password reset flow (a CLI/DB operation) and no email invitation flow — an administrator
+- no password reset flow (a CLI/DB operation) and no email invitation flow - an administrator
   adds members directly;
 - demo reset is "re-run the idempotent seed script";
 - no uploader/confirmer segregation of duties;
-- PDF output uses ReportLab's built-in Helvetica (Latin-1 coverage) — the ruled DejaVu Sans
+- PDF output uses ReportLab's built-in Helvetica (Latin-1 coverage) - the ruled DejaVu Sans
   bundling and CJK glyph coverage are both deferred;
 - the negotiation-brief numeric cross-check validates every number token (integers
   included, exact-`Decimal` match) against the brief's own facts, but the allowed set is

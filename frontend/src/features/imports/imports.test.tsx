@@ -126,7 +126,7 @@ describe("PartImportPanel", () => {
   });
 
   afterEach(() => {
-    // vite.config.ts sets `test.globals: false` — see parts.test.tsx's
+    // vite.config.ts sets `test.globals: false` - see parts.test.tsx's
     // identical comment for why this manual cleanup is required.
     cleanup();
     vi.unstubAllGlobals();

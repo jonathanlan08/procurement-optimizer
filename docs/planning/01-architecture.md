@@ -1,4 +1,4 @@
-# 01 — System Architecture
+# 01 - System Architecture
 
 Status: **DRAFT FOR PRINCIPAL REVIEW**
 Scope: whole system. Authority: `docs/SPEC.md` overrides this document wherever they disagree.
@@ -32,7 +32,7 @@ flowchart LR
     B["Browser SPA<br/>React 18 + TS + Vite"]
   end
 
-  subgraph Server["Backend — FastAPI (single process)"]
+  subgraph Server["Backend - FastAPI (single process)"]
     API["HTTP API /api/v1"]
     APP["Application services"]
     DOM["Domain services<br/>(pure, no I/O)"]
@@ -170,7 +170,7 @@ sequenceDiagram
   R->>S: create_scenario(principal, dto)
   S->>REPO: begin unit of work (single transaction)
   REPO->>DB: SELECT ... WHERE organization_id = :org
-  S->>DOMS: compute(landed costs, scores) — pure Decimal
+  S->>DOMS: compute(landed costs, scores) - pure Decimal
   DOMS-->>S: results + assumptions + missing[]
   S->>REPO: INSERT scenario, scenario_results (immutable snapshot)
   S->>AUD: record(event_type, before, after, explanation)
@@ -182,7 +182,7 @@ sequenceDiagram
 
 **Transaction rule:** one HTTP request = at most one DB transaction, opened and committed by the
 application service via a Unit of Work dependency. Repositories never commit. Audit events are
-written **inside** the same transaction as the change they describe — an audit trail that can
+written **inside** the same transaction as the change they describe - an audit trail that can
 diverge from the data is worse than none.
 
 **Provider rule:** never call a network provider inside an open transaction. Extraction is a job
@@ -190,7 +190,7 @@ diverge from the data is worse than none.
 
 ---
 
-## 6. Asynchronous work — a gap in the provisional decisions
+## 6. Asynchronous work - a gap in the provisional decisions
 
 Extraction of a scanned PDF, XLSX parsing, PDF report rendering and optimization runs are all
 seconds-to-tens-of-seconds. The provisional decisions do not name a job strategy. Celery/RQ need
@@ -210,7 +210,7 @@ API contract consequence: expensive POSTs return `202 Accepted` with a job resou
 
 ---
 
-## 7. Organization isolation — defense in depth
+## 7. Organization isolation - defense in depth
 
 The principal's decision ("mandatory `organization_id` filter in the repository layer") is necessary
 but is a *single* control that fails silently the first time someone writes a raw query or forgets a
@@ -220,8 +220,8 @@ filter on a join. Proposed layering:
 |---|---|---|---|
 | 1 | `OrgScope` value object, constructible only from an authenticated principal + verified membership | `api/deps.py` | forged/absent org id in request body |
 | 2 | `OrgScopedRepository` base: every query builder starts from `.where(Model.organization_id == scope.org_id)`; a `get()` that returns a row with a different org raises `OrgIsolationViolation` (defensive assertion, logged as a security event) | `repositories/base.py` | forgotten filter in a subclass |
-| 3 | **Composite foreign keys carrying `organization_id`** — e.g. `rfq_lines(organization_id, rfq_id) REFERENCES rfqs(organization_id, id)` | schema | cross-org *references* created by any code path, including seeds and migrations |
-| 4 | Route-matrix isolation test: enumerate `app.routes`, and for each, call it as an actor from org B against a fixture resource in org A; assert 404 (not 403 — do not confirm existence) | `tests/integration/test_org_isolation_matrix.py` | new endpoints added without isolation |
+| 3 | **Composite foreign keys carrying `organization_id`** - e.g. `rfq_lines(organization_id, rfq_id) REFERENCES rfqs(organization_id, id)` | schema | cross-org *references* created by any code path, including seeds and migrations |
+| 4 | Route-matrix isolation test: enumerate `app.routes`, and for each, call it as an actor from org B against a fixture resource in org A; assert 404 (not 403 - do not confirm existence) | `tests/integration/test_org_isolation_matrix.py` | new endpoints added without isolation |
 | 5 | *(Phase 7, optional)* Postgres RLS with `SET LOCAL app.current_org_id` per request | DB | ORM bypass, ad-hoc SQL |
 
 Control 3 is the one I most want the principal to adopt: it moves isolation from "every developer
@@ -237,11 +237,11 @@ superuser connections; I recommend documenting it as hardening rather than block
 
 | Interface | Default (demo/tests) | Optional real | Notes |
 |---|---|---|---|
-| `ExtractionProvider` | `MockExtractionProvider` — keyed by document SHA-256 → committed fixture JSON | Anthropic | Mock is *deterministic*, not random. Response labelled `simulated=true` end-to-end. |
-| `OcrProvider` | `MockOcrProvider` (fixture text per image hash) | `rapidocr-onnxruntime` | See §9 — tesseract is rejected: it needs a system binary and the dev machine has no Homebrew. |
+| `ExtractionProvider` | `MockExtractionProvider` - keyed by document SHA-256 → committed fixture JSON | Anthropic | Mock is *deterministic*, not random. Response labelled `simulated=true` end-to-end. |
+| `OcrProvider` | `MockOcrProvider` (fixture text per image hash) | `rapidocr-onnxruntime` | See §9 - tesseract is rejected: it needs a system binary and the dev machine has no Homebrew. |
 | `StorageProvider` | `FilesystemStorage` under `var/storage/` | `S3Storage` (boto3 → MinIO/S3) | Same key scheme both ways. Never expose raw paths/URLs; downloads stream through an authorized endpoint. |
 | `FxRateProvider` | `FixtureFxProvider` (committed synthetic table) | `ManualOverrideProvider`, future live | Tests never touch the network (SPEC §9). |
-| `ReportRenderer` | ReportLab PDF / openpyxl XLSX / csv | — | See §9 for the licence trap. |
+| `ReportRenderer` | ReportLab PDF / openpyxl XLSX / csv | - | See §9 for the licence trap. |
 | `Clock`, `IdGenerator` | `FrozenClock`, `SeededIdGenerator` in tests | system | **Proposed addition.** Without these, snapshot tests of reports and scenarios are unstable. |
 | `AiNarrativeProvider` | `TemplateNarrativeProvider` (deterministic templates) | Anthropic | **Proposed addition.** The negotiation brief needs prose in demo mode too; do not overload `ExtractionProvider`. |
 
@@ -260,8 +260,8 @@ This eliminates several otherwise-obvious choices:
 
 | Need | Choose | Reject, and why |
 |---|---|---|
-| PDF text + tables | `pypdf` (text), `pdfplumber` (tables) | — |
-| PDF → raster (scanned quotes, page previews) | **`pypdfium2`** (BSD-3/Apache-2, pip wheels incl. macOS arm64, no system deps) | `pdf2image` (needs poppler binary → Homebrew). **`PyMuPDF` — rejected: AGPL-3.0.** The SPEC ships an MIT repo; AGPL in a distributed web app is a licence conflict, and this is easy to walk into by accident. |
+| PDF text + tables | `pypdf` (text), `pdfplumber` (tables) | - |
+| PDF → raster (scanned quotes, page previews) | **`pypdfium2`** (BSD-3/Apache-2, pip wheels incl. macOS arm64, no system deps) | `pdf2image` (needs poppler binary → Homebrew). **`PyMuPDF` - rejected: AGPL-3.0.** The SPEC ships an MIT repo; AGPL in a distributed web app is a licence conflict, and this is easy to walk into by accident. |
 | PDF report generation | **`reportlab`** (BSD-style, pure pip) | `WeasyPrint` (cairo/pango/gobject system libs → Homebrew). Headless-Chrome printing (needs a browser at runtime). |
 | OCR | `rapidocr-onnxruntime` as an *optional extra*; mock by default | `pytesseract` (tesseract binary), `easyocr` (torch, ~2 GB) |
 | XLSX read/write | `openpyxl` with `read_only=True`, `data_only=True` | pandas (heavy; and `data_only` semantics matter more than DataFrames here) |
@@ -272,7 +272,7 @@ This eliminates several otherwise-obvious choices:
 
 `docker-compose.yml` (Postgres + MinIO) remains the **documented standard path** for other developers
 and mirrors CI. The principal's local path is an explicitly supported alternative, and the two must
-resolve `DATABASE_URL` through the same code path — see `08-test-strategy.md` §4.
+resolve `DATABASE_URL` through the same code path - see `08-test-strategy.md` §4.
 
 Every dependency choice above must be recorded with its licence in `docs/DEPENDENCIES.md` and
 checked in CI (`pip-licenses --fail-on 'AGPL*;GPL-3.0*'`).
@@ -284,7 +284,7 @@ specifies Lexend + Source Sans 3 loaded via a **Google Fonts CDN `@import`**. Th
 commitments in this plan and must be resolved before Phase 1 frontend work:
 
 - the strict CSP of `07-security-model.md` §7 (`style-src 'self'`, no external hosts) would block it;
-- the demo and E2E suite are required to run with **no network egress** — a CDN font makes the demo
+- the demo and E2E suite are required to run with **no network egress** - a CDN font makes the demo
   render differently offline and leaks visitor IPs to a third party.
 
 **Recommendation:** keep the exact typefaces, self-host them. `@fontsource/lexend` and
@@ -292,8 +292,8 @@ commitments in this plan and must be resolved before Phase 1 frontend work:
 bundled by Vite, subset-able, and require no CSP relaxation. This is a one-line change now and a
 CSP-weakening argument later.
 
-Second, smaller discrepancy: the design system bands extraction confidence at `≥ 0.9 / 0.6–0.9 / < 0.6`
-while `04-document-pipeline.md` §7 uses `≥ 0.95 / 0.60–0.95 / < 0.60`. The two must be reconciled to a
+Second, smaller discrepancy: the design system bands extraction confidence at `≥ 0.9 / 0.6-0.9 / < 0.6`
+while `04-document-pipeline.md` §7 uses `≥ 0.95 / 0.60-0.95 / < 0.60`. The two must be reconciled to a
 single source of truth (I recommend the stricter 0.95, with the critical-field override that makes the
 exact threshold largely moot for money fields). Whichever is chosen, the band boundaries belong in one
 backend constant that the design tokens reference, not in two documents.
@@ -304,7 +304,7 @@ backend constant that the design tokens reference, not in two documents.
 
 Format: **AGREE** / **AGREE WITH CHANGES** / **DISAGREE**, with reasons.
 
-### D1 — FastAPI, SQLAlchemy 2.x typed, sync engine, Alembic, Pydantic v2, Python 3.12
+### D1 - FastAPI, SQLAlchemy 2.x typed, sync engine, Alembic, Pydantic v2, Python 3.12
 **AGREE WITH CHANGES.** Sync is the right call: this workload is CPU-bound decimal math and short
 transactional queries, and sync SQLAlchemy is dramatically easier for junior implementers to get
 right (no accidental awaits, no greenlet errors, real stack traces). The change I insist on:
@@ -321,7 +321,7 @@ right (no accidental awaits, no greenlet errors, real stack traces). The change 
 - Python 3.12 agreed (3.13 buys nothing here and risks wheel gaps for onnxruntime/ortools on arm64).
 - Add `pydantic-settings` for typed config with fail-fast validation at startup.
 
-### D2 — Decimal end-to-end; `NUMERIC(18,6)` money, `NUMERIC(18,8)` FX
+### D2 - Decimal end-to-end; `NUMERIC(18,6)` money, `NUMERIC(18,8)` FX
 **AGREE WITH CHANGES.** Decimal end-to-end: unreserved agreement, and the DB must never see a float.
 Two changes:
 
@@ -337,7 +337,7 @@ Two changes:
 - Enforce the Decimal context centrally (`app/core/money.py`, prec=34) and ban `float(` in
   `app/domain` via lint.
 
-### D3 — OR-Tools CP-SAT with integer scaling
+### D3 - OR-Tools CP-SAT with integer scaling
 **AGREE WITH CHANGES**, and the changes are load-bearing for the SPEC's determinism promise:
 
 - **CP-SAT is not deterministic with default parameters.** Multi-worker search returns different
@@ -349,14 +349,14 @@ Two changes:
 - **The reported cost must never be the solver's objective value.** Report the exact Decimal
   recomputation of the returned allocation. The scaled integer objective is a search device only;
   publishing it would leak the scaling error into the CFO report.
-- Scaling factor: recommend **1e4** (0.0001 currency units), not 1e6, for objective coefficients —
+- Scaling factor: recommend **1e4** (0.0001 currency units), not 1e6, for objective coefficients -
   more int64 headroom, with a hard pre-solve bound check that raises rather than silently overflowing.
   Bound proof and the maximum possible rounding error go in `06-optimization-methodology.md` §7.
 - Add deterministic input ordering (sort by UUID) so the model is byte-identical for identical data.
 - Status mapping and infeasibility cores: use CP-SAT **assumption literals** per constraint group so
   "why is this infeasible" is a real minimal core, not a guess.
 
-### D4 — React 18 + TS + Vite, TanStack Query/Router/Table, no SSR, Vitest, Playwright
+### D4 - React 18 + TS + Vite, TanStack Query/Router/Table, no SSR, Vitest, Playwright
 **AGREE WITH CHANGES.**
 - No SSR: correct. This is an authenticated internal tool; SSR buys nothing and costs a Node runtime
   in production.
@@ -369,13 +369,13 @@ Two changes:
   - **`openapi-typescript` generating `frontend/src/api/schema.d.ts` from the backend's OpenAPI, checked
     in and verified in CI.** Otherwise the API contract is duplicated by hand in two languages and
     drifts within a week. This is the single highest-leverage frontend decision.
-  - A tiny typed fetch wrapper that attaches the CSRF header and maps the structured error envelope —
+  - A tiny typed fetch wrapper that attaches the CSRF header and maps the structured error envelope -
     written once, by the principal.
 - React 19 is available and stable but React 18 is the safer pin for the TanStack/Playwright ecosystem
   at this size; agreed.
 - Vitest + Testing Library + `msw` for component tests; Playwright for E2E. Agreed.
 
-### D5 — Sessions in Postgres, HttpOnly SameSite cookies, argon2, CSRF double-submit, roles, org scoping
+### D5 - Sessions in Postgres, HttpOnly SameSite cookies, argon2, CSRF double-submit, roles, org scoping
 **AGREE WITH CHANGES.**
 - Server-side sessions over JWT: correct for this app (instant revocation, no refresh-token dance).
 - Specify: **argon2id**, `time_cost=3, memory_cost=65536 KiB, parallelism=1`, per-hash salt, rehash on
@@ -384,23 +384,23 @@ Two changes:
   be a session-hijack kit. Rotate the session id on login and on privilege change.
 - Both idle (`last_seen_at + 8h`) and absolute (`created_at + 7d`) expiry; `revoked_at`; "log out all
   devices".
-- Cookie: `HttpOnly; Secure; SameSite=Lax; Path=/`. **`Lax`, not `Strict`** — `Strict` breaks the
+- Cookie: `HttpOnly; Secure; SameSite=Lax; Path=/`. **`Lax`, not `Strict`** - `Strict` breaks the
   "click a link in an email into the app" flow and is not needed once the two controls below exist.
 - **CSRF: add an `Origin`/`Referer` allowlist check in addition to double-submit.** Double-submit
   alone is weak against subdomain/XSS-adjacent attacks; origin checking is one line and strictly
   stronger. Keep double-submit for defence in depth.
 - Roles: a single `require_roles(...)` dependency, plus an explicit permission matrix table in
   `03-api-contract.md` that the route-matrix test reads. Do not scatter `if role ==` checks.
-- Org scoping: see §7 — repository filtering is control #2 of 5, not the whole story.
+- Org scoping: see §7 - repository filtering is control #2 of 5, not the whole story.
 - Add login rate limiting + generic failure messages (no user enumeration) and audit events for
   login success/failure/logout.
 
-### D6 — Monorepo layout
+### D6 - Monorepo layout
 **AGREE.** Additions in §4 (`core`, `jobs`, `exports`, `seed`). One naming note: `docker-compose.yml`
 at root is fine and expected; keep MinIO **and** Postgres in it so the S3 path is exercised by at
 least one developer profile, and keep the file's service names stable because CI docs reference them.
 
-### D7 — Provider interfaces
+### D7 - Provider interfaces
 **AGREE WITH CHANGES.** Add `ReportRenderer`, `Clock`, `IdGenerator`, and a separate
 `AiNarrativeProvider` (§8). Rationale: reproducible snapshots of reports and scenarios are impossible
 without injectable time and ids, and folding narrative generation into `ExtractionProvider` would put
@@ -415,7 +415,7 @@ Single typed `Settings` (pydantic-settings), validated at startup, printed (reda
 | Setting | Values | Default | Effect |
 |---|---|---|---|
 | `APP_ENV` | `dev`\|`test`\|`demo`\|`prod` | `dev` | error verbosity, docs exposure, cookie `Secure` |
-| `DATABASE_URL` | dsn | — | see resolution order in 08 §4 |
+| `DATABASE_URL` | dsn | - | see resolution order in 08 §4 |
 | `EXTRACTION_PROVIDER` | `mock`\|`anthropic` | `mock` | mock ⇒ `simulated=true` on every result |
 | `OCR_PROVIDER` | `mock`\|`rapidocr` | `mock` | |
 | `STORAGE_PROVIDER` | `filesystem`\|`s3` | `filesystem` | |
@@ -437,7 +437,7 @@ rather than silently degrading to mock. Silent degradation is how a mock ends up
 - **Logging:** structured JSON, `request_id` from middleware, `org_id`/`user_id` when known. Never log
   document contents, extracted values, or session tokens.
 - **Audit:** `AuditRecorder` service; a `record()` call is mandatory in every mutating application
-  service — enforced by a test that asserts every `services/*` public mutator has an audit call
+  service - enforced by a test that asserts every `services/*` public mutator has an audit call
   (imperfect but catches omissions in review).
 - **Migrations:** Alembic, autogenerate reviewed by hand (never blindly), every migration must be
   tested up **and** down against an empty DB in CI.
@@ -457,7 +457,7 @@ positioning).
 
 ## 14. Assumptions I had to make
 
-1. The SPEC has no explicit phase numbering; I have defined phases 1–7 in `09-task-decomposition.md`
+1. The SPEC has no explicit phase numbering; I have defined phases 1-7 in `09-task-decomposition.md`
    and flagged that as my construction.
 2. "Controlled public demo access" is interpreted as: a seeded demo organization, a demo login with
    `analyst` role, `DEMO_MODE` making it non-destructive, and a periodic reset. No self-service signup

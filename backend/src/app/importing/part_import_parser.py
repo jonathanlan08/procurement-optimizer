@@ -1,7 +1,7 @@
 """CSV/XLSX parsing and row-level validation for part imports (SPEC §3;
 docs/planning/03-api-contract.md §4.5 `POST /part-imports`).
 
-Pure — no database session anywhere in this module. `app.services.
+Pure - no database session anywhere in this module. `app.services.
 part_import_service.PartImportService` does the DB-dependent second pass
 (existing-part duplicate detection, `unit_code` → `unit_definition_id`
 resolution, persistence). Keeping this layer pure makes header validation,
@@ -21,7 +21,7 @@ paired` (migration 0004) via the identical rule already used by `app.
 schemas.parts.PartCreate`.
 
 `unit_code` is listed as optional even though `Part.unit_definition_id` is
-`NOT NULL`: a blank/absent `unit_code` is not rejected here — the service
+`NOT NULL`: a blank/absent `unit_code` is not rejected here - the service
 resolves it to the standard catalogue's `"each"` unit (`app.seed.units_
 catalog.STANDARD_UNIT_CATALOG`'s canonical count-dimension entry, factor 1
 by definition) as the sensible default for "no unit of measure specified",
@@ -33,26 +33,26 @@ Security (this task's brief, non-negotiable):
   ``=+-@`` is rejected as a row-level error *unless* the entire cell is a
   plain signed number (``-10.5``, ``+5`` are legitimate negative/positive
   numbers; ``=cmd|'/c calc'!A1``, ``-2+3+cmd|' /C calc'!A1`` are not).
-  Applied to every cell of every row, for both CSV and XLSX — a string cell
+  Applied to every cell of every row, for both CSV and XLSX - a string cell
   in an XLSX sheet can carry the identical payload if the sheet is ever
   round-tripped back through a spreadsheet application, so the same check
   guards both formats rather than only the bullet that names CSV
   explicitly.
 - **Encoding.** UTF-8 first, BOM-tolerant (`"utf-8-sig"` strips a leading
   BOM if present and is a strict superset of plain UTF-8 decoding).
-  Latin-1 fallback on a `UnicodeDecodeError` — Latin-1 can decode any byte
+  Latin-1 fallback on a `UnicodeDecodeError` - Latin-1 can decode any byte
   sequence, so it never itself raises; `RawFile.encoding_fallback` reports
   when it was used so the caller can surface it, never silently.
 - **Row/column caps.** 10,000 data rows / 50 columns. Exceeding either
   rejects the *whole file* (`PartImportParseError`) rather than silently
-  truncating — this far outside normal usage reads as abuse, not a file to
+  truncating - this far outside normal usage reads as abuse, not a file to
   quietly accept part of.
 - **XLSX.** Loaded with `openpyxl(read_only=True, data_only=True)` so this
-  process never evaluates a formula — only cached values are read. A
+  process never evaluates a formula - only cached values are read. A
   formula cell with no cached value is indistinguishable from a genuinely
   blank cell in a single `read_only+data_only` pass, so `parse_xlsx` loads
   the workbook a *second* time with `data_only=False` (still `read_only`,
-  still not evaluating anything — this second pass only reads which cells
+  still not evaluating anything - this second pass only reads which cells
   store an `=`-prefixed formula string) purely to detect "formula, no
   cached value", which is reported as a row error per this task's brief.
   Defined names and macros are not detectable via openpyxl (this task's
@@ -93,14 +93,14 @@ CANONICAL_COLUMNS: frozenset[str] = REQUIRED_COLUMNS | OPTIONAL_COLUMNS
 
 _CURRENCY_RE = re.compile(r"^[A-Z]{3}$")
 _INJECTION_LEAD = frozenset("=+-@")
-# a signed plain number: "-10.5", "+5", "5", ".5" — anything else after a
+# a signed plain number: "-10.5", "+5", "5", ".5" - anything else after a
 # leading =+-@ is treated as a formula-injection attempt, not a number
 _SAFE_SIGNED_NUMBER_RE = re.compile(r"^[+-]?(\d+\.?\d*|\.\d+)$")
 _NON_ALNUM_RE = re.compile(r"[^a-z0-9]")
 
 
 class PartImportParseError(Exception):
-    """File-level parse failure. Nothing is persisted when this is raised —
+    """File-level parse failure. Nothing is persisted when this is raised -
     header validation, encoding, size/shape caps, and corrupt-workbook
     failures all abort before any batch or row is created."""
 
@@ -149,7 +149,7 @@ class RowError:
 @dataclass(frozen=True, slots=True)
 class ParsedFields:
     """Field values after per-row validation, before DB-dependent resolution
-    (unit_code -> unit_definition_id, existing-part duplicate check —
+    (unit_code -> unit_definition_id, existing-part duplicate check -
     app.services.part_import_service). `target_price` is a decimal string at
     UNIT_PRICE_SCALE (wire-ready, `app.core.money.to_wire` shape), never a
     float, matching the codebase's money policy."""
@@ -188,7 +188,7 @@ class ValidatedRow:
 
 def _decode_csv_bytes(data: bytes) -> tuple[str, bool]:
     """Returns (text, fallback_used). UTF-8 (BOM-tolerant) first, Latin-1
-    fallback — see module docstring."""
+    fallback - see module docstring."""
     try:
         return data.decode("utf-8-sig"), False
     except UnicodeDecodeError:
@@ -197,7 +197,7 @@ def _decode_csv_bytes(data: bytes) -> tuple[str, bool]:
 
 def _validate_headers(headers: list[str]) -> dict[int, str]:
     """Column index -> canonical field name. Raises `PartImportParseError`
-    on an unrecognized, duplicated, or missing-required header — SPEC §3's
+    on an unrecognized, duplicated, or missing-required header - SPEC §3's
     "header validation" is a whole-file gate, not a per-row concern."""
     seen: dict[str, int] = {}
     mapping: dict[int, str] = {}

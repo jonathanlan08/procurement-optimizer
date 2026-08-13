@@ -1,10 +1,10 @@
-/** Part-import data layer — TanStack Query hooks over the live API.
+/** Part-import data layer - TanStack Query hooks over the live API.
  *
  * Shapes mirror backend/src/app/schemas/part_imports.py exactly
- * (backend/src/app/api/v1/part_imports.py — mounted in app/main.py as
+ * (backend/src/app/api/v1/part_imports.py - mounted in app/main.py as
  * `part_imports_router`, prefix `/part-imports`):
  *  - `POST /part-imports` is `multipart/form-data` (one `file` part), not
- *    JSON — same reason ../documents/api.ts's `uploadDocument` can't reuse
+ *    JSON - same reason ../documents/api.ts's `uploadDocument` can't reuse
  *    `api()`/`post()` (../../api/client): those unconditionally
  *    `JSON.stringify()` the body and set `Content-Type: application/json`.
  *    `uploadPartImport` below is the same hand-rolled fetch, line for line
@@ -12,10 +12,10 @@
  *    just posting a `FormData` instead.
  *  - `POST /part-imports`'s `201` response (`PartImportPreviewResponse`) is
  *    a different, narrower shape than `GET /part-imports/{id}`
- *    (`PartImportBatchDetailResponse`) — the contract's own explicit
+ *    (`PartImportBatchDetailResponse`) - the contract's own explicit
  *    example, not this file's invention (part_imports.py schema module
  *    docstring: "intentionally does not match GET's shape"). It carries
- *    `sample_rows` (up to 20) plus a flattened `errors[]` (up to 100) — not
+ *    `sample_rows` (up to 20) plus a flattened `errors[]` (up to 100) - not
  *    the full row set.
  *  - **This UI shows `sample_rows` as the preview table, not the full
  *    cursor-paginated row list `GET /part-imports/{id}` exposes.** A
@@ -23,30 +23,30 @@
  *    showing the backend's per-row validation verdicts," which `sample_rows`
  *    already satisfies (every disposition value can appear in it, and
  *    `rows_invalid`/`rows_valid`/`rows_duplicate` on the same response give
- *    the true totals) — building a second "load more rows" cursor-paging UI
+ *    the true totals) - building a second "load more rows" cursor-paging UI
  *    on top would add a second query surface for marginal value over the
  *    honest "showing the first N of `rows_total` rows" caveat
  *    PartImportPanel.tsx renders when the file has more rows than the
  *    sample. `usePartImportBatch` (cursor-paginated) is still exported here
  *    for completeness against the contract, but is unused by this task's UI.
  *  - **`disposition` is typed as the 3-value domain the service actually
- *    emits** (`create`/`skip_duplicate`/`error` — app/models/part_imports.py's
+ *    emits** (`create`/`skip_duplicate`/`error` - app/models/part_imports.py's
  *    own module docstring: `update` is "documented but not emitted by any
  *    code path"), not the ERD's wider 4-value one.
  *  - `raw_values`/`normalized_values` are genuinely untyped JSONB
- *    (`dict[str, Any]` server-side, one key per canonical import column) —
+ *    (`dict[str, Any]` server-side, one key per canonical import column) -
  *    typed `Record<string, unknown>` and narrowed defensively at the one
  *    render site, the same "don't invent a shape" treatment
  *    ../comparison/api.ts's header documents for scenario snapshot fields.
  *  - **Commit's gate mirrors the backend's own refusal rule exactly**:
  *    `PartImportService.commit` (services/part_import_service.py) refuses
- *    the whole batch — `409 conflict_state` — if it contains any `error`
+ *    the whole batch - `409 conflict_state` - if it contains any `error`
  *    disposition row. `canCommit()` below is that same rule
  *    (`rows_invalid === 0`) applied client-side purely to disable the
  *    button pre-emptively; the server re-validates regardless, so a stale
  *    preview can never bypass it.
  *  - **Commit invalidates the Parts list** (`partKeys.lists()`, imported
- *    from ../parts/api — within this task's own ownership) so a successful
+ *    from ../parts/api - within this task's own ownership) so a successful
  *    import's newly created parts show up in PartsPage.tsx's table without
  *    a manual refresh, the same "mutation invalidates the list it affects"
  *    convention every other feature's api.ts already follows.
@@ -81,7 +81,7 @@ export interface PartImportRowErrorResponse {
   issue: string;
 }
 
-/** `201` response of `POST /part-imports` — the contract's own explicit
+/** `201` response of `POST /part-imports` - the contract's own explicit
  * shape (see this file's header), distinct from `PartImportBatchDetailResponse`. */
 export interface PartImportPreviewResponse {
   batch_id: string;
@@ -120,7 +120,7 @@ export interface PartImportBatchDetailResponse extends PartImportBatchSummaryRes
 }
 
 /** `200` response of `POST /part-imports/{id}/commit`. `updated` is always
- * `0` — this service never updates an existing part from an import row,
+ * `0` - this service never updates an existing part from an import row,
  * only creates or skips (part_imports.py schema module docstring on
  * `PartImportCommitResponse`). */
 export interface PartImportCommitResponse {
@@ -129,7 +129,7 @@ export interface PartImportCommitResponse {
   skipped: number;
 }
 
-/** Mirrors `PartImportService.commit`'s own refusal rule exactly — see this
+/** Mirrors `PartImportService.commit`'s own refusal rule exactly - see this
  * file's header. */
 export function canCommitPartImport(preview: {
   rows_invalid: number;
@@ -137,7 +137,7 @@ export function canCommitPartImport(preview: {
   return preview.rows_invalid === 0;
 }
 
-/** Hand-rolled multipart upload — see this file's header for why `api()`/
+/** Hand-rolled multipart upload - see this file's header for why `api()`/
  * `post()` can't be reused. Mirrors ../documents/api.ts's `uploadDocument`
  * line for line. */
 async function uploadPartImport(
@@ -202,7 +202,7 @@ export function useCancelPartImport() {
   });
 }
 
-/** `GET /part-imports/{id}` — cursor-paginated full row list. Exported
+/** `GET /part-imports/{id}` - cursor-paginated full row list. Exported
  * for contract completeness; not used by this task's preview-table UI
  * (see this file's header for the scope call). */
 export function usePartImportBatch(batchId: string | null, cursor: string | null, limit = 50) {

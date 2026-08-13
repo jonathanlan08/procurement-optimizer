@@ -1,4 +1,4 @@
-"""MockExtractionProvider — the default, always-available ExtractionProvider.
+"""MockExtractionProvider - the default, always-available ExtractionProvider.
 
 SPEC "External-service strategy": "Public demo works without any paid AI key: mock AI
 provider, deterministic fixture extraction, synthetic exchange rates, prebuilt demo
@@ -6,12 +6,12 @@ workflow, clear labeling of simulated behavior ... Never present a mock response
 
 Deterministic and NEVER RANDOM: given a `document_sha256`, this provider either
 (a) returns the exact golden `ExtractedQuotePayload` committed for that hash under the
-fixture registry directory (`backend/tests/fixtures/extraction/<sha256>.json` by default —
+fixture registry directory (`backend/tests/fixtures/extraction/<sha256>.json` by default -
 the same directory `backend/scripts/generate_fixtures.py` writes to), or (b) for any
 `document_sha256` it doesn't recognize, falls back to a small regex heuristic over the
 acquired page text so an arbitrary upload still demonstrates the review/confirmation flow
-rather than failing outright. The heuristic is deliberately weak — fixed confidence 0.5 on
-any field it manages to find, 0.4 overall — it exists to keep the demo alive for documents
+rather than failing outright. The heuristic is deliberately weak - fixed confidence 0.5 on
+any field it manages to find, 0.4 overall - it exists to keep the demo alive for documents
 outside the fixture set, not to compete with a real extraction model.
 
 `is_simulated = True` unconditionally: every payload this provider returns, fixture or
@@ -22,7 +22,7 @@ simulated behavior").
 The heuristic fallback's regex expects the "known table layout" this codebase's own
 acquisition module (`app.ingestion.acquisition`) produces: XLSX sheets and pdfplumber-found
 PDF tables are pipe-separated rows, and CSV survives acquisition as its original
-comma-separated text — so candidate line-item rows are split on either delimiter.
+comma-separated text - so candidate line-item rows are split on either delimiter.
 """
 
 from __future__ import annotations
@@ -65,7 +65,7 @@ def _empty_terms() -> ExtractedTerms:
 def _normalize_money(raw: str) -> str | None:
     """Strip a `$` prefix / thousands separators and confirm the result parses as a
     decimal string per the codebase's money policy (`app.core.money.parse_decimal`).
-    Returns `None` rather than raising — a candidate that fails to parse is simply not a
+    Returns `None` rather than raising - a candidate that fails to parse is simply not a
     price, not a fatal error for the whole heuristic pass."""
     cleaned = raw.lstrip("$").replace(",", "")
     try:
@@ -177,7 +177,7 @@ def _heuristic_payload(pages: list[str]) -> ExtractedQuotePayload:
 
 class MockExtractionProvider:
     """Deterministic `ExtractionProvider` (see `app.providers.extraction.base.
-    ExtractionProvider`). Never random — see module docstring."""
+    ExtractionProvider`). Never random - see module docstring."""
 
     name = "mock"
     is_simulated = True

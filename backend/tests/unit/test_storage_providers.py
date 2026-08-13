@@ -1,4 +1,4 @@
-"""`StorageProvider` contract tests — one shared suite run against
+"""`StorageProvider` contract tests - one shared suite run against
 `FilesystemStorageProvider` (`tmp_path`) AND `MemoryStorageProvider`, per this
 task's explicit instruction. `S3StorageProvider` is deliberately excluded: no
 network in a unit test (see `app/providers/storage/s3.py`'s own module
@@ -203,7 +203,7 @@ class TestOrgNamespacing:
 
 class TestFilesystemLayout:
     """Filesystem-only behaviors not part of the shared Protocol contract
-    (on-disk layout, atomicity) — `MemoryStorageProvider` has no directory
+    (on-disk layout, atomicity) - `MemoryStorageProvider` has no directory
     structure or partial-write failure mode to assert against."""
 
     def test_layout_is_root_slash_org_slash_key(self, tmp_path: object) -> None:

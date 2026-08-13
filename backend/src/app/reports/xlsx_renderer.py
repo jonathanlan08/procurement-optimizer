@@ -9,7 +9,7 @@ column row) are bold for readability; this is presentation only; content
 rules are identical to the CSV path.
 
 Every cell passes through `app.reports.escape.escape_formula_cell` before
-being written — see that module's docstring for why this matters even more
+being written - see that module's docstring for why this matters even more
 here than for CSV: `openpyxl` itself auto-detects a leading `=` on a string
 `Cell.value` and stores it as a live formula unless the leading character
 has already been neutralized.
@@ -21,7 +21,7 @@ import io
 from typing import Any
 
 # no bundled type stubs, and pyproject.toml's mypy overrides are off-limits
-# for this task — same accepted precedent app/importing/part_import_parser.py
+# for this task - same accepted precedent app/importing/part_import_parser.py
 # already documents for its own openpyxl import.
 import openpyxl  # type: ignore[import-untyped]
 from openpyxl.styles import Font  # type: ignore[import-untyped]

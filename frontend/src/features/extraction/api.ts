@@ -1,23 +1,23 @@
-/** Extraction-review + part-matching data layer — TanStack Query hooks over
+/** Extraction-review + part-matching data layer - TanStack Query hooks over
  * the live API.
  *
  * Shapes mirror backend/src/app/schemas/extractions.py + matching.py exactly
  * (backend/src/app/api/v1/extractions.py + matching.py):
  *  - `GET /quote-documents/{id}/extraction-runs` / `.../fields` both return
- *    `{ items }` — no `page` envelope, same "whole set in one call" shape
+ *    `{ items }` - no `page` envelope, same "whole set in one call" shape
  *    ../quotes/api.ts's file header documents for `QuoteListResponse` (a
  *    document/run realistically has a handful of runs/fields, not pages of
  *    them).
  *  - **`start_run` always executes synchronously** (extraction_service.py's
  *    own module docstring: "JOB_RUNNER=inline... the only shape this v0.1
- *    build implements, not a test-only special case") — `POST
+ *    build implements, not a test-only special case") - `POST
  *    /quote-documents/{id}/extraction-runs` returns `201` with the
  *    *completed* `ExtractionRunResponse` already in a terminal-ish state
  *    (`extracted`/`needs_review`/`ready`/`failed`), never `queued`/
  *    `running` from the caller's point of view. `useStartExtractionRun`
  *    therefore needs no polling.
  *  - `overall_confidence`/`confidence` are decimal wire strings (never
- *    through Number()/parseFloat, lib/money.ts's rule) — `band` is already
+ *    through Number()/parseFloat, lib/money.ts's rule) - `band` is already
  *    the pre-computed `"high"|"medium"|"low"` string
  *    (`app.domain.confidence.ConfidenceBand`, thresholds 0.95/0.60,
  *    MASTER.md's own mirrored table), so ReviewPane.tsx never recomputes a
@@ -30,23 +30,23 @@
  *    through the one mutation, matching the one route.
  *  - **`POST /extraction-runs/{id}/confirm` (materialize) returns a
  *    `QuoteResponse`** (the same shape ../quotes/api.ts's `QuoteResponse`
- *    already types) — imported from there rather than re-declared, and its
+ *    already types) - imported from there rather than re-declared, and its
  *    success invalidates `quoteKeys.rfqLists()`/`quoteKeys.detail()` too
  *    (imported key builders, not private symbols) so the RFQ drawer's own
  *    QuotesSection picks up the newly-materialized quote without a manual
- *    refetch once ReviewPane.tsx closes — the same cross-feature
+ *    refetch once ReviewPane.tsx closes - the same cross-feature
  *    invalidation-on-a-known-read pattern already used throughout this
  *    app's mutations for their *own* feature's queries, extended here to
  *    the one external read this action is documented to affect.
  *  - **Materialize's `409`** (unconfirmed low-band fields) carries one
  *    `ErrorDetail` per blocking field
  *    (`issue: "low-confidence field is not confirmed"`, `field:
- *    <field_path>`) — `ApiErrorBanner` already renders `message` +
+ *    <field_path>`) - `ApiErrorBanner` already renders `message` +
  *    every `details[]` entry generically, so ReviewPane.tsx's "409 callout
  *    listing which fields block" is that same banner, not bespoke parsing.
  *
  * **Matching hooks (`/quotes/{id}/match(es)`, `/quote-lines/{id}/match`)
- * are colocated here, not a separate `features/matching/` folder** — the
+ * are colocated here, not a separate `features/matching/` folder** - the
  * task brief describes match-candidate review as part of the same
  * post-materialize surface ReviewPane.tsx owns ("After materialize: link
  * to the quote + match candidates section"), and no standalone matching
@@ -60,11 +60,11 @@
  *    `useConfirmQuoteLineMatch` with that candidate's own `rfq_line_id`;
  *    "Reject" only renders on the line's currently-selected/confirmed
  *    candidate and calls `useUnmatchQuoteLineMatch` (clears the line back
- *    to unmatched) — the closest faithful mapping onto the real,
+ *    to unmatched) - the closest faithful mapping onto the real,
  *    line-addressed confirm/unmatch pair.
  *  - **Auto-confirmed exact matches** (`match_status === "auto"`,
  *    `matching_service.py`'s "Auto-confirmation (strategy internal_pn
- *    only)") render a quiet "auto-matched" chip instead of action buttons —
+ *    only)") render a quiet "auto-matched" chip instead of action buttons -
  *    `human_confirmed` stays `false` on that line's winning candidate even
  *    though it is already `is_selected`, precisely so the UI can tell "the
  *    matcher decided this" apart from "a human confirmed this"
@@ -72,7 +72,7 @@
  *
  * Vendor/supplier *scoring* (`SupplierScore`, `app/domain/scoring/`) is a
  * different domain concept from the part-*matching* candidates this file
- * owns — that lives in ../comparison/api.ts instead (see that file's header
+ * owns - that lives in ../comparison/api.ts instead (see that file's header
  * for a documented backend gap: ranked scoring has no implemented route
  * yet), matching the task brief's own split (item 2 = this file's
  * extraction+matching review surface; item 3 = the comparison workspace's
@@ -129,7 +129,7 @@ export interface ExtractionRunListResponse {
 export type ConfidenceBand = "high" | "medium" | "low";
 
 /** `target_entity`: header-level ("quote"), terms ("quote_terms"), or a
- * per-line field ("quote_line", with `target_line_index` set) — see
+ * per-line field ("quote_line", with `target_line_index` set) - see
  * `services/extraction_service.py`'s `_build_fields`. */
 export type FieldTargetEntity = "quote" | "quote_terms" | "quote_line";
 
@@ -236,16 +236,16 @@ export function usePatchExtractionField() {
     onSuccess: (_result, vars) => {
       void queryClient.invalidateQueries({ queryKey: extractionKeys.fields(vars.runId) });
       // A field confirm/correct can flip the run needs_review -> ready
-      // (ExtractionService._recompute_run_state) — refetch the run header too.
+      // (ExtractionService._recompute_run_state) - refetch the run header too.
       void queryClient.invalidateQueries({ queryKey: extractionKeys.run(vars.runId) });
     },
   });
 }
 
 /** `POST /extraction-runs/{id}/fields/confirm-all` (2026-08 audit
- * remediation, wave B) — bulk counterpart to `usePatchExtractionField`'s
+ * remediation, wave B) - bulk counterpart to `usePatchExtractionField`'s
  * per-field confirm. No request body; the response is the run detail
- * itself (`ExtractionRunResponse`, not a field — see
+ * itself (`ExtractionRunResponse`, not a field - see
  * `extractions.py::confirm_all_extraction_fields`'s own docstring for why),
  * so on success this both seeds the run query cache directly with that
  * response (the same "already have the fresh value, skip a refetch"

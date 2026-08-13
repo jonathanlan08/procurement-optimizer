@@ -11,7 +11,7 @@ currency (or vice versa) is a data error, not a valid 'unset' state" (§1.2).
 On `PartCreate` this is a plain both-or-neither check on the parsed values;
 on `PartUpdate` (a PATCH, where only fields present in the payload are
 applied) it is checked against `model_fields_set` instead, since the client
-either leaves both columns untouched or replaces both together — never
+either leaves both columns untouched or replaces both together - never
 `{"target_price": "10.5"}` alone, which would otherwise satisfy the DB CHECK
 by accident only if the existing row already had a NULL currency.
 """
@@ -117,7 +117,7 @@ class PartCreate(BaseModel):
 class PartUpdate(BaseModel):
     """Partial update (PATCH): only fields present in the payload are applied.
 
-    Concurrency is carried by the `If-Match` header (§1.7), not the body —
+    Concurrency is carried by the `If-Match` header (§1.7), not the body -
     there is deliberately no `version` field here.
     """
 
@@ -216,8 +216,8 @@ class PartListResponse(BaseModel):
 
 class PartAlternativeCreate(BaseModel):
     """`{alternative_part_id?|alternative_mpn?, approval_status, rationale}`
-    (§4.5): exactly one of `alternative_part_id` (internal — must resolve to a
-    part in this organization's catalogue) or `alternative_mpn` (external —
+    (§4.5): exactly one of `alternative_part_id` (internal - must resolve to a
+    part in this organization's catalogue) or `alternative_mpn` (external -
     a manufacturer part number this org has never catalogued) is required."""
 
     model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")

@@ -1,4 +1,4 @@
-# 05 — Calculation Methodology
+# 05 - Calculation Methodology
 
 Status: **DRAFT FOR PRINCIPAL REVIEW**
 Implements SPEC §Landed-cost engine, §Vendor comparison engine, §9 currency, §10 units, §11 price
@@ -9,7 +9,7 @@ breaks. Everything here is **pure**: `app/domain/**` has no database, no clock, 
 ## 1. Decimal policy
 
 ```python
-# app/core/money.py  — PRINCIPAL-OWNED
+# app/core/money.py  - PRINCIPAL-OWNED
 from decimal import Decimal, Context, ROUND_HALF_EVEN, localcontext
 
 CALC_PRECISION   = 34                       # working precision, never a storage scale
@@ -119,7 +119,7 @@ Decisions the SPEC leaves open, resolved here (each is a documented assumption, 
 Code contract (principal-owned interface, implementation delegable):
 
 ```python
-# app/domain/landed_cost/contracts.py  — PRINCIPAL-OWNED
+# app/domain/landed_cost/contracts.py  - PRINCIPAL-OWNED
 CALCULATION_VERSION: Final[str] = "1.0.0"
 
 @dataclass(frozen=True, slots=True)
@@ -162,7 +162,7 @@ class LandedCostCalculator(Protocol):
 ```
 
 The calculator takes ids only as opaque labels and never loads anything. The application service is
-responsible for assembling `LandedCostInput` from repositories — which is precisely what makes
+responsible for assembling `LandedCostInput` from repositories - which is precisely what makes
 "financial calculations testable without a database" true.
 
 ---
@@ -184,7 +184,7 @@ Rules:
   currency.
 - **Rate selection is as-of the scenario, not as-of now.** Pick the row with the greatest
   `effective_date <= scenario.as_of_date` for the exact pair; manual overrides win over provider rows
-  on the same date. If no rate exists: `MissingExchangeRateError` — never fall back to 1.0, never
+  on the same date. If no rate exists: `MissingExchangeRateError` - never fall back to 1.0, never
   cross-triangulate silently.
 - **Triangulation** (EUR→JPY via USD) is allowed only when explicitly enabled, is recorded as an
   assumption naming the pivot currency, and both legs' rate ids are stored in `fx_snapshot`.
@@ -228,7 +228,7 @@ Rules:
 ## 6. Price-break selection
 
 Interval semantics: **closed on both ends**, `[min_quantity, max_quantity]`, `max_quantity = NULL`
-meaning unbounded. The SPEC's example (`1–99, 100–499, 500–999, 1000+`) is exactly this.
+meaning unbounded. The SPEC's example (`1-99, 100-499, 500-999, 1000+`) is exactly this.
 
 ```python
 def select_break(breaks: Sequence[PriceBreak], qty: Decimal) -> PriceBreak | None:
@@ -241,7 +241,7 @@ def select_break(breaks: Sequence[PriceBreak], qty: Decimal) -> PriceBreak | Non
 
 Rules and the boundary tests they imply:
 - **All-units discount semantics**: the selected tier's price applies to the *entire* quantity.
-  (Assumption flagged in `01-architecture.md` §14.3 — needs principal confirmation. Incremental
+  (Assumption flagged in `01-architecture.md` §14.3 - needs principal confirmation. Incremental
   discounts would require a different formula and a different MILP.)
 - `qty` below the lowest `min_quantity` ⇒ `BelowMinimumTierError`; the UI offers "raise quantity to
   the tier minimum" as an explicit user action, never automatic.
@@ -265,13 +265,13 @@ Rules and the boundary tests they imply:
 
 Deterministic, LLM-free, reproducible (SPEC §Vendor comparison engine).
 
-**Step 1 — collect raw criterion values** per supplier. Built-in criteria and directions:
+**Step 1 - collect raw criterion values** per supplier. Built-in criteria and directions:
 
 | Key | Direction | Source |
 |---|---|---|
 | `total_landed_cost` | lower better | calculated |
 | `effective_unit_cost` | lower better | calculated |
-| `specification_compliance` | higher better | user-scored 0–1 per RFQ line, averaged |
+| `specification_compliance` | higher better | user-scored 0-1 per RFQ line, averaged |
 | `lead_time_days` | lower better | quote |
 | `capacity_units` | higher better | quote / supplier |
 | `moq_flexibility` | higher better | derived: `1 − min(1, moq / required_qty)` |
@@ -283,7 +283,7 @@ Deterministic, LLM-free, reproducible (SPEC §Vendor comparison engine).
 | `supply_concentration` | lower better | scenario-level, allocation-dependent |
 | user-defined | declared per criterion | user input |
 
-**Step 2 — normalize to [0,1]** with explicit handling of the SPEC's listed edge cases:
+**Step 2 - normalize to [0,1]** with explicit handling of the SPEC's listed edge cases:
 
 ```
 higher_better: n = (v - min) / (max - min)
@@ -304,10 +304,10 @@ lower_better:  n = (max - v) / (max - min)
   Instead, min-max is computed over included suppliers and any value beyond 3× the interquartile range
   raises an `outlier_detected` warning naming the supplier and criterion. Optional
   `outlier_policy=winsorize_p95` exists, is off by default, and is printed in the methodology when on.
-- **Excluded suppliers** are removed *before* min/max computation — otherwise an excluded outlier
+- **Excluded suppliers** are removed *before* min/max computation - otherwise an excluded outlier
   silently compresses everyone else's scores. This is a subtle bug worth a dedicated test.
 
-**Step 3 — weight and aggregate:**
+**Step 3 - weight and aggregate:**
 ```
 w_norm_i = w_i / Σ w   (over criteria applicable to this supplier)
 score    = Σ (w_norm_i × n_i)              # quantized RATIO_SCALE
@@ -315,7 +315,7 @@ score    = Σ (w_norm_i × n_i)              # quantized RATIO_SCALE
 Weight sum must be > 0. Weights are stored raw and normalized at calculation time so the user's intent
 survives edits.
 
-**Step 4 — explain.** Every `criterion_scores` entry carries
+**Step 4 - explain.** Every `criterion_scores` entry carries
 `{key, raw, normalized, weight, weighted, direction, reason, missing, outlier}`. The report prints the
 full table; the SPEC's "show the reason for each score" is satisfied by construction, not by prose.
 
@@ -384,21 +384,21 @@ strings, not approximate equality. Any change to these numbers must be a deliber
 
 ## 10. Edge cases and gaps flagged to the principal
 
-1. **All-units vs incremental price breaks** — assumed all-units (§6). Confirm.
-2. **Financing as a benefit** (negative component) — I recommend it; it is the only signed component
+1. **All-units vs incremental price breaks** - assumed all-units (§6). Confirm.
+2. **Financing as a benefit** (negative component) - I recommend it; it is the only signed component
    and it needs an explicit blessing because "a cost component can be negative" surprises reviewers.
 3. **Duty basis (FOB vs CIF)** materially changes import cost; modelled as an explicit assumption with
    a default of "material + logistics" (CIF-like). Confirm the default.
 4. **Recoverable tax** default `excluded`. Confirm.
-5. **Currency of fixed costs** — a quote may state tooling in USD while pricing parts in EUR. Current
+5. **Currency of fixed costs** - a quote may state tooling in USD while pricing parts in EUR. Current
    model assumes one currency per quote (see `02-erd.md` §12.1).
 6. **Scrap/yield loss** (buy 1050 to get 1000 good) is a real landed-cost driver and is entirely absent
-   from the SPEC. Proposed as a v0.2 criterion, not v0.1.0 — flagged so it is a decision, not an
+   from the SPEC. Proposed as a v0.2 criterion, not v0.1.0 - flagged so it is a decision, not an
    oversight.
 7. **Minimum line/order charges** ("orders under $500 incur a $50 handling fee") are common on real
    quotes and are not in the SPEC's field list. Proposed: capture in `other_fixed_cost` with a note;
    full modelling is roadmap.
-8. **Multi-currency FX risk cost** (hedging) — out of scope, explicitly.
-9. **Zero-quantity and negative-quantity inputs** must raise, not return 0 — required tests.
+8. **Multi-currency FX risk cost** (hedging) - out of scope, explicitly.
+9. **Zero-quantity and negative-quantity inputs** must raise, not return 0 - required tests.
 10. **Extreme values**: quantity `10^12` and unit price `10^-8` must not overflow `NUMERIC(18,6)`;
     the calculator raises `AmountOutOfRangeError` before the DB does, with a clear message.

@@ -1,14 +1,14 @@
 """Negotiation-brief request/response schemas (docs/planning/
 03-api-contract.md §4.17, app/models/briefs.py, app/services/brief_service.py).
 
-Wire conventions (§1.2): decimals are JSON strings, never numbers —
+Wire conventions (§1.2): decimals are JSON strings, never numbers -
 `UnitPriceString` (reused from `app.schemas.parts`, `NUMERIC(18,8)`/8dp,
 matching `price_target`/`stretch_target`/`walk_away_threshold`'s column
 scale) is used for both the optional request-side overrides and the
 response figures.
 
 `NegotiationBriefResponse.requires_review` is derived (`state ==
-BriefState.DRAFT`), not a stored column — this task's own OBJECTIVE
+BriefState.DRAFT`), not a stored column - this task's own OBJECTIVE
 explicitly asks the `GET` response to "prominently include review state and
 narrative_is_generated"; `requires_review` makes "is this safe to act on
 yet" a single boolean a client can check without knowing the state enum's
@@ -16,7 +16,7 @@ member spelling, alongside the literal `state` string. `narrative_is_generated`
 is the task's own paraphrase name for `AiNarrativeProvider.is_generated`,
 exposed here as the literal negation of the stored `simulated` column (see
 `app/models/briefs.py` module docstring for why the DB column itself is
-named — and stores — the opposite polarity, ERD-literal `simulated`).
+named - and stores - the opposite polarity, ERD-literal `simulated`).
 """
 
 from __future__ import annotations
@@ -35,7 +35,7 @@ from app.schemas.parts import UnitPriceString
 
 class BriefTargetsRequest(BaseModel):
     """Optional human overrides for the CALCULATED targets (03-api-contract.md
-    §4.17's `targets?` request field) — each supplied value is stored with
+    §4.17's `targets?` request field) - each supplied value is stored with
     `SectionProvenance.USER_ASSUMPTION`, never silently relabelled
     CALCULATED (app/services/brief_service.py `generate`)."""
 
@@ -91,7 +91,7 @@ class BriefSectionResponse(BaseModel):
 
 
 class NegotiationBriefResponse(BaseModel):
-    """`GET /negotiation-briefs/{id}` — every SPEC content item under
+    """`GET /negotiation-briefs/{id}` - every SPEC content item under
     `sections`, each carrying its own `provenance`; review state and
     `narrative_is_generated`/`simulated` prominent at the top level (module
     docstring)."""
@@ -113,7 +113,7 @@ class NegotiationBriefResponse(BaseModel):
     state: str
     requires_review: bool
     reviewed_by_id: str | None
-    # resolved display name (org-scoped); None when the reviewer is unknown —
+    # resolved display name (org-scoped); None when the reviewer is unknown -
     # a raw reviewer UUID on a reviewed brief was a 2026-08 external-review P3
     reviewed_by_full_name: str | None = None
     reviewed_at: datetime | None
@@ -163,7 +163,7 @@ class NegotiationBriefResponse(BaseModel):
 
 class NegotiationBriefSummaryResponse(BaseModel):
     """List views (`GET /comparison-scenarios/{id}/negotiation-briefs`,
-    `GET /rfqs/{id}/negotiation-briefs`) — lean, no embedded `sections`."""
+    `GET /rfqs/{id}/negotiation-briefs`) - lean, no embedded `sections`."""
 
     model_config = ConfigDict(from_attributes=True)
 

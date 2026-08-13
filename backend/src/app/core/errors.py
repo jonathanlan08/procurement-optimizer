@@ -1,4 +1,4 @@
-"""Application error hierarchy and the single HTTP error envelope — PRINCIPAL-OWNED.
+"""Application error hierarchy and the single HTTP error envelope - PRINCIPAL-OWNED.
 
 Every non-2xx response uses one envelope (docs/planning/03-api-contract.md §3):
 
@@ -6,7 +6,7 @@ Every non-2xx response uses one envelope (docs/planning/03-api-contract.md §3):
 
 ``message`` must be safe for display: no SQL, no stack traces, no file paths, and
 never another organization's data. Cross-organization access is always
-``not_found`` (404), never 403 — existence must not leak.
+``not_found`` (404), never 403 - existence must not leak.
 """
 
 from __future__ import annotations

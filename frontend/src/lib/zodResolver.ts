@@ -1,7 +1,7 @@
 /** Minimal zod <-> react-hook-form bridge.
  *
  * `@hookform/resolvers` is not in package.json (only `react-hook-form` and
- * `zod` are) and this task's dependency allowlist forbids adding packages —
+ * `zod` are) and this task's dependency allowlist forbids adding packages -
  * so this reimplements just the handful of lines the official
  * `zodResolver()` provides, using react-hook-form's own public `Resolver`
  * type. Forms here keep zod's output type identical to its input type (no

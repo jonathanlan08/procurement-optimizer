@@ -1,4 +1,4 @@
-"""Matching service — part matching for quote lines
+"""Matching service - part matching for quote lines
 (docs/planning/04-document-pipeline.md §10, docs/planning/03-api-contract.md
 §4.12, app/domain/matching/matcher.py, app/models/documents.py's FROZEN
 `PartMatchCandidate`/`MatchStrategy`).
@@ -6,28 +6,28 @@
 Services never commit: the request-scoped `get_db` dependency
 (app/api/deps.py) commits on success and rolls back on any raised exception.
 
-## Operates on quote lines, post-materialization — not extraction fields
+## Operates on quote lines, post-materialization - not extraction fields
 
 This task's own OBJECTIVE is explicit that matching runs against
 `QuoteLine` rows (via `matched_rfq_line_id`/`part_id`), not
 `extraction_fields` pre-materialization, documenting this as "matching
 operates on materialized quotes in v0.1." A manually-entered `Quote`
 (`source = 'manual'`) has real `QuoteLine` rows with no extraction run
-behind them at all, and those are just as matchable — so "materialized"
+behind them at all, and those are just as matchable - so "materialized"
 here means "a real `Quote`/`QuoteLine` exists," not "was extracted."
 
 ## `generate_for_quote`, not `generate_for_run`
 
 This task's own OBJECTIVE names the generation method `generate_for_run
 (run_id)`. That does not fit this codebase for two independent reasons: (1)
-`docs/planning/03-api-contract.md` §4.12's own literal route table — which
-this task also cites as authoritative for `api/v1/matching.py` — addresses
+`docs/planning/03-api-contract.md` §4.12's own literal route table - which
+this task also cites as authoritative for `api/v1/matching.py` - addresses
 generation by quote (`POST /quotes/{id}/match`), never by extraction run;
 (2) a manually-entered quote (see above) has no `ExtractionRun` at all to
 key on, yet its lines must be matchable too. Read together with the task's
 own clarifying prose ("matching operates on materialized quotes"), `run` in
 the task's own method name is treated as loose shorthand for "one execution
-of the matching process," not literally `ExtractionRun.id` — this service
+of the matching process," not literally `ExtractionRun.id` - this service
 names the method `generate_for_quote(quote_id, ...)` to match both the
 contract's addressing and the OBJECTIVE's own clarifying sentence, rather
 than the task's literal (and, on this reading, self-contradicting) method
@@ -50,14 +50,14 @@ The catalog built for one quote is exactly: (a) every part any line of the
 quote's RFQ requests (the only parts a persisted candidate can ever attach
 to, via that RFQ line's id), plus (b) every part that is an *approved*
 `part_alternatives` entry for one of those RFQ-line parts, even if that
-alternative part is not itself requested anywhere on the RFQ — needed only
+alternative part is not itself requested anywhere on the RFQ - needed only
 so `app.domain.matching.generate_candidates`'s `alternative` strategy can
 recognize a quoted alternative's identity and re-target the match at its
 *canonical* (RFQ-line) part, per §10's own rule. A part in group (b) that is
 not also in group (a) has no `rfq_line_id` of its own; if strategies 1/2/4
 also happen to match it directly (not via the `alternative` re-targeting),
 that candidate is silently dropped rather than persisted with no RFQ line to
-attach to — an accepted, documented gap for v0.1, not a silent bug.
+attach to - an accepted, documented gap for v0.1, not a silent bug.
 `conditional`/`rejected` alternatives are excluded entirely (see
 `app/domain/matching/matcher.py`'s own module docstring for why the
 `alternative` strategy is approved-only here).
@@ -75,7 +75,7 @@ Per §10 ("only strategy 1 auto-confirms... everything else requires human
 confirmation"): a generated `internal_pn` candidate is persisted with
 `human_confirmed=True`/`is_selected=True`/`confirmed_at` set immediately (no
 human action), and the owning `QuoteLine` is updated to
-`match_status=AUTO` (not `CONFIRMED` — that status is reserved for a line a
+`match_status=AUTO` (not `CONFIRMED` - that status is reserved for a line a
 human explicitly confirmed through `confirm_line_match`, giving the two a
 real behavioral distinction rather than collapsing them). Every other
 candidate is persisted unconfirmed and ranked for human review.
@@ -83,7 +83,7 @@ candidate is persisted unconfirmed and ranked for human review.
 ## Regeneration is sticky, keyed off `QuoteLine.match_status`
 
 `generate_for_quote` only (re)generates candidates for lines still
-`UNMATCHED` — an `AUTO` line already carries a `human_confirmed=True`
+`UNMATCHED` - an `AUTO` line already carries a `human_confirmed=True`
 strategy-1 candidate (from a prior generation) that
 `MatchingRepository.delete_unconfirmed_for_line` would never delete, so
 re-running the matcher against it would attempt to insert a second row for
@@ -100,10 +100,10 @@ Per §4.12's literal request shape (`{rfq_line_id, confirmed:true, reason?}`
 addressed by *quote line*, not by candidate id, and supplies the target RFQ
 line directly rather than a `PartMatchCandidate` id. `confirm_line_match`
 resolves the RFQ line's own `part_id` (every `RfqLine` targets exactly one
-part — `app/models/rfqs.py`) and applies it to the `QuoteLine` directly; if
+part - `app/models/rfqs.py`) and applies it to the `QuoteLine` directly; if
 matching candidate row(s) already exist for that `(quote_line, part)` pair
 they are marked confirmed/selected too (so a subsequent `GET .../matches`
-reflects the human's choice), but a candidate row is not a precondition — a
+reflects the human's choice), but a candidate row is not a precondition - a
 reviewer may confirm a pairing the matcher never proposed. Any other
 previously-confirmed candidate on the same line (a different part) is
 un-confirmed as a side effect: a line has exactly one true match, and this
@@ -230,7 +230,7 @@ class MatchingService:
         auto_confirmed_lines = 0
         for line in lines:
             if line.match_status != QuoteLineMatchStatus.UNMATCHED:
-                continue  # sticky — see module docstring
+                continue  # sticky - see module docstring
             line_texts = LineTexts(
                 part_number_text=line.quoted_part_number or line.quoted_mpn,
                 description_text=line.description,
@@ -244,7 +244,7 @@ class MatchingService:
             for rank, cand in enumerate(candidates, start=1):
                 rfq_line_id = part_to_rfq_line.get(cand.part_id)
                 if rfq_line_id is None:
-                    # No RFQ line targets this part — cannot satisfy the
+                    # No RFQ line targets this part - cannot satisfy the
                     # required rfq_line_id FK; see module docstring.
                     continue
                 auto = cand.strategy is MatchStrategy.INTERNAL_PN
@@ -335,7 +335,7 @@ class MatchingService:
                 cand.confirmed_by_id = actor_id
                 cand.confirmed_at = now
             elif cand.human_confirmed:
-                # A different part was previously confirmed for this line —
+                # A different part was previously confirmed for this line -
                 # this explicit confirmation supersedes it (module docstring).
                 cand.human_confirmed = False
                 cand.is_selected = False

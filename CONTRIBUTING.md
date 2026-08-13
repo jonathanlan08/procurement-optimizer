@@ -12,7 +12,7 @@ cp ../.env.example ../.env   # adjust if needed; never commit .env
 
 You need a Postgres instance. Two supported paths:
 
-- **No Docker (used by the test suite by default):** nothing to start — `pgserver`
+- **No Docker (used by the test suite by default):** nothing to start - `pgserver`
   (a dev dependency) spins up a real, user-space PostgreSQL automatically the
   first time tests run. This is the default when `PO_TEST_DATABASE_URL` is unset.
 - **Docker:** `docker compose up -d` from the repo root starts `postgres` and
@@ -21,7 +21,7 @@ You need a Postgres instance. Two supported paths:
   `postgresql+psycopg://postgres:postgres@localhost:5432/procurement`.
 
 The backend itself always runs on the host (`uv run uvicorn ...` from `backend/`),
-never inside compose — see `docs/planning/01-architecture.md` §11.
+never inside compose - see `docs/planning/01-architecture.md` §11.
 
 ### Frontend (React + TypeScript + Vite, in `frontend/`)
 
@@ -31,7 +31,7 @@ npm install
 BACKEND_PORT=8001 npm run dev   # Vite dev server on :5173, proxying /api to the backend
 ```
 
-The dev server proxies `/api` to `http://localhost:${BACKEND_PORT:-8000}` — set
+The dev server proxies `/api` to `http://localhost:${BACKEND_PORT:-8000}` - set
 `BACKEND_PORT` to wherever your backend runs.
 
 ## Test commands
@@ -51,7 +51,7 @@ npm run typecheck   # tsc --noEmit
 npm run build       # production build (also typechecks)
 ```
 
-End-to-end (from the repo root — boots an ephemeral backend + frontend, then
+End-to-end (from the repo root - boots an ephemeral backend + frontend, then
 runs Playwright on Chromium/Firefox/WebKit):
 
 ```
@@ -67,7 +67,7 @@ uv run mypy
 ```
 
 `ruff` and `mypy` (strict on `app/domain`) run in CI and should run clean before
-you open a PR. Floats are banned in domain/money code — use `Decimal`.
+you open a PR. Floats are banned in domain/money code - use `Decimal`.
 
 ## File ownership and review
 
@@ -76,7 +76,7 @@ Per `docs/planning/09-task-decomposition.md` §10 (ratified in
 
 - **Principal review required (R):** changes to `app/schemas/*` (decimal-as-string
   and missing-field conventions), `app/models/*` (org FK, constraints, indexes),
-  `app/exports/**` (formula-escaping), `app/seed/**`, and any migration —
+  `app/exports/**` (formula-escaping), `app/seed/**`, and any migration -
   need a principal diff review before merge, even though the underlying work is
   delegable.
 - **Principal-owned, not delegable:** `app/core/**`, `api/deps.py`,
@@ -86,12 +86,12 @@ Per `docs/planning/09-task-decomposition.md` §10 (ratified in
   (`domain/optimization/model_builder.py`, `scaling.py`, `determinism.py`),
   `providers/__init__.py`/`*/base.py`, `services/audit.py`, `jobs/runner.py`,
   and any migration touching tenancy or composite FKs. Don't modify these
-  directly — propose the change and let the principal make or review it.
+  directly - propose the change and let the principal make or review it.
 - A PR that needs a change to a principal-owned file should describe the
   requested change rather than editing the file itself.
 
 **Migrations are append-only once merged.** Never edit a migration that has
-already been merged, even to fix a bug in it — write a new migration instead.
+already been merged, even to fix a bug in it - write a new migration instead.
 
 ## Before opening a PR
 

@@ -1,4 +1,4 @@
-/** Overview workspace — routed at "/" (replaces the `PlaceholderPage` that
+/** Overview workspace - routed at "/" (replaces the `PlaceholderPage` that
  * used to sit at the index route, per this task's ALLOWED App.tsx edit; P1
  * audit finding: "the Overview screen is still an under-construction
  * placeholder").
@@ -6,7 +6,7 @@
  * Design decisions:
  *  - **Three KPI tiles, not a dashboard of charts.** MASTER.md's "KPI
  *    cards" spec ("compact, label + value") plus this task's own "keep it
- *    lean and dense; no charts" instruction — suppliers/parts/open-RFQ
+ *    lean and dense; no charts" instruction - suppliers/parts/open-RFQ
  *    totals are each a `page.total` from a `limit=1` list call (./api.ts),
  *    the cheapest honest count without a dedicated stats endpoint.
  *  - **"Recent scenarios" shows the latest RFQ's own scenario history, not
@@ -15,9 +15,9 @@
  *    unbounded per-RFQ scan to fake one is exactly the N+1 this codebase
  *    avoids elsewhere.
  *  - **Quick links mirror AppShell's own NAV list** (minus Overview
- *    itself) — the workspace's actual navigation vocabulary, not an
+ *    itself) - the workspace's actual navigation vocabulary, not an
  *    independently invented set of destinations.
- *  - **The "Demo — synthetic data" posture is not duplicated as a second
+ *  - **The "Demo - synthetic data" posture is not duplicated as a second
  *    badge.** AppShell.tsx's header already renders that badge globally
  *    (layout/** is out of scope for this task); this page's subtitle only
  *    echoes the same fact in one line of text when `session.demo_mode` is
@@ -37,7 +37,7 @@ import { useMostRecentRfq, useOpenRfqTotal, usePartTotal, useSupplierTotal } fro
 
 const RECENT_SCENARIOS_LIMIT = 5;
 
-// `hue` (v2 extension) mirrors AppShell's own NAV list — see that file's
+// `hue` (v2 extension) mirrors AppShell's own NAV list - see that file's
 // comment: only the seven design-director-assigned workspaces get one, BOMs
 // and FX rates render as before (no `overview-link-card--*` modifier applied).
 const WORKSPACE_LINKS: { to: string; label: string; description: string; hue?: HueName }[] = [
@@ -51,10 +51,10 @@ const WORKSPACE_LINKS: { to: string; label: string; description: string; hue?: H
   { to: "/audit", label: "Audit log", description: "Full change history across the workspace.", hue: "audit" },
 ];
 
-// The end-to-end workflow spelled out for a first-time user — the reviewer's
+// The end-to-end workflow spelled out for a first-time user - the reviewer's
 // "biggest missing UX element". Each step deep-links to where it happens.
 const WORKFLOW_STEPS: { to: string; title: string; description: string }[] = [
-  { to: "/suppliers", title: "Add suppliers & parts", description: "Set up your vendors and the parts you buy — or start from the seeded demo data." },
+  { to: "/suppliers", title: "Add suppliers & parts", description: "Set up your vendors and the parts you buy - or start from the seeded demo data." },
   { to: "/rfqs", title: "Create an RFQ & invite suppliers", description: "Open a request for quotation, add the lines you need, and invite vendors to quote." },
   { to: "/rfqs", title: "Enter or upload quotes", description: "Type quotes in by hand, or upload a supplier's document and let extraction read it." },
   { to: "/scenarios", title: "Set assumptions & run a scenario", description: "Fill in any costs the quotes don't state, then compute landed cost and the best allocation." },
@@ -78,7 +78,7 @@ function strategyLabel(strategy: string): string {
 }
 
 /** Structural match for whatever `useSuppliers`/`useParts`/`useRfqs` return
- * — every one of those list hooks' response carries `page.total`, so this
+ * - every one of those list hooks' response carries `page.total`, so this
  * card doesn't need to know which resource it's counting. */
 interface TotalQuery {
   isLoading: boolean;
@@ -88,7 +88,7 @@ interface TotalQuery {
 
 function totalDisplay(query: TotalQuery): string {
   if (query.isLoading) return "…";
-  if (query.isError) return "—";
+  if (query.isError) return "-";
   return (query.data?.page.total ?? 0).toLocaleString();
 }
 
@@ -110,7 +110,7 @@ function KpiCard({
       <span className="overview-kpi-label">{label}</span>
       <span
         className={`overview-kpi-value overview-kpi-value--${hue}`}
-        title={query.isError ? "Failed to load — try refreshing." : undefined}
+        title={query.isError ? "Failed to load - try refreshing." : undefined}
       >
         {totalDisplay(query)}
       </span>
@@ -130,7 +130,7 @@ function RecentScenariosCard() {
   return (
     // v2 hue extension: this is the page's PRIMARY card (the "Workspaces"
     // quick-link card beside it is secondary), so it's the one that gets
-    // the 3px hue border-top — "one per page, not every card".
+    // the 3px hue border-top - "one per page, not every card".
     <section className="detail-section overview-card hue-panel-top hue-panel-top--overview">
       <div className="detail-header-row">
         <h3 className="detail-section-title">Recent scenarios</h3>
@@ -144,11 +144,11 @@ function RecentScenariosCard() {
       ) : recentRfqQuery.isError ? (
         <ApiErrorBanner error={recentRfqQuery.error} />
       ) : !recentRfq ? (
-        <p className="detail-label">No RFQs yet — create one to start comparing suppliers.</p>
+        <p className="detail-label">No RFQs yet - create one to start comparing suppliers.</p>
       ) : (
         <>
           <p className="overview-recent-context detail-label">
-            Latest RFQ: <span className="detail-value mono">{recentRfq.internal_reference}</span> —{" "}
+            Latest RFQ: <span className="detail-value mono">{recentRfq.internal_reference}</span> -{" "}
             {recentRfq.name}
           </p>
           {scenariosQuery.isLoading ? (
@@ -157,7 +157,7 @@ function RecentScenariosCard() {
             <ApiErrorBanner error={scenariosQuery.error} />
           ) : scenarios.length === 0 ? (
             <p className="detail-label">
-              No scenarios yet for this RFQ — open Compare to score and allocate suppliers.
+              No scenarios yet for this RFQ - open Compare to score and allocate suppliers.
             </p>
           ) : (
             <ul className="overview-scenario-list">
@@ -185,7 +185,7 @@ export function OverviewPage() {
 
   // Sanctioned motion pattern 2 (lib/motion.ts): KPI cards, the workflow
   // steps, and the two lower cards fade up in sequence on arrival. Mount-time
-  // only — count refetches never re-trigger it.
+  // only - count refetches never re-trigger it.
   const pageRef = useEntranceStagger<HTMLElement>(
     ".overview-kpi-card, .overview-workflow-step, .overview-columns > .overview-card",
   );
@@ -198,7 +198,7 @@ export function OverviewPage() {
           <h1>Overview</h1>
           <p>
             Workspace summary for {session?.organization_name ?? "your organization"}.
-            {session?.demo_mode ? " Demo — synthetic data throughout." : ""}
+            {session?.demo_mode ? " Demo - synthetic data throughout." : ""}
           </p>
         </div>
       </header>
@@ -212,7 +212,7 @@ export function OverviewPage() {
       <section className="detail-section overview-card overview-workflow">
         <h3 className="detail-section-title">How it works</h3>
         <p className="detail-label">
-          The workflow, end to end — each step links to where you do it.
+          The workflow, end to end - each step links to where you do it.
         </p>
         <ol className="overview-workflow-list">
           {WORKFLOW_STEPS.map((step, i) => (

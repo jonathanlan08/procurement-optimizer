@@ -1,26 +1,26 @@
-/** Audit-log data layer — TanStack Query hooks against the FROZEN wire
+/** Audit-log data layer - TanStack Query hooks against the FROZEN wire
  * contract given in this task's brief. The backend is being built
  * concurrently (see ../reports/api.ts's file header for the same
- * "code to the frozen contract" situation) — this file documents the two
+ * "code to the frozen contract" situation) - this file documents the two
  * places the contract leaves a shape ambiguous:
  *  - **`actor_user_id`/`explanation` are typed nullable.** The contract
  *    lists both as plain fields (no `?`), but an audit trail necessarily
  *    also records system-initiated changes (scheduled jobs, migrations)
  *    with no human actor, and not every event necessarily carries a
- *    human-readable explanation — nullable is the safer reading given the
+ *    human-readable explanation - nullable is the safer reading given the
  *    UI spec's own "Show raw UUIDs for actors ... do not fake names"
  *    instruction, which only makes sense if a row can legitimately have no
- *    actor to show a UUID for. AuditPage.tsx renders `null` as "— system"
+ *    actor to show a UUID for. AuditPage.tsx renders `null` as "system"
  *    for the actor and "No explanation recorded." for the explanation,
  *    never a fabricated value.
  *  - **`before_state`/`after_state` are typed as `Record<string, unknown> |
- *    null`** — genuinely untyped JSONB snapshots (no fixed shape is
+ *    null`** - genuinely untyped JSONB snapshots (no fixed shape is
  *    possible across every `entity_type` this log can cover), same
  *    "don't invent a shape" treatment ../reports/api.ts's header documents
  *    for `parameters`. `null` covers a create event's `before_state` and a
  *    delete/archive event's `after_state`.
  *  - `request_id` is the one field the contract itself marks optional
- *    (`request_id?`) — typed `string | null` here since a present-but-empty
+ *    (`request_id?`) - typed `string | null` here since a present-but-empty
  *    key vs. an absent key are indistinguishable once through `JSON.parse`
  *    either way.
  */

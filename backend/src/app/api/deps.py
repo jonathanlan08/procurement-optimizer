@@ -1,4 +1,4 @@
-"""FastAPI dependency chain — PRINCIPAL-OWNED. Isolation control #1.
+"""FastAPI dependency chain - PRINCIPAL-OWNED. Isolation control #1.
 
 Chain: cookie -> AuthService.resolve -> Principal(user, org, role)
        mutating request -> CSRF double-submit + Origin allowlist

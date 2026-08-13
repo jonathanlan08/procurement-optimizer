@@ -1,10 +1,10 @@
-/** Reports workspace — routed at `/reports` (replaces the `PlaceholderPage`,
+/** Reports workspace - routed at `/reports` (replaces the `PlaceholderPage`,
  * per this task's ALLOWED App.tsx edit): generate an export for a scenario,
  * then track/download every report this organization has generated.
  *
  * Design decisions:
  *  - **Scenario picker is RFQ-then-scenario, reusing
- *    `useRfqScenarios(rfqId)`** — the exact same two-step picker
+ *    `useRfqScenarios(rfqId)`** - the exact same two-step picker
  *    ../comparison/ComparisonPage.tsx already uses, per this task's own
  *    instruction to "reuse whatever scenario-listing call
  *    features/comparison already uses." There is no org-wide
@@ -14,11 +14,11 @@
  *    timer.** `state` moves `pending` -> `ready`/`failed` asynchronously
  *    server-side with no push channel in this codebase (mirrors
  *    ../comparison/api.ts's own "no job queue exists" note for scenario
- *    solving) — a predictable manual refresh keeps this page's behavior
+ *    solving) - a predictable manual refresh keeps this page's behavior
  *    observable in tests without timer-driven flakiness, the same call this
  *    codebase already makes everywhere else (DataTable's own `onRetry`).
  *  - **Download is a plain `<a href download>`**, never JS-triggered
- *    `window.location` navigation and never a fetch+blob dance — see
+ *    `window.location` navigation and never a fetch+blob dance - see
  *    ./api.ts's file header.
  */
 
@@ -53,7 +53,7 @@ import "./reports.css";
 const LIMIT = 20;
 
 /** Bytes -> human size string. `size_bytes` is a plain JSON number/`null`
- * (see ./api.ts's header), so ordinary arithmetic is safe — duplicated
+ * (see ./api.ts's header), so ordinary arithmetic is safe - duplicated
  * locally rather than importing ../documents/api.ts's `formatBytes`, same
  * "small pure helper per feature" convention ../comparison/ComparisonPage.tsx's
  * file header documents for its own `toPercentDisplay`. */
@@ -247,7 +247,7 @@ export function ReportsPage() {
         header: "Generated",
         cell: (ctx) => {
           const v = ctx.getValue<string | null>();
-          return v ? new Date(v).toLocaleString() : "—";
+          return v ? new Date(v).toLocaleString() : "-";
         },
       },
       {
@@ -257,7 +257,7 @@ export function ReportsPage() {
         meta: { align: "right" },
         cell: (ctx) => {
           const v = ctx.getValue<number | null>();
-          return v === null ? "—" : formatBytes(v);
+          return v === null ? "-" : formatBytes(v);
         },
       },
       {
@@ -294,7 +294,7 @@ export function ReportsPage() {
           <PageEyebrow hue="reports">Reports</PageEyebrow>
           <h1>Reports</h1>
           <p>
-            Generate and download exports — supplier comparisons, CFO recommendations,
+            Generate and download exports - supplier comparisons, CFO recommendations,
             negotiation briefs, scenario summaries, and audit history.
           </p>
         </div>
@@ -302,7 +302,7 @@ export function ReportsPage() {
 
       {canWrite && (
         // v2 hue extension: this page has no Drawer and no full "card"
-        // chrome element (unlike Suppliers/Parts/RFQs/Audit) — "Generate
+        // chrome element (unlike Suppliers/Parts/RFQs/Audit) - "Generate
         // report" is the page's one write-oriented primary section (the
         // history table below is read-only), so it's the target for the 3px
         // hue border-top rather than inventing new card chrome.
@@ -314,7 +314,7 @@ export function ReportsPage() {
                 <option value="">Select RFQ…</option>
                 {(rfqsQuery.data?.items ?? []).map((r) => (
                   <option key={r.id} value={r.id}>
-                    {r.internal_reference} — {r.name}
+                    {r.internal_reference} - {r.name}
                   </option>
                 ))}
               </select>

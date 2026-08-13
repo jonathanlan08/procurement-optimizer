@@ -352,7 +352,7 @@ class TestRfqCreate:
 
 class TestRfqListLineCounts:
     """2026-08 product-audit remediation, P2: "Lines column always displays
-    a dash because the summary API omits the count" — `GET /rfqs` (the list/
+    a dash because the summary API omits the count" - `GET /rfqs` (the list/
     summary endpoint) must carry a correct `line_count` per row."""
 
     def test_list_line_count_reflects_actual_line_count(
@@ -366,7 +366,7 @@ class TestRfqListLineCounts:
 
         one_part = _three_parts(client, headers, unit_id)[:1]
         single_line_rfq = _create_rfq(client, headers, one_part)
-        # drain the only line to zero — no minimum-line guard on a draft RFQ
+        # drain the only line to zero - no minimum-line guard on a draft RFQ
         # (RfqService.remove_line), so this is the only way to get a real,
         # persisted 0-line RFQ to assert the "0" case against.
         del_resp = client.delete(
@@ -385,7 +385,7 @@ class TestRfqListLineCounts:
         self, client: TestClient, org_a: dict[str, Any], migrated_engine: Engine
     ) -> None:
         """Each RFQ's `line_count` in the listing reflects only its OWN
-        lines, never another RFQ's — a regression a naive unscoped `GROUP
+        lines, never another RFQ's - a regression a naive unscoped `GROUP
         BY` (missing the per-org filter, or missing the join predicate)
         could produce."""
         unit_id = _seed_unit(migrated_engine, organization_id=org_a["org_id"])
@@ -525,7 +525,7 @@ class TestRfqStatusWorkflow:
         org_b: dict[str, Any],
         migrated_engine: Engine,
     ) -> None:
-        """Name resolution joins through this org's memberships only — an
+        """Name resolution joins through this org's memberships only - an
         actor id belonging to another organization must never resolve to that
         org's user name (isolation control, 2026-08 review P3 fix)."""
         from sqlalchemy.orm import Session as SaSession

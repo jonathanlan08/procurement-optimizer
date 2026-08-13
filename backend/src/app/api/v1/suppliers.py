@@ -3,7 +3,7 @@
 Concurrency (§1.7): `GET` sets `ETag: "<version>"`; `PATCH` requires `If-Match`
 and returns `409 conflict_version` on mismatch. Archive/unarchive are
 restricted to administrator+ per the contract's route table (`O A`, not
-analyst) — analysts may create/read/update but not archive.
+analyst) - analysts may create/read/update but not archive.
 
 Deviation from this task's prose (contract wins, per instructions): the
 contract's route table lists `PATCH /suppliers/{id}`, not `PUT`; this router

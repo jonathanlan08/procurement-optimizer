@@ -1,7 +1,7 @@
 """Extraction routes (docs/planning/03-api-contract.md §4.10). Sync `def` by
 policy, mirroring every other router in this codebase.
 
-**Literal contract paths, not the delegating task's own paraphrase** — per
+**Literal contract paths, not the delegating task's own paraphrase** - per
 this task's own instruction ("Follow the contract's literal paths where they
 differ") and the same resolution `api/v1/documents.py`/`api/v1/quotes.py`
 already document for the identical class of gap:
@@ -13,7 +13,7 @@ already document for the identical class of gap:
 | `PATCH /extraction-runs/{id}/fields/{fid}`       | `POST .../confirm` + `POST .../correct`  |
 | `POST /extraction-runs/{id}/confirm`             | `POST /extraction-runs/{id}/materialize` |
 
-**Two routers, one module** — same shape `api/v1/documents.py`/
+**Two routers, one module** - same shape `api/v1/documents.py`/
 `api/v1/quotes.py` already establish: `document_extractions_router` nests
 start/list under the parent document (`/quote-documents/{id}/extraction-runs`,
 §4.10's own route table), while every other route addresses the run
@@ -23,7 +23,7 @@ directly (`/extraction-runs/{id}...`). Both are exported and both mounted in
 **`POST .../extraction-runs` returns `201` with the completed run body, not
 `202` + a job envelope.** §1.5 documents this exact shape as the
 `JOB_RUNNER=inline` case ("`201` with the completed resource... documented,
-so contract tests assert both shapes") — this v0.1 build only ever runs
+so contract tests assert both shapes") - this v0.1 build only ever runs
 inline (`services/extraction_service.py`'s own module docstring), so that is
 the only shape implemented.
 
@@ -35,7 +35,7 @@ correcting); its absence with `is_confirmed=true` is a plain confirmation;
 neither combination is a no-op the route rejects with `422`.
 
 **`POST .../confirm` (materialize) returns a `QuoteResponse`** (the same
-schema `api/v1/quotes.py` already uses), including its `ETag` header —
+schema `api/v1/quotes.py` already uses), including its `ETag` header -
 `materialize()` builds a real `Quote`, and every other route in this
 codebase that returns one sets the same header (`api/v1/quotes.py`'s own
 `_set_etag`, duplicated here as a two-line inline rather than importing a
@@ -89,7 +89,7 @@ def get_extraction_service(
     settings: SettingsDep,
 ) -> ExtractionService:
     # Built per request from Settings, not injected via api/deps.py
-    # (principal-owned, off limits) — same pattern api/v1/documents.py's
+    # (principal-owned, off limits) - same pattern api/v1/documents.py's
     # get_document_service already establishes for build_storage_provider.
     storage = build_storage_provider(settings)
     provider = build_extraction_provider(settings)
@@ -192,13 +192,13 @@ def confirm_all_extraction_fields(
     principal: Annotated[Principal, Depends(require_role(Role.ANALYST))],
 ) -> ExtractionRunResponse:
     """2026-08 product-audit remediation, P2 (bulk field confirmation). No
-    request body (yet) — every field still requiring confirmation on this
+    request body (yet) - every field still requiring confirmation on this
     run is confirmed in one call, see `ExtractionService.confirm_all_fields`.
 
     Returns the run detail, not a field (unlike `patch_extraction_field`
     above): this task's brief explicitly allows either "the same shape the
     single-field confirm returns, or the run detail", and a bulk action over
-    an unbounded number of fields has no single field to return — the run
+    an unbounded number of fields has no single field to return - the run
     (now `ready`, or unchanged if there was nothing pending) is the
     meaningful result here.
     """

@@ -1,33 +1,33 @@
-# 00 — Principal's Decision Record (Plan Approval)
+# 00 - Principal's Decision Record (Plan Approval)
 
 Date: 2026-08-10 · Author: principal (Fable 5) · Status: **PLAN APPROVED with the rulings below**
 
-The planning package (`01`–`09`) produced by the architecture-manager subagent is approved as the
+The planning package (`01`-`09`) produced by the architecture-manager subagent is approved as the
 basis for implementation, subject to the corrections and rulings in this document. Where this
-document conflicts with `01`–`09`, **this document wins**.
+document conflicts with `01`-`09`, **this document wins**.
 
-## 1. Architecture-manager recommendations — accepted
+## 1. Architecture-manager recommendations - accepted
 
-1. **CP-SAT determinism** — ACCEPTED in full: `num_search_workers=1`, `random_seed=0`,
+1. **CP-SAT determinism** - ACCEPTED in full: `num_search_workers=1`, `random_seed=0`,
    `max_deterministic_time`, sorted inputs, stored `model_hash`; report the **exact Decimal
    recomputation** of the chosen allocation, never the scaled solver objective; integer scale
    `10^4` for int64 headroom. Determinism controls land with the first solve (task 6.6 is not
    deferrable).
-2. **Composite org FKs** — ACCEPTED: `UNIQUE (organization_id, id)` on parents; child FKs carry
+2. **Composite org FKs** - ACCEPTED: `UNIQUE (organization_id, id)` on parents; child FKs carry
    `organization_id`. Cross-org references become database-refusable. Route-matrix test asserts
    404 (not 403) for every endpoint accessed cross-org.
-3. **Numeric scales** — ACCEPTED: FX `NUMERIC(24,12)`; unit prices `NUMERIC(18,8)`; monetary
+3. **Numeric scales** - ACCEPTED: FX `NUMERIC(24,12)`; unit prices `NUMERIC(18,8)`; monetary
    totals `NUMERIC(18,6)`. Money crosses the wire as **strings**, always.
-4. **Contract integrity** — ACCEPTED: committed `docs/openapi.json` + `openapi-typescript`
+4. **Contract integrity** - ACCEPTED: committed `docs/openapi.json` + `openapi-typescript`
    generation + CI drift job; `react-hook-form` + `zod`; **all DB-touching routes are sync `def`**
    (threadpool), never `async def` with a sync session.
-5. **Auth details** — ACCEPTED: CSRF double-submit **plus** Origin/Referer allowlist;
+5. **Auth details** - ACCEPTED: CSRF double-submit **plus** Origin/Referer allowlist;
    `SameSite=Lax`; DB stores `sha256(session_token)` only; providers extended with `Clock`,
    `IdGenerator`, `ReportRenderer`, `AiNarrativeProvider`.
 
-**Library rulings** (licence + no-Homebrew constraints): `pypdfium2` (not PyMuPDF — AGPL) for PDF
+**Library rulings** (licence + no-Homebrew constraints): `pypdfium2` (not PyMuPDF - AGPL) for PDF
 rastering; `pypdf` + `pdfplumber` for text/tables; ReportLab for PDF generation; `rapidfuzz` (MIT)
-for fuzzy matching; fonts self-hosted via `@fontsource` (no Google Fonts CDN — CSP + offline demo);
+for fuzzy matching; fonts self-hosted via `@fontsource` (no Google Fonts CDN - CSP + offline demo);
 CI licence gate blocks AGPL/GPL.
 
 ## 2. Rulings on the open questions
@@ -62,9 +62,9 @@ Additional rulings:
 - **#12 lead time**: quotes whose lead time misses the required-by date are excluded by the
   pre-solve eligibility filter with a reason string; user may override per supplier (logged).
 - **#14 confirmation roles**: `analyst`+ confirm; no uploader/confirmer segregation in v0.1
-  (single-analyst demo) — noted in SECURITY.md as a production gap.
-- **#18–#23 lifecycle**: no retention/purge, no partitioning, no password reset (CLI script only),
-  no email invitation flow (admin adds members directly), demo reset via seed script re-run —
+  (single-analyst demo) - noted in SECURITY.md as a production gap.
+- **#18-#23 lifecycle**: no retention/purge, no partitioning, no password reset (CLI script only),
+  no email invitation flow (admin adds members directly), demo reset via seed script re-run -
   all v0.1 accepted limitations, documented in ROADMAP.md.
 - **#24 PDF fonts**: bundle DejaVu Sans in ReportLab output; CJK coverage is roadmap.
 - **#25 dates**: `due_date`/`required_by_date` are calendar dates with documented
@@ -92,34 +92,34 @@ the operating model; **R**-marked paths require my diff review before commit.
 
 Verdict: APPROVE-WITH-FIXES. All findings triaged; resolution status:
 
-- **#1 lockout rollback (HIGH)** — FIXED: failure counters write in their own
+- **#1 lockout rollback (HIGH)** - FIXED: failure counters write in their own
   transaction (`AuthService._record_failed_login`, `SELECT ... FOR UPDATE`);
   regression-tested against rollback.
-- **#2 timing oracle (HIGH)** — FIXED: dummy-hash verification on absent/locked
+- **#2 timing oracle (HIGH)** - FIXED: dummy-hash verification on absent/locked
   accounts; locked accounts return the generic failure message.
-- **#3 isolation unwired (HIGH)** — FIXED: `OrgOwnedBase` abstract base (typed
+- **#3 isolation unwired (HIGH)** - FIXED: `OrgOwnedBase` abstract base (typed
   pk + organization_id) adopted by AuditEvent/Job; repository base gains
   post-fetch check, `get_or_raise`, `list_page`; permission matrix + coverage
   test land (tasks 1.12/1.13); composite `UNIQUE (organization_id, id)` will be
   created by each Phase 2+ business-table migration (0001's tables have no
   business children, so retrofitting was declined).
-- **#4 CSRF after refresh (MEDIUM)** — FIXED: `/me` returns `csrf_token`;
+- **#4 CSRF after refresh (MEDIUM)** - FIXED: `/me` returns `csrf_token`;
   browser-verified (login → hard reload → mutation succeeds).
-- **#5 auth audit (MEDIUM)** — PARTIAL by ruling: `auth.login_succeeded` and
+- **#5 auth audit (MEDIUM)** - PARTIAL by ruling: `auth.login_succeeded` and
   `auth.logout` are audit events; failed logins go to the structured security
   log because the org-scoped audit table cannot represent org-less failures
   (documented deviation for SECURITY.md).
-- **#6 dead logging (MEDIUM)** — FIXED: `configure_logging` wired in
+- **#6 dead logging (MEDIUM)** - FIXED: `configure_logging` wired in
   `create_app`; security log used for failed logins.
-- **#7 idle expiry (MEDIUM)** — FIXED: 2h idle timeout in `resolve`. Session
+- **#7 idle expiry (MEDIUM)** - FIXED: 2h idle timeout in `resolve`. Session
   purge job remains roadmap.
-- **#8 CI gaps (MEDIUM)** — PARTIAL: mypy --strict now clean (26 files) and in
+- **#8 CI gaps (MEDIUM)** - PARTIAL: mypy --strict now clean (26 files) and in
   CI. pip-audit / licence gate / OpenAPI drift jobs are scheduled for their
   phases (drift job lands with the first generated client in Phase 2).
-- **#9 money (LOW)** — no defect found by review; `places=0` covered by tests.
-- **#10 misc (LOW)** — FIXED: InvalidHashError caught; docs gated off in prod
+- **#9 money (LOW)** - no defect found by review; `places=0` covered by tests.
+- **#10 misc (LOW)** - FIXED: InvalidHashError caught; docs gated off in prod
   (unless demo_mode); TRUNCATE trigger added to 0001 (edited pre-release by
-  principal ruling — append-only applies from first release); rate-limiter key
+  principal ruling - append-only applies from first release); rate-limiter key
   eviction bound. REVOKE-based audit grants deferred: dev runs as table owner;
   documented for production in SECURITY.md.
 

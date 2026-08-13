@@ -2,7 +2,7 @@
 
 Thin CLI wrapper around `app.seed.demo_dataset.seed_demo_dataset`, which owns
 the actual dataset (org/users, suppliers, parts, BOMs, RFQs, quotes, FX
-overrides, scoring configurations, scenarios, documents + extraction — see
+overrides, scoring configurations, scenarios, documents + extraction - see
 that module's docstring for the full inventory and the SPEC checklist items
 each piece demonstrates). ALL DATA IS SYNTHETIC.
 

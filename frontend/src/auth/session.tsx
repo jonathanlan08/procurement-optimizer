@@ -1,4 +1,4 @@
-/** Auth session state + guards — PRINCIPAL-OWNED. */
+/** Auth session state + guards - PRINCIPAL-OWNED. */
 
 import {
   createContext,
@@ -40,7 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // a hard refresh keeps the cookie but loses the in-memory CSRF token;
     // /me returns it so the session survives refreshes.
-    // Only a 401 proves "signed out" — a 429 (shared-IP rate limit), 5xx, or
+    // Only a 401 proves "signed out" - a 429 (shared-IP rate limit), 5xx, or
     // network blip must not bounce a valid session to the login page, so any
     // non-401 failure gets one retry before we give up.
     let cancelled = false;

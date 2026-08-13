@@ -121,7 +121,7 @@ def upgrade() -> None:
         sa.Column("part_id", pg.UUID(as_uuid=True), nullable=False),
         sa.Column("required_quantity", sa.Numeric(18, 6), nullable=False),
         sa.Column(
-            # plain FK — unit_definitions.organization_id is nullable (global
+            # plain FK - unit_definitions.organization_id is nullable (global
             # catalogue), so the composite org-guard FK cannot apply here
             # (see Part.unit_definition_id, migration 0004).
             "unit_definition_id",
@@ -158,7 +158,7 @@ def upgrade() -> None:
     )
     op.create_index("ix_rfq_lines_organization_id", "rfq_lines", ["organization_id"])
     op.create_index(
-        # 02-erd.md §9 ix_rfq_lines_rfq: RFQ detail view — every line of one
+        # 02-erd.md §9 ix_rfq_lines_rfq: RFQ detail view - every line of one
         # RFQ, in line-number order.
         "ix_rfq_lines_rfq",
         "rfq_lines",

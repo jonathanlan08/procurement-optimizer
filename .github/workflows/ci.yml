@@ -91,7 +91,7 @@ jobs:
       PO_ALLOWED_ORIGINS: '["http://localhost:5173"]'
       # A scripted browser firing many TanStack Query fetches per page trips
       # the general-purpose in-memory rate limiter (tuned for one interactive
-      # dev session, not a test suite) — raised here, config only, same as
+      # dev session, not a test suite) - raised here, config only, same as
       # scripts/e2e_local.sh.
       PO_RATE_LIMIT_PER_MINUTE: "6000"
       PO_RATE_LIMIT_AUTH_PER_MINUTE: "300"
@@ -103,8 +103,8 @@ jobs:
       # run concurrently and own the uv/npm caches; when this job also tried to
       # save them, the post-job save raced them ("Unable to reserve cache …
       # another job may be creating this cache") and setup-uv's post step exited
-      # 2, failing an e2e run whose every real step — including the whole
-      # Playwright suite — had already passed.
+      # 2, failing an e2e run whose every real step - including the whole
+      # Playwright suite - had already passed.
       - uses: astral-sh/setup-uv@v5
         with:
           python-version: "3.12"

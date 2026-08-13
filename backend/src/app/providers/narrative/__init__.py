@@ -2,7 +2,7 @@
 
 `AiNarrativeProvider` (base.py) is the Protocol every provider implements.
 `TemplateNarrativeProvider` (template.py) is the only implementation shipped
-in v0.1 — deterministic, offline, `is_generated=False` (SPEC §External-
+in v0.1 - deterministic, offline, `is_generated=False` (SPEC §External-
 service strategy: "Public demo works without any paid AI key"). The
 config-selected factory (`app.core.config.NarrativeProviderKind` ->
 concrete provider) lives in `app.services.brief_service.

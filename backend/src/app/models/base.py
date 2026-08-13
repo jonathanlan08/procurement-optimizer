@@ -1,4 +1,4 @@
-"""Declarative base and mixins — PRINCIPAL-OWNED.
+"""Declarative base and mixins - PRINCIPAL-OWNED.
 
 Conventions (docs/planning/02-erd.md §1, ratified):
 - UUID primary keys generated in the application (IdGenerator), never in the DB
@@ -37,7 +37,7 @@ NAMING_CONVENTION = {
 class Base(DeclarativeBase):
     metadata = MetaData(naming_convention=NAMING_CONVENTION)
 
-    type_annotation_map = {  # noqa: RUF012 — SQLAlchemy declarative API contract
+    type_annotation_map = {  # noqa: RUF012 - SQLAlchemy declarative API contract
         uuid.UUID: UUID(as_uuid=True),
         datetime: TIMESTAMP(timezone=True),
     }
@@ -66,7 +66,7 @@ class OrgOwnedMixin:
 
 
 def org_identity_constraint(table_name: str) -> UniqueConstraint:
-    """UNIQUE (organization_id, id) — the target for composite org FKs.
+    """UNIQUE (organization_id, id) - the target for composite org FKs.
 
     Include in __table_args__ of every OrgOwned business table.
     """

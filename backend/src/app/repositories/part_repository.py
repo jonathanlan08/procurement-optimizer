@@ -1,4 +1,4 @@
-"""Part repository — org-scoped data access (docs/planning/02-erd.md §4).
+"""Part repository - org-scoped data access (docs/planning/02-erd.md §4).
 
 Extends OrgScopedRepository, so every query is filtered by organization_id
 before any other predicate (isolation control #2).
@@ -98,7 +98,7 @@ class PartRepository(OrgScopedRepository[Part]):
             normalized = _normalize(term)
             if normalized:
                 # equality match on the generated normalized_key column
-                # (docs/planning/04-document-pipeline.md §10 strategy 4) —
+                # (docs/planning/04-document-pipeline.md §10 strategy 4) -
                 # tolerant of punctuation/casing differences an ilike substring
                 # match would miss, e.g. "ACME-100" vs "acme100".
                 or_clauses.append(Part.normalized_key == normalized)
@@ -130,7 +130,7 @@ class PartAlternativeRepository(OrgScopedRepository[PartAlternative]):
         self, part_id: uuid.UUID, alternative_id: uuid.UUID
     ) -> PartAlternative | None:
         """None when the row is absent, other-org, or belongs to a different
-        part — all indistinguishable, surfacing as 404."""
+        part - all indistinguishable, surfacing as 404."""
         alt = self.get(alternative_id)
         if alt is None or alt.part_id != part_id:
             return None

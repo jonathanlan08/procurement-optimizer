@@ -14,7 +14,7 @@ docstring): copy-on-write. Every BOM response carries `root_bom_id`,
 tell which version of a BOM's history it is looking at. There is
 deliberately no line-edit schema anywhere in this module: lines are
 immutable once a version exists (`BillOfMaterialLine` carries no
-timestamp/version columns at all — see the model's own docstring); the only
+timestamp/version columns at all - see the model's own docstring); the only
 way to change a line is `POST /boms/{id}/versions`, which replaces the whole
 line set at once via `BomVersionCreate`.
 
@@ -78,10 +78,10 @@ class BomLineCreate(BaseModel):
 
     `unit_definition_id` is optional: when omitted, `BomService` defaults it
     to the referenced part's own `unit_definition_id` (per this task's
-    brief: "unit_definition_id optional — default the part's unit"). When
+    brief: "unit_definition_id optional - default the part's unit"). When
     provided explicitly it is still validated exactly like
     `Part.unit_definition_id` (global catalogue or this org's own private
-    unit; never another organization's) — see `BomService._validate_unit`.
+    unit; never another organization's) - see `BomService._validate_unit`.
     """
 
     model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")
@@ -108,7 +108,7 @@ class BomVersionCreate(BaseModel):
     optional metadata overrides (§4.7: "copy-on-write new version from a
     full line payload"). Metadata fields left unset (`None`) copy forward
     from the version being forked from; `lines` is always a full
-    replacement of the new version's line set — never merged with the prior
+    replacement of the new version's line set - never merged with the prior
     version's lines.
     """
 
@@ -156,7 +156,7 @@ class BomLineResponse(BaseModel):
 
 class BomResponse(BaseModel):
     """Full detail: one BOM version with its lines. Used by every mutating
-    endpoint and `GET /boms/{id}` — the contract (§4.7) documents lines as
+    endpoint and `GET /boms/{id}` - the contract (§4.7) documents lines as
     present only on the single-resource GET; `GET /boms` and
     `GET /boms/{id}/versions` use `BomSummaryResponse` instead, which omits
     them to keep list payloads bounded.

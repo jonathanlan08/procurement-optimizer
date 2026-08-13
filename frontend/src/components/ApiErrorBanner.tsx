@@ -2,7 +2,7 @@ import { ApiError } from "../api/client";
 import "./workspace.css";
 
 /** Renders the API's single error envelope: `message` plus per-field
- * `details[]` (backend/src/app/schemas — every mutation route shares this
+ * `details[]` (backend/src/app/schemas - every mutation route shares this
  * shape). Anything not an ApiError (network failure, etc.) gets a generic
  * fallback rather than leaking implementation detail. */
 export function ApiErrorBanner({ error }: { error: unknown }) {

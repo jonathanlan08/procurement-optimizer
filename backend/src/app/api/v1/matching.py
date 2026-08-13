@@ -1,7 +1,7 @@
 """Part-matching routes (docs/planning/03-api-contract.md §4.12). Sync `def`
 by policy, mirroring every other router in this codebase.
 
-**Contract's literal paths, not this task's own paraphrase** — per this
+**Contract's literal paths, not this task's own paraphrase** - per this
 task's own instruction ("Contract's literal paths win") and the same
 resolution `api/v1/extractions.py` already documents for the identical
 class of gap:
@@ -15,10 +15,10 @@ class of gap:
 
 The contract's confirm/unmatch routes are addressed by *quote line*, with an
 explicit `rfq_line_id` in the request body, not by a `PartMatchCandidate`
-id at all — see `services/matching_service.py`'s own module docstring for
+id at all - see `services/matching_service.py`'s own module docstring for
 how `confirm_line_match`/`unmatch_line` are built around that literal shape.
 
-**Two routers, one module** — same shape `api/v1/extractions.py`/
+**Two routers, one module** - same shape `api/v1/extractions.py`/
 `api/v1/quotes.py` already establish: `quotes_match_router` (prefix
 `/quotes`) owns generate/list, `quote_lines_match_router` (prefix
 `/quote-lines`) owns confirm/unmatch. Both are exported and both mounted in
@@ -36,7 +36,7 @@ established precedent `start_extraction_run` already sets. `200`, not
 not a single newly-created addressable resource.
 
 **`POST`/`DELETE /quote-lines/{id}/match` return `QuoteLineResponse`**, the
-same schema `api/v1/quotes.py` already uses for a quote line — mirroring
+same schema `api/v1/quotes.py` already uses for a quote line - mirroring
 `api/v1/rfqs.py`'s `DELETE /rfqs/{id}/suppliers/{id}` (exclude), which
 likewise returns the updated resource rather than `204`.
 """

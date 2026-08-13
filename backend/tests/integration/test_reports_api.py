@@ -276,7 +276,7 @@ def _setup_two_supplier_case(
 ) -> dict[str, Any]:
     """Acme Low-Price (unit_price 8.00, shipping 3000 -> high landed cost)
     vs. Beta Premium (unit_price 11.00, shipping 100 -> low landed cost),
-    500 units — same signature case test_briefs_api.py/test_scenarios_api.py
+    500 units - same signature case test_briefs_api.py/test_scenarios_api.py
     build, so Beta always ends up the lower-landed-cost alternative."""
     unit_id = _seed_unit(migrated_engine, org["org_id"])
     part = _create_part(client, headers, unit_id)
@@ -608,7 +608,7 @@ class TestPurge:
         assert resp.status_code == 410, resp.text
         assert resp.json()["error"]["code"] == "not_found"
 
-        # metadata itself is still readable — the row is kept, only the blob is gone
+        # metadata itself is still readable - the row is kept, only the blob is gone
         meta = client.get(f"/api/v1/reports/{report['id']}", headers=headers)
         assert meta.status_code == 200
         assert meta.json()["purged"] is True

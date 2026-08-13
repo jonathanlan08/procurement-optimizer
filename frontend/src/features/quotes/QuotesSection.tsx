@@ -2,7 +2,7 @@
  * `RfqDetail`, per this task's ALLOWED "minimal insertion" edit there).
  *
  * Design decisions, mirroring the freshest established patterns (features/
- * rfqs/RfqsPage.tsx / features/boms/BomsPage.tsx — see those files' headers
+ * rfqs/RfqsPage.tsx / features/boms/BomsPage.tsx - see those files' headers
  * for the drawer-vs-route + dense-list rationale this file follows too):
  *
  *  - **Self-contained role gating.** Rather than threading `canWrite`/
@@ -13,25 +13,25 @@
  *    line plus one import.
  *  - **"Enter quote" mirrors `QuoteService._check_rfq_eligible` exactly**:
  *    visible only for analyst+ while the RFQ itself is `open`/
- *    `under_review` (services/quote_service.py) — the same rule the server
+ *    `under_review` (services/quote_service.py) - the same rule the server
  *    re-enforces on `POST /rfqs/{id}/quotes`. "Supersede" on the detail
  *    view mirrors the same eligibility check (`QuoteService.supersede`
  *    calls `_check_rfq_eligible` too) plus the service's own guard against
  *    superseding an already-superseded quote.
  *  - **Supplier select is scoped to invited, non-excluded suppliers of
  *    this RFQ** (`useRfqSuppliers` from ../rfqs/api, filtered on
- *    `excluded_at === null`) — `QuoteService._check_supplier_eligible`
+ *    `excluded_at === null`) - `QuoteService._check_supplier_eligible`
  *    rejects any other supplier_id with a 409, so offering only the
  *    eligible set avoids a round-trip just to hit that error.
  *  - **Cost fields never default to `"0"`.** Every per-line commercial
  *    field (unit price, MOQ, and all ten tooling/setup/packaging/shipping/
  *    insurance/other/tariff/duty/customs/tax costs) starts life as an empty
- *    string and round-trips to `null`, never `"0"` — see ./api.ts's file
+ *    string and round-trips to `null`, never `"0"` - see ./api.ts's file
  *    header on why an absent amount must stay absent
  *    (`QuoteLineCreate`: "Missing stays missing").
  *  - **Price-break structural hints are a client-side mirror of
  *    `QuoteService._validate_price_breaks`** (duplicate `min_quantity`,
- *    overlap, non-final open-ended `max_quantity`) — computed live via
+ *    overlap, non-final open-ended `max_quantity`) - computed live via
  *    `useWatch` so they update on every keystroke, and *also* enforced by
  *    `quoteFormSchema`'s `superRefine` so submission is blocked before the
  *    round trip. The server re-validates authoritatively regardless; this
@@ -40,12 +40,12 @@
  *    independent, non-exclusive fields**, not a mode toggle:
  *    `QuoteLineCreate.matched_rfq_line_id`/`.description` are both
  *    optional and can both be set at once (there's no server-side
- *    either/or constraint) — this form only requires that *at least one*
+ *    either/or constraint) - this form only requires that *at least one*
  *    of the two is present, and prefills quantity/unit/part from the
  *    selected RFQ line as a convenience the user can still override.
  *  - **Quote entry/detail is a second `<Drawer>` stacked on top of the RFQ
  *    drawer** (reusing components/Drawer.tsx, the same component RfqsPage
- *    itself uses) rather than an inline swap of the RFQ drawer's own body —
+ *    itself uses) rather than an inline swap of the RFQ drawer's own body -
  *    consistent with MASTER.md's "explainability drawers" progressive-
  *    disclosure idiom. One inherited quirk from stacking two independent
  *    `Drawer` instances: each registers its own capture-phase `Escape`
@@ -117,11 +117,11 @@ type CostFieldKey =
   | "tax_amount";
 
 // `documentation_cost`/`handling_cost` (migration 0016, 2026-08 audit
-// remediation P1 — see ./api.ts's `QuoteLineInput` and backend/src/app/
+// remediation P1 - see ./api.ts's `QuoteLineInput` and backend/src/app/
 // schemas/quotes.py's module docstring) are placed beside packaging/shipping
 // here since that's their real-world grouping (freight-adjacent fixed
 // costs), same "not stated" placeholder/validation convention as every
-// other optional cost in this array — COST_FIELDS drives both the entry
+// other optional cost in this array - COST_FIELDS drives both the entry
 // form and the read-only detail view generically (see QuoteLineFormRow /
 // QuoteLineViewRow below), so adding a key here is the only wiring needed
 // for both surfaces.
@@ -147,11 +147,11 @@ function statusLabel(status: string): string {
     .join(" ");
 }
 
-/** Parses "YYYY-MM-DD" as a local-timezone date, not UTC — same rule (and
+/** Parses "YYYY-MM-DD" as a local-timezone date, not UTC - same rule (and
  * same off-by-one-day rationale) as features/rfqs/RfqsPage.tsx's own
  * `formatDate`. */
 function formatDate(raw: string | null): string {
-  if (!raw) return "—";
+  if (!raw) return "-";
   const [y, m, d] = raw.split("-").map(Number);
   if (!y || !m || !d) return raw;
   return new Date(y, m - 1, d).toLocaleDateString(undefined, {
@@ -175,7 +175,7 @@ function emptyToNull(v: string): string | null {
 }
 
 /** Compares two validated decimal strings without float precision loss
- * (BigInt on a shared fractional scale) — used only for price-break
+ * (BigInt on a shared fractional scale) - used only for price-break
  * ordering/overlap hints, never for a value sent to the server. */
 function compareDecimalStrings(a: string, b: string): number {
   const aNeg = a.startsWith("-");
@@ -198,7 +198,7 @@ interface PriceBreakRow {
 }
 
 /** Client-side mirror of `QuoteService._validate_price_breaks`'s
- * structural rules — see this file's header. Rows that aren't yet valid
+ * structural rules - see this file's header. Rows that aren't yet valid
  * decimals are skipped rather than flagged, so partial typing doesn't
  * flash spurious errors. Returns at most one message per row index. */
 function priceBreakIssues(rows: PriceBreakRow[]): Record<number, string> {
@@ -229,7 +229,7 @@ function priceBreakIssues(rows: PriceBreakRow[]): Record<number, string> {
     if (!isDecimalString(row.max) || row.max.startsWith("-")) return;
     const next = sorted[pos + 1];
     if (!isLast && next && compareDecimalStrings(row.max, next.min) >= 0) {
-      issues[row.index] = "Overlaps the next tier — max quantity must be less than its min quantity.";
+      issues[row.index] = "Overlaps the next tier - max quantity must be less than its min quantity.";
     }
   });
 
@@ -242,17 +242,17 @@ function QuoteStatusBadge({ status }: { status: QuoteStatus }) {
 
 function SupplierOption({ supplierId }: { supplierId: string }) {
   const q = useSupplier(supplierId);
-  return <option value={supplierId}>{q.data ? `${q.data.code} — ${q.data.name}` : supplierId}</option>;
+  return <option value={supplierId}>{q.data ? `${q.data.code} - ${q.data.name}` : supplierId}</option>;
 }
 
 function RfqLineOption({ line }: { line: RfqLineResponse }) {
   const partQuery = usePart(line.part_id);
   const label = partQuery.data
-    ? `${partQuery.data.internal_part_number} — ${partQuery.data.name}`
+    ? `${partQuery.data.internal_part_number} - ${partQuery.data.name}`
     : line.part_id;
   return (
     <option value={line.id}>
-      {label} — qty {formatQuantity(line.required_quantity)}
+      {label} - qty {formatQuantity(line.required_quantity)}
     </option>
   );
 }
@@ -311,7 +311,7 @@ function checkOptionalPositive(raw: string, path: (string | number)[], ctx: z.Re
 }
 
 // No per-field zod refinements on `quoteLineFormSchema`/`priceBreakFormSchema`
-// themselves — same reasoning as ../rfqs/RfqsPage.tsx's `rfqFormSchema`
+// themselves - same reasoning as ../rfqs/RfqsPage.tsx's `rfqFormSchema`
 // header: a plain `z.array(...)` would validate every element
 // unconditionally, so line/price-break validation lives entirely in this
 // top-level `superRefine`.
@@ -488,7 +488,7 @@ const emptyFormValues: QuoteFormValues = {
 };
 
 /** Prefills the supersede form from the quote being replaced. `supplier_id`
- * is intentionally left blank/unused — see this file's header + ./api.ts's:
+ * is intentionally left blank/unused - see this file's header + ./api.ts's:
  * a supersede inherits the old quote's supplier server-side and never sends
  * one. */
 function toFormValues(q: QuoteResponse): QuoteFormValues {
@@ -662,7 +662,7 @@ function QuotePriceBreakEditor({
         </button>
       </div>
       {fields.length === 0 ? (
-        <p className="detail-label">No price breaks — single flat unit price above.</p>
+        <p className="detail-label">No price breaks - single flat unit price above.</p>
       ) : (
         <div className="quote-price-break-list">
           {fields.map((field, j) => (
@@ -774,7 +774,7 @@ function QuoteLineFormRow({
               }
             }}
           >
-            <option value="">— none (free text) —</option>
+            <option value="">- none (free text) -</option>
             {rfqLines.map((l) => (
               <RfqLineOption key={l.id} line={l} />
             ))}
@@ -795,7 +795,7 @@ function QuoteLineFormRow({
             <option value="">Select unit…</option>
             {units.map((u) => (
               <option key={u.id} value={u.id}>
-                {u.code} — {u.name}
+                {u.code} - {u.name}
               </option>
             ))}
           </select>
@@ -896,7 +896,7 @@ function QuoteForm({
       <div className="form-grid">
         {base ? (
           <FormField label="Supplier" full>
-            <span className="detail-label">Same supplier as the quote being superseded — inherited automatically.</span>
+            <span className="detail-label">Same supplier as the quote being superseded - inherited automatically.</span>
           </FormField>
         ) : (
           <FormField label="Supplier" error={errors.supplier_id?.message} full>
@@ -1009,9 +1009,9 @@ function QuoteLineViewRow({
     line.description ??
     (line.part_id
       ? partQuery.data
-        ? `${partQuery.data.internal_part_number} — ${partQuery.data.name}`
+        ? `${partQuery.data.internal_part_number} - ${partQuery.data.name}`
         : line.part_id
-      : "—");
+      : "-");
 
   return (
     <div className="quote-line-view-row">
@@ -1027,24 +1027,24 @@ function QuoteLineViewRow({
         <DetailRow label="Unit" value={unit ? unit.code : line.unit_definition_id} mono={!unit} />
         <DetailRow
           label="Unit price"
-          value={line.unit_price ? formatQuantity(line.unit_price) : "— not stated"}
+          value={line.unit_price ? formatQuantity(line.unit_price) : "not stated"}
           num={!!line.unit_price}
         />
-        <DetailRow label="MOQ" value={line.moq ? formatQuantity(line.moq) : "— not stated"} num={!!line.moq} />
+        <DetailRow label="MOQ" value={line.moq ? formatQuantity(line.moq) : "not stated"} num={!!line.moq} />
         <DetailRow
           label="Lead time"
-          value={line.lead_time_days !== null ? `${line.lead_time_days} days` : "— not stated"}
+          value={line.lead_time_days !== null ? `${line.lead_time_days} days` : "not stated"}
         />
         <DetailRow
           label="Country of origin"
-          value={line.country_of_origin ?? "— not stated"}
+          value={line.country_of_origin ?? "not stated"}
           mono={!!line.country_of_origin}
         />
         {COST_FIELDS.map(({ key, label }) => (
           <DetailRow
             key={key}
             label={label}
-            value={line[key] ? formatQuantity(line[key] as string) : "— not stated"}
+            value={line[key] ? formatQuantity(line[key] as string) : "not stated"}
             num={!!line[key]}
           />
         ))}
@@ -1071,7 +1071,7 @@ function QuoteLineViewRow({
                     {formatQuantity(pb.unit_price)}
                   </td>
                   <td data-align="right" className="mono">
-                    {pb.setup_fee ? formatQuantity(pb.setup_fee) : "— not stated"}
+                    {pb.setup_fee ? formatQuantity(pb.setup_fee) : "not stated"}
                   </td>
                 </tr>
               ))}
@@ -1133,7 +1133,7 @@ function QuoteDetail({
   }
 
   // Mirrors QuoteService.supersede's own guards: RFQ still open/under_review,
-  // and the quote itself not already superseded — see this file's header.
+  // and the quote itself not already superseded - see this file's header.
   const canSupersede =
     canWrite &&
     !quote.is_archived &&
@@ -1176,10 +1176,10 @@ function QuoteDetail({
         <div className="detail-grid">
           <DetailRow
             label="Supplier"
-            value={supplierQuery.data ? `${supplierQuery.data.code} — ${supplierQuery.data.name}` : quote.supplier_id}
+            value={supplierQuery.data ? `${supplierQuery.data.code} - ${supplierQuery.data.name}` : quote.supplier_id}
             mono={!supplierQuery.data}
           />
-          <DetailRow label="Quote number" value={quote.quote_number ?? "—"} mono />
+          <DetailRow label="Quote number" value={quote.quote_number ?? "-"} mono />
           <DetailRow label="Quote date" value={formatDate(quote.quote_date)} />
           <DetailRow label="Expiration date" value={formatDate(quote.expiration_date)} />
           <DetailRow label="Currency" value={quote.currency} />
@@ -1187,7 +1187,7 @@ function QuoteDetail({
           <DetailRow label="Version" value={String(quote.version)} mono />
           <DetailRow label="Updated" value={new Date(quote.updated_at).toLocaleString()} />
           {quote.superseded_by_id && <DetailRow label="Superseded by" value={quote.superseded_by_id} mono />}
-          <DetailRow label="Notes" value={quote.notes ?? "—"} full />
+          <DetailRow label="Notes" value={quote.notes ?? "-"} full />
         </div>
       </section>
 
@@ -1197,9 +1197,9 @@ function QuoteDetail({
           <div className="detail-grid">
             <DetailRow
               label="Archived at"
-              value={quote.archived_at ? new Date(quote.archived_at).toLocaleString() : "—"}
+              value={quote.archived_at ? new Date(quote.archived_at).toLocaleString() : "-"}
             />
-            <DetailRow label="Reason" value={quote.archive_reason ?? "—"} full />
+            <DetailRow label="Reason" value={quote.archive_reason ?? "-"} full />
           </div>
         </section>
       )}
@@ -1244,11 +1244,11 @@ function QuoteDetail({
         <section className="detail-section">
           <h3 className="detail-section-title">Terms</h3>
           <div className="detail-grid">
-            <DetailRow label="Payment terms" value={quote.terms.payment_terms ?? "—"} />
-            <DetailRow label="Incoterm" value={quote.terms.incoterm ?? "—"} />
-            <DetailRow label="Warranty" value={quote.terms.warranty_terms ?? "—"} full />
-            <DetailRow label="Exceptions" value={quote.terms.exceptions ?? "—"} full />
-            <DetailRow label="Exclusions" value={quote.terms.exclusions ?? "—"} full />
+            <DetailRow label="Payment terms" value={quote.terms.payment_terms ?? "-"} />
+            <DetailRow label="Incoterm" value={quote.terms.incoterm ?? "-"} />
+            <DetailRow label="Warranty" value={quote.terms.warranty_terms ?? "-"} full />
+            <DetailRow label="Exceptions" value={quote.terms.exceptions ?? "-"} full />
+            <DetailRow label="Exclusions" value={quote.terms.exclusions ?? "-"} full />
           </div>
         </section>
       )}
@@ -1271,7 +1271,7 @@ function QuoteRow({ quote, onOpen }: { quote: QuoteSummaryResponse; onOpen: () =
       <button type="button" className="quote-row-btn" onClick={onOpen}>
         <span className="quote-row-main">
           <span className="quote-row-supplier">
-            {supplierQuery.data ? `${supplierQuery.data.code} — ${supplierQuery.data.name}` : quote.supplier_id}
+            {supplierQuery.data ? `${supplierQuery.data.code} - ${supplierQuery.data.name}` : quote.supplier_id}
           </span>
           <span className="detail-label">
             {quote.quote_number ?? "No quote #"} · {formatDate(quote.quote_date)} · {quote.currency} ·{" "}
@@ -1306,7 +1306,7 @@ export function QuotesSection({ rfq }: { rfq: RfqResponse }) {
   );
   const [drawerState, setDrawerState] = useState<QuoteDrawerState>(null);
 
-  // Mirrors QuoteService._check_rfq_eligible — see this file's header.
+  // Mirrors QuoteService._check_rfq_eligible - see this file's header.
   const canEnterQuote = canWrite && (rfq.status === "open" || rfq.status === "under_review");
 
   function closeDrawer() {
@@ -1346,7 +1346,7 @@ export function QuotesSection({ rfq }: { rfq: RfqResponse }) {
         </ul>
       )}
 
-      {/* Second, stacked Drawer for quote entry/detail/supersede — see this
+      {/* Second, stacked Drawer for quote entry/detail/supersede - see this
           file's header on the Escape-key stacking caveat. */}
       <Drawer open={drawerState !== null} onClose={closeDrawer} title={drawerTitle}>
         {drawerState?.mode === "create" && (

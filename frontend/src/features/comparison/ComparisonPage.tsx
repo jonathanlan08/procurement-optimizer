@@ -1,4 +1,4 @@
-/** Comparison workspace — routed at `/scenarios` (replaces the
+/** Comparison workspace - routed at `/scenarios` (replaces the
  * `PlaceholderPage`, per this task's ALLOWED App.tsx edit): a per-RFQ-line
  * landed-cost comparison table, plus the full comparison-scenario surface
  * below it (strategy/constraint controls -> scoring + allocation results ->
@@ -7,16 +7,16 @@
  * Design decisions:
  *  - **The comparison grain is one RFQ line, not the whole RFQ.** The task
  *    brief's own "not like-for-like" warning only makes sense comparing the
- *    *same* requested item across suppliers — a `<select>` next to the RFQ
+ *    *same* requested item across suppliers - a `<select>` next to the RFQ
  *    picker lets the reviewer choose which RFQ line to compare (defaulting
  *    to the first once the RFQ loads); "Calculate" persists landed cost for
  *    every compared supplier's quote line matched to *that* RFQ line only
  *    (one `POST /rfqs/{id}/landed-costs` call per matched line, per
- *    ./api.ts's file header — there is no batch route).
+ *    ./api.ts's file header - there is no batch route).
  *  - **Comparable quotes** are this RFQ's non-superseded (`GET
  *    .../quotes?include_superseded=false`), non-rejected, non-archived
  *    quotes with a line whose `matched_rfq_line_id` equals the selected RFQ
- *    line — i.e. quotes a human (or matching, see ../extraction/
+ *    line - i.e. quotes a human (or matching, see ../extraction/
  *    ReviewPane.tsx) has already tied to that specific request. Quote
  *    *details* (lines/terms) are fetched with `useQueries` (one query per
  *    comparable quote, keyed with the same `quoteKeys.detail` builder
@@ -25,9 +25,9 @@
  *    file can see every column's data at once.
  *  - **Per-cell click opens the explainability drawer** for that column's
  *    landed-cost result (all six metric rows share one drawer per supplier
- *    column — every row is a view onto the *same* computed
+ *    column - every row is a view onto the *same* computed
  *    `LandedCostResultResponse`, not six independent explanations).
- *    Built on components/Drawer.tsx (allowed, unmodified use — an
+ *    Built on components/Drawer.tsx (allowed, unmodified use - an
  *    explainability drawer is exactly what that component already is,
  *    per MASTER.md's own "signature interaction" framing), unlike
  *    ../extraction/ReviewPane.tsx's full-screen surface.
@@ -38,7 +38,7 @@
  *    *live* result (flag false); selecting a scenario-history row sets a
  *    *saved* one (flag true, drives AllocationPanel.tsx's read-only version-
  *    stamp footer). One state slot, not three, because exactly one scenario
- *    result is ever shown at a time — see ./api.ts's file header for why
+ *    result is ever shown at a time - see ./api.ts's file header for why
  *    the create endpoint alone (scoring AND allocation in one call) makes
  *    that possible.
  */
@@ -90,7 +90,7 @@ function statusLabel(raw: string): string {
 }
 
 /** Pure string decimal-point shift (never Number()/parseFloat, lib/money.ts's
- * rule): "0.987000" -> "98.7%". Duplicated from ../extraction/ReviewPane.tsx —
+ * rule): "0.987000" -> "98.7%". Duplicated from ../extraction/ReviewPane.tsx -
  * same small-pure-helper-per-feature convention as formatDate/formatQuantity
  * across features/rfqs/RfqsPage.tsx and features/quotes/QuotesSection.tsx. */
 function toPercentDisplay(raw: string): string {
@@ -101,7 +101,7 @@ function toPercentDisplay(raw: string): string {
   const moved = padded.slice(0, 2);
   // Scores cross the wire at full precision by design (see the scorer's
   // no-quantize note); a bar label is presentation, so truncate the display
-  // to 2 decimals — "0.8899954446…" renders "88.99%", not a 14-digit tail.
+  // to 2 decimals - "0.8899954446…" renders "88.99%", not a 14-digit tail.
   const remaining = padded.slice(2, 4).replace(/0+$/, "");
   let newInt = (intPart + moved).replace(/^0+(?=\d)/, "");
   if (newInt === "") newInt = "0";
@@ -156,18 +156,18 @@ function CompletenessBadge({ completeness }: { completeness: Completeness }) {
 function RfqLineOption({ line }: { line: RfqLineResponse }) {
   const partQuery = usePart(line.part_id);
   const label = partQuery.data
-    ? `${partQuery.data.internal_part_number} — ${partQuery.data.name}`
+    ? `${partQuery.data.internal_part_number} - ${partQuery.data.name}`
     : line.part_id;
   return (
     <option value={line.id}>
-      {label} — qty {line.required_quantity}
+      {label} - qty {line.required_quantity}
     </option>
   );
 }
 
 function SupplierHeaderLabel({ supplierId }: { supplierId: string }) {
   const q = useSupplier(supplierId);
-  return <>{q.data ? `${q.data.code} — ${q.data.name}` : supplierId}</>;
+  return <>{q.data ? `${q.data.code} - ${q.data.name}` : supplierId}</>;
 }
 
 // --- assumptions form --------------------------------------------------
@@ -284,7 +284,7 @@ function AssumptionsForm({
         </h3>
       </div>
       <p className="detail-label assumptions-intro">
-        Optional inputs used to estimate costs a quote doesn&rsquo;t state — quality and delay
+        Optional inputs used to estimate costs a quote doesn&rsquo;t state - quality and delay
         risk, financing, tariffs. Leave any blank to skip it. These are your assumptions, kept
         separate from supplier-provided figures.
       </p>
@@ -336,7 +336,7 @@ function AssumptionsForm({
             </FormField>
             <FormField
               label="Promised lead time"
-              hint="days, optional — falls back to the quote line's own lead time"
+              hint="days, optional - falls back to the quote line's own lead time"
               error={errors.promised_lead_time_days?.message}
             >
               <input
@@ -426,7 +426,7 @@ function ComparisonTable({
           {showsStoredResults && (
             <tr>
               <td colSpan={columns.length + 1} className="comparison-not-like-for-like">
-                Showing previously calculated results — they were computed with the
+                Showing previously calculated results - they were computed with the
                 assumptions in force at the time, which may differ from the form above
                 (each column&rsquo;s Explain panel discloses what it used). Press Calculate
                 to recompute every column under the current assumptions.
@@ -436,7 +436,7 @@ function ComparisonTable({
           {notLikeForLike && (
             <tr>
               <td colSpan={columns.length + 1} className="comparison-not-like-for-like">
-                Compared suppliers have different completeness levels for this line — this
+                Compared suppliers have different completeness levels for this line - this
                 comparison is not fully like-for-like; treat totals cautiously.
               </td>
             </tr>
@@ -447,7 +447,7 @@ function ComparisonTable({
               <td key={c.quote.id} className="num">
                 {c.line.unit_price
                   ? formatMoney(c.line.unit_price, { currency: c.quote.currency })
-                  : "— not stated"}
+                  : "not stated"}
               </td>
             ))}
           </tr>
@@ -469,7 +469,7 @@ function ComparisonTable({
                       {formatMoney(r.effective_unit_cost, { currency: r.currency })}
                     </button>
                   ) : (
-                    "— not calculated"
+                    "not calculated"
                   )}
                 </td>
               );
@@ -493,7 +493,7 @@ function ComparisonTable({
                       {formatMoney(r.total_landed_cost, { currency: r.currency })}
                     </button>
                   ) : (
-                    "— not calculated"
+                    "not calculated"
                   )}
                 </td>
               );
@@ -514,7 +514,7 @@ function ComparisonTable({
                       <CompletenessBadge completeness={r.completeness} />
                     </button>
                   ) : (
-                    "—"
+                    "-"
                   )}
                 </td>
               );
@@ -524,14 +524,14 @@ function ComparisonTable({
             <th className="comparison-row-label">Lead time</th>
             {columns.map((c) => (
               <td key={c.quote.id} className="num">
-                {c.line.lead_time_days !== null ? `${c.line.lead_time_days}d` : "— not stated"}
+                {c.line.lead_time_days !== null ? `${c.line.lead_time_days}d` : "not stated"}
               </td>
             ))}
           </tr>
           <tr>
             <th className="comparison-row-label">Payment terms</th>
             {columns.map((c) => (
-              <td key={c.quote.id}>{c.quote.terms?.payment_terms ?? "— not stated"}</td>
+              <td key={c.quote.id}>{c.quote.terms?.payment_terms ?? "not stated"}</td>
             ))}
           </tr>
         </tbody>
@@ -557,7 +557,7 @@ function ExplainDrawer({
     <Drawer
       open={open}
       onClose={onClose}
-      title={`Landed cost — ${supplierLabel}`}
+      title={`Landed cost - ${supplierLabel}`}
       panelClassName="hue-panel-top hue-panel-top--compare"
     >
       {result && (
@@ -579,7 +579,7 @@ function ExplainDrawer({
                 </div>
                 <div className="explain-formula">
                   {/* the stored formula is an audit artifact and speaks in raw
-                      component keys ("all allocated_fixed inputs missing…") —
+                      component keys ("all allocated_fixed inputs missing…") -
                       say it in plain language instead when nothing computed */}
                   {c.is_missing
                     ? `No ${COMPONENT_LABELS[c.component].toLowerCase()} inputs were provided, so this component could not be computed.`
@@ -601,7 +601,7 @@ function ExplainDrawer({
                 {result.missing_inputs.map((m, i) => (
                   <li className="explain-list-item" key={i}>
                     <strong>{COMPONENT_LABELS[m.component as CostComponentKind] ?? m.component}:</strong>{" "}
-                    {m.input_name} — {m.consequence}
+                    {m.input_name} - {m.consequence}
                   </li>
                 ))}
               </ul>
@@ -615,7 +615,7 @@ function ExplainDrawer({
                 {result.assumptions.map((a, i) => (
                   <li className="explain-list-item" key={i}>
                     <ProvenanceBadge provenance={a.provenance} /> <strong>{a.key}</strong> ={" "}
-                    <span className="mono">{a.value}</span> — {a.description}
+                    <span className="mono">{a.value}</span> - {a.description}
                   </li>
                 ))}
               </ul>
@@ -634,12 +634,12 @@ function criterionLabel(criterion: string): string {
   return statusLabel(criterion);
 }
 
-/** Renders `ScenarioResponse.scoring_result` — a pure display component, no
+/** Renders `ScenarioResponse.scoring_result` - a pure display component, no
  * fetching/mutating of its own; ScenarioControls.tsx/ScenarioHistory.tsx own
  * producing the `ScoringResultResponse` this receives (via "Run scenario",
  * "Clone & re-run", or selecting a history row). Markup unchanged from the
  * pre-Phase-7 `ScoringSection`, which rendered the identical shape from an
- * ad-hoc adapter — see ./api.ts's file header. */
+ * ad-hoc adapter - see ./api.ts's file header. */
 function ScoringResultView({ result }: { result: ScoringResultResponse }) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
@@ -669,7 +669,7 @@ function ScoringResultView({ result }: { result: ScoringResultResponse }) {
           <div className={`score-row${s.excluded ? " is-excluded" : ""}`} key={s.supplier_id}>
             <div className="score-row-header">
               <span>
-                <span className="score-rank">{s.excluded ? "—" : `#${s.rank}`}</span>{" "}
+                <span className="score-rank">{s.excluded ? "-" : `#${s.rank}`}</span>{" "}
                 {s.supplier_name}
               </span>
               <span className="score-total">
@@ -697,7 +697,7 @@ function ScoringResultView({ result }: { result: ScoringResultResponse }) {
                           <div className="score-bar-fill" style={{ width: widthPct }} />
                         </div>
                         <span className="score-criterion-value">
-                          {cs.normalized_score !== null ? widthPct : "—"}
+                          {cs.normalized_score !== null ? widthPct : "-"}
                         </span>
                       </div>
                       {isOpen && <div className="score-criterion-reason">{cs.reason}</div>}
@@ -779,7 +779,7 @@ export function ComparisonPage() {
   const calculateMutation = useCalculateLandedCost();
   const [calcError, setCalcError] = useState<string | null>(null);
   // Mirrors the AssumptionsForm's live values so scenario runs carry them
-  // (2026-08 acceptance finding — see CreateScenarioVars.assumptions).
+  // (2026-08 acceptance finding - see CreateScenarioVars.assumptions).
   const [scenarioAssumptions, setScenarioAssumptions] =
     useState<LandedCostAssumptionsInput | null>(null);
 
@@ -810,7 +810,7 @@ export function ComparisonPage() {
   const explainColumn = columns.find((c) => c.line.id === explainLineId);
   const explainSupplierQuery = useSupplier(explainColumn?.quote.supplier_id ?? null);
   const explainSupplierLabel = explainSupplierQuery.data
-    ? `${explainSupplierQuery.data.code} — ${explainSupplierQuery.data.name}`
+    ? `${explainSupplierQuery.data.code} - ${explainSupplierQuery.data.name}`
     : (explainColumn?.quote.supplier_id ?? "");
 
   // -- scenario surface: a live (freshly created/cloned) or saved-from-
@@ -842,7 +842,7 @@ export function ComparisonPage() {
       : null;
 
   // Negotiation-briefs pick-list: the scenario's own scoring result already
-  // carries every scored, non-excluded supplier's name (ALLOWED insertion —
+  // carries every scored, non-excluded supplier's name (ALLOWED insertion -
   // see ../briefs/BriefsPanel.tsx's file header for why this is passed in
   // rather than re-fetched).
   const briefSupplierOptions: BriefSupplierOption[] = useMemo(
@@ -881,7 +881,7 @@ export function ComparisonPage() {
             <option value="">Select RFQ…</option>
             {(rfqsQuery.data?.items ?? []).map((r) => (
               <option key={r.id} value={r.id}>
-                {r.internal_reference} — {r.name} ({statusLabel(r.status)})
+                {r.internal_reference} - {r.name} ({statusLabel(r.status)})
               </option>
             ))}
           </select>
@@ -926,7 +926,7 @@ export function ComparisonPage() {
               resultFor={resultFor}
               onOpenExplain={setExplainLineId}
               // 2026-08 external review P1: stored results render while the
-              // assumptions form sits blank — say so instead of letting users
+              // assumptions form sits blank - say so instead of letting users
               // compare numbers computed under invisible, differing assumptions.
               showsStoredResults={columns.some(
                 (c) => !freshResults[c.line.id] && resultFor(c.line.id) !== undefined,
@@ -945,7 +945,7 @@ export function ComparisonPage() {
             <>
               {isSavedResult && (
                 <p className="scenario-saved-result-note">
-                  Showing a saved result from scenario history — read-only. Run a new scenario
+                  Showing a saved result from scenario history - read-only. Run a new scenario
                   above, or collapse the history row to return to your last live run.
                 </p>
               )}

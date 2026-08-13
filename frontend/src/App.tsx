@@ -2,7 +2,7 @@ import { lazy, Suspense } from "react";
 import { Route, Routes } from "react-router-dom";
 import { RequireAuth } from "./auth/session";
 // `.detail-label` (used by RouteLoadingFallback below) lives in this shared
-// stylesheet, not app-shell.css — every OTHER consumer of it is a feature
+// stylesheet, not app-shell.css - every OTHER consumer of it is a feature
 // page, and those are all lazy now, so without this eager import here the
 // very first Suspense fallback (before any route chunk has loaded) would
 // briefly render unstyled.
@@ -13,7 +13,7 @@ import { LoginPage } from "./pages/LoginPage";
 /** Route-level code splitting (2026-08 audit remediation P2: a single
  * ~585KB pre-gzip main chunk, everything eagerly bundled together). Every
  * routed page becomes its own chunk, fetched only when its route is first
- * visited — AppShell (always needed immediately, every authenticated route
+ * visited - AppShell (always needed immediately, every authenticated route
  * renders inside it) and LoginPage (the unauthenticated entry point, so
  * there's nothing to defer it behind) stay eager imports per this task's
  * own scope. `PlaceholderPage` is tiny but is still routed via `path="*"`,
@@ -39,7 +39,7 @@ const PlaceholderPage = lazy(() =>
   import("./pages/PlaceholderPage").then((m) => ({ default: m.PlaceholderPage })),
 );
 
-/** Shared Suspense fallback for every lazy route above — minimal, centered,
+/** Shared Suspense fallback for every lazy route above - minimal, centered,
  * reusing the existing `.page-loading` layout (app-shell.css) and
  * `.detail-label` text styling (components/workspace.css) rather than new
  * spinner art, per this task's own "no spinner art" instruction. Both

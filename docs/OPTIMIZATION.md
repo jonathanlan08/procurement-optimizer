@@ -1,6 +1,6 @@
 # Order-allocation optimization
 
-A CP-SAT model that decides how much of each RFQ line to buy from which supplier — and,
+A CP-SAT model that decides how much of each RFQ line to buy from which supplier - and,
 just as importantly, is honest about how confident it is in the answer.
 
 Contract: `backend/src/app/domain/optimization/contracts.py` (frozen,
@@ -31,12 +31,12 @@ right one: it minimizes total landed cost, not sticker price.
 
 Variables, created in canonical order:
 
-- `alloc[offer]` — integer units, `0 … min(demand, capacity)`;
-- `used[offer]` — boolean, tied to `alloc > 0` by
+- `alloc[offer]` - integer units, `0 … min(demand, capacity)`;
+- `used[offer]` - boolean, tied to `alloc > 0` by
   `alloc ≤ upper·used` and `alloc ≥ used`;
-- `tier[offer, k]` — boolean per price-break tier, with `Σ_k tier = used` (exactly one tier
+- `tier[offer, k]` - boolean per price-break tier, with `Σ_k tier = used` (exactly one tier
   per used offer);
-- `offer_cost[offer]` — integer scaled cost;
+- `offer_cost[offer]` - integer scaled cost;
 - `supplier_used[s]`, `supplier_spend[s]`, and a global `total_cost`.
 
 Constraints:
@@ -45,7 +45,7 @@ Constraints:
 |---|---|
 | **demand** (never relaxable) | `Σ_offers alloc = required_quantity` per line |
 | `moq` | `alloc ≥ moq` enforced only if the offer is used |
-| `capacity` | `alloc ≤ capacity` (per quote line — cross-line shared capacity is roadmap) |
+| `capacity` | `alloc ≤ capacity` (per quote line - cross-line shared capacity is roadmap) |
 | `supplier_count` | `Σ supplier_used ≤ k` |
 | `concentration` | **cost basis**: `spend_s · 10^6 ≤ cap_num · total_cost`, `cap_num = round(ρ · 10^6)` |
 | `budget` | `total_cost ≤ scaled(budget_limit)` |
@@ -73,17 +73,17 @@ resolution.
 The recipe, ratified in `docs/planning/00-decisions.md` §1.1 and implemented in
 `AllocationSolver._make_solver` / `_canonical_problem_dict`:
 
-- `num_search_workers = 1` — no parallel search nondeterminism;
+- `num_search_workers = 1` - no parallel search nondeterminism;
 - `random_seed = 0`;
 - `max_deterministic_time = 30.0` (plus a `max_time_in_seconds = 120.0` wall-clock backstop);
-- **canonical input ordering** — lines sorted by `str(rfq_line_id)`, offers by
+- **canonical input ordering** - lines sorted by `str(rfq_line_id)`, offers by
   `(str(rfq_line_id), str(supplier_id), str(quote_line_id))`, tiers by `min_quantity`, locks
   and exclusions sorted too. (The methodology's `(code, id)` / `(line_number, id)` sort keys
   do not exist on the frozen dataclasses, so the only always-present stable keys are used
   instead; a reordering test asserts the result is unchanged.)
-- **`model_hash`** — SHA-256 over canonical JSON of the *input* (sorted keys, ids as
+- **`model_hash`** - SHA-256 over canonical JSON of the *input* (sorted keys, ids as
   strings, decimals via `to_wire`), not over the built CpModel proto. Cheaper, and it means a
-  pre-solve `INFEASIBLE` verdict — reached without ever calling the solver — still carries a
+  pre-solve `INFEASIBLE` verdict - reached without ever calling the solver - still carries a
   meaningful, reproducible hash.
 
 Repeat solves and permuted-input solves of the same problem produce the same model and the
@@ -99,11 +99,11 @@ solver's module docstring rather than silently added or silently skipped, and is
 
 **The scaling caveat (methodology §7.4).** The objective sees costs rounded half-even to
 0.0001 currency units (`MONEY_INT_SCALE = 10^4`), so two offers whose landed unit costs
-differ by less than `10^-4` are indistinguishable to the solver — it can return the
+differ by less than `10^-4` are indistinguishable to the solver - it can return the
 canonically-first of the two and truthfully report `optimal` in scaled space while the
 other is marginally cheaper in exact space. Every solved result therefore carries
-`stats.max_scaling_error` — a conservative worst-case bound,
-`2 × 5×10^-5 × (total required units + number of nonzero fixed costs)` — and the
+`stats.max_scaling_error` - a conservative worst-case bound,
+`2 × 5×10^-5 × (total required units + number of nonzero fixed costs)` - and the
 disclosure appears wherever an `optimal` status is shown: *"Optimality is proven with
 respect to costs rounded to 0.0001 currency units; any unconsidered alternative is at
 most `max_scaling_error` cheaper."* (Added after the 2026-08 independent calculation
@@ -111,20 +111,20 @@ audit, F1, demonstrated a scaled tie between costs differing at the 5th decimal.
 
 ## 4. Honest statuses
 
-`AllocationStatus` has four members and the mapping is 1:1 — **`FEASIBLE` is never presented
+`AllocationStatus` has four members and the mapping is 1:1 - **`FEASIBLE` is never presented
 as `OPTIMAL`**:
 
 | Status | Meaning |
 |---|---|
-| `optimal` | CP-SAT returned `OPTIMAL` — proven optimal within the deterministic budget |
-| `feasible` | CP-SAT returned `FEASIBLE` — a valid allocation, optimality **not** proven |
+| `optimal` | CP-SAT returned `OPTIMAL` - proven optimal within the deterministic budget |
+| `feasible` | CP-SAT returned `FEASIBLE` - a valid allocation, optimality **not** proven |
 | `infeasible` | no allocation satisfies the constraints |
 | `error` | solver failure or an unexpected status; the message is preserved, never hidden |
 
 `SolverStats` records the raw CP-SAT status name verbatim (`status_raw`), the deterministic
 time, the `model_hash`, and the variable/constraint counts. A pre-solve infeasibility is
 labelled `PRESOLVE_INFEASIBLE`. Any exception during model build or solve is caught once and
-returned as `status=ERROR` with `error_message=str(exc)` — never a bare 500, never a silent
+returned as `status=ERROR` with `error_message=str(exc)` - never a bare 500, never a silent
 empty result.
 
 The frontend allocation panel (`frontend/src/features/comparison/AllocationPanel.tsx`)
@@ -138,8 +138,8 @@ For each allocated offer it:
 1. re-selects the price-break tier at the **allocated** quantity using the same
    `select_price_break` the landed-cost engine uses;
 2. reads which tier CP-SAT actually chose;
-3. **raises `ConsistencyError` if the two disagree** — on the tier's `min_quantity` or its
-   unit price — or if the allocated quantity cannot be priced at all, or if no tier boolean
+3. **raises `ConsistencyError` if the two disagree** - on the tier's `min_quantity` or its
+   unit price - or if the allocated quantity cannot be priced at all, or if no tier boolean
    is set;
 4. computes `line_cost = quantize_money(tier.landed_unit_cost × quantity)` in exact
    `Decimal`, adds each used offer's `fixed_cost` once, and quantizes the total.
@@ -153,29 +153,29 @@ documented as never authoritative.
 
 ### Pre-solve explanations
 
-Before building a model at all, the solver checks — in order — and returns immediately with
+Before building a model at all, the solver checks - in order - and returns immediately with
 a specific explanation:
 
-1. **no supply for a line** — names each uncovered line, its required quantity, and the
+1. **no supply for a line** - names each uncovered line, its required quantity, and the
    reasons its would-be suppliers dropped out; attributes the conflict to `moq` when *all*
    the reasons were MOQ-related, otherwise `capacity`;
-2. **capacity shortfall** — "total capacity for line X is N units; M are required", with a
+2. **capacity shortfall** - "total capacity for line X is N units; M are required", with a
    relaxation hint;
-3. **lock conflicts** — a lock that exceeds an offer's ceiling, falls below its MOQ, prices
+3. **lock conflicts** - a lock that exceeds an offer's ceiling, falls below its MOQ, prices
    into no tier, points at an ineligible supplier or absent line, or whose per-line sum
    exceeds demand;
-4. **structural concentration conflict** — "a 0.4 concentration cap requires at least 3
+4. **structural concentration conflict** - "a 0.4 concentration cap requires at least 3
    suppliers; only 2 are available", naming whether `max_supplier_count` or the eligible
    supplier count is the limiter;
-5. **budget below the floor** — the cheapest conceivable allocation is computed exactly and
+5. **budget below the floor** - the cheapest conceivable allocation is computed exactly and
    compared to the budget: "budget of X is below the cheapest possible allocation of Y",
    with "raising `budget_limit` to at least Y restores feasibility".
 
 ### CP-SAT assumption cores
 
 For anything the pre-solve checks do not catch, the main solve runs in **assumption mode**:
-all six relaxable constraint groups — `moq`, `capacity`, `supplier_count`, `concentration`,
-`budget`, `locks` — are gated by boolean literals registered with `AddAssumptions`, always
+all six relaxable constraint groups - `moq`, `capacity`, `supplier_count`, `concentration`,
+`budget`, `locks` - are gated by boolean literals registered with `AddAssumptions`, always
 present even when a problem does not use that constraint, so
 `SufficientAssumptionsForInfeasibility()` has a uniform, canonical set to reason over.
 `demand` and the tier/linking structure are never gated: they are not policy a user could
@@ -199,8 +199,8 @@ at exactly its capacity; an allocation using exactly `max_supplier_count` suppli
 within one scaled unit of the budget; a supplier's spend at or within one scaled unit of the
 concentration cap.
 
-For split allocations it also computes **one** rejected alternative — a second deterministic
-solve with `max_supplier_count = 1` — reported as
+For split allocations it also computes **one** rejected alternative - a second deterministic
+solve with `max_supplier_count = 1` - reported as
 "a single-supplier allocation would cost X (+Δ vs. the recommended split)", or "no feasible
 single-supplier alternative". This is deliberately scoped to the single-supplier comparison
 rather than the methodology's full every-supplier sweep.
@@ -210,8 +210,8 @@ rather than the methodology's full every-supplier sweep.
 `_filter_offers` drops, each with a human-readable reason recorded:
 
 - offers pre-excluded upstream. In this build `ScenarioService._gather_offer_contexts`
-  produces exactly one kind of `EligibilityExclusion` — suppliers excluded from the RFQ
-  (`rfq_suppliers.excluded_at IS NOT NULL`), reason "<supplier> is excluded from this RFQ" —
+  produces exactly one kind of `EligibilityExclusion` - suppliers excluded from the RFQ
+  (`rfq_suppliers.excluded_at IS NOT NULL`), reason "<supplier> is excluded from this RFQ" -
   plus a plain skip for quotes in `rejected` status. The lead-time eligibility filter of
   `docs/planning/00-decisions.md` §4 #12 (drop suppliers whose lead time misses the
   required-by date) is **not implemented**: `rfq_lines` has no `required_by_date` column to
@@ -237,7 +237,7 @@ That is a documented deviation from `docs/planning/03-api-contract.md` §4.16, w
 describes a two-step async design (`POST …/comparison-scenarios` scores, `POST …/optimize`
 allocates). Two reasons, both recorded in the service's module docstring: there is no job
 queue anywhere in this build, and the frozen persistence shape has **no state for "scored but
-not yet allocated"** — `ComparisonScenario.state` is one machine
+not yet allocated"** - `ComparisonScenario.state` is one machine
 (`draft → running → complete|failed`) and both result tables carry
 `UNIQUE (organization_id, scenario_id)`.
 
@@ -248,14 +248,14 @@ scenario results are immutable.
 **Reproducibility.** Five granular snapshots are stored on every scenario:
 `constraints_snapshot`, `assumptions_snapshot`, `fx_snapshot`, `quote_snapshot_refs`,
 `weights_snapshot`. `POST …/{id}/clone` (the contract's route name for what the service calls
-`rerun`) creates a **new** scenario from the original's snapshots — reusing
-`quote_snapshot_refs` byte-for-byte rather than re-resolving "latest" landed costs — and
+`rerun`) creates a **new** scenario from the original's snapshots - reusing
+`quote_snapshot_refs` byte-for-byte rather than re-resolving "latest" landed costs - and
 performs a fresh solve. Because the scorer and solver are pure functions of their inputs, an
 unchanged rerun reproduces identical scores, an identical allocation, and the identical
 `model_hash`. History is never mutated; every rerun gets a new id, and
 `scenario.rerun` is audited.
 
-**Quote eligibility** for a scenario is "not superseded, not rejected" — deliberately *not*
+**Quote eligibility** for a scenario is "not superseded, not rejected" - deliberately *not*
 "confirmed". `QuoteStatus.CONFIRMED` is unreachable through any route in this build's
 manual-entry quote pipeline, so gating on it would make every scenario empty. The deviation
 is documented in `backend/src/app/services/scenario_service.py`.
@@ -265,10 +265,10 @@ is documented in `backend/src/app/services/scenario_service.py`.
 The seeded scenarios (`backend/src/app/seed/demo_dataset.py`) are engineered to exercise the
 honest paths, and asserted by `backend/tests/integration/test_demo_dataset.py`:
 
-- **"Enclosure Pilot — Lowest Landed Cost"** — a feasible run whose ranking puts Cascade
+- **"Enclosure Pilot - Lowest Landed Cost"** - a feasible run whose ranking puts Cascade
   Precision first even though Shenzhen Precision has the lowest raw unit price;
-- **"Enclosure Pilot — Budget Ceiling (Infeasible Demo)"** — `budget_limit = 500`,
+- **"Enclosure Pilot - Budget Ceiling (Infeasible Demo)"** - `budget_limit = 500`,
   deliberately infeasible, persisted with its explanation rather than hidden;
-- **"Enclosure Pilot — Capacity-Constrained Split"** — every quote's per-line production
+- **"Enclosure Pilot - Capacity-Constrained Split"** - every quote's per-line production
   capacity (250) is below the RFQ line's required quantity (500), so the optimum is forced
   into a ≥ 2-supplier split.

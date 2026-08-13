@@ -5,9 +5,9 @@ Wire conventions (§1.2): every decimal crosses the wire as a JSON string,
 never a number. `DecimalString` below is deliberately **unscaled** (parses
 via `app.core.money.parse_decimal`, not `parse_at_scale`): scenario
 assumptions (`quality_risk_rate`, `annual_rate`, lead-time day counts, ...)
-have no single DB column/scale of their own — they are recorded inside
+have no single DB column/scale of their own - they are recorded inside
 `landed_cost_results.inputs_snapshot`/`.assumptions` JSONB, not a typed
-`NUMERIC(p,s)` column — so there is no boundary scale to enforce at the API
+`NUMERIC(p,s)` column - so there is no boundary scale to enforce at the API
 edge the way `UnitPriceString`/`QuantityString` enforce theirs. Money/
 quantity fields that DO map onto a fixed-scale column (`amount`,
 `accepted_quantity`, `effective_unit_cost`, a weight fraction) reuse the
@@ -175,7 +175,7 @@ class AssumptionResponse(BaseModel):
 
 
 class LandedCostPreviewResponse(BaseModel):
-    """`POST /landed-costs:preview` response — computed, never persisted."""
+    """`POST /landed-costs:preview` response - computed, never persisted."""
 
     quote_line_id: str
     accepted_quantity: str

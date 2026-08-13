@@ -1,9 +1,9 @@
-/** Suppliers data layer — TanStack Query hooks over the live API.
+/** Suppliers data layer - TanStack Query hooks over the live API.
  *
  * Shapes mirror backend/src/app/schemas/suppliers.py exactly:
  *  - list envelope is `{ items, page: { limit, offset, total } }`.
  *  - `capacity_units_per_month` / `default_moq` are NUMERIC(18,6) wire
- *    strings (QTY_SCALE) — never run through Number()/parseFloat.
+ *    strings (QTY_SCALE) - never run through Number()/parseFloat.
  *  - `PATCH /suppliers/{id}` requires an `If-Match: "<version>"` header
  *    (backend/src/app/api/v1/suppliers.py `_parse_if_match`); the current
  *    version travels in the resource body (`SupplierResponse.version`), so
@@ -11,7 +11,7 @@
  *
  * `api()` (frontend/src/api/client.ts) replaces its whole internal `headers`
  * object whenever `init.headers` is supplied (`{ ...built, ...init }` is a
- * shallow spread, so a caller-supplied `headers` key wins outright) — so the
+ * shallow spread, so a caller-supplied `headers` key wins outright) - so the
  * one call site that needs a custom header (`If-Match`) must also re-supply
  * `Content-Type` and the CSRF token itself, or they're silently dropped.
  * The CSRF token isn't otherwise readable outside client.ts (no getter is

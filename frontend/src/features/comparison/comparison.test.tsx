@@ -443,7 +443,7 @@ describe("ComparisonPage", () => {
 
   afterEach(() => {
     // vite.config.ts sets `test.globals: false`, so @testing-library/react's
-    // automatic post-test cleanup never registers itself — see
+    // automatic post-test cleanup never registers itself - see
     // features/fx/fx.test.tsx's own identical comment for why this is
     // required.
     cleanup();

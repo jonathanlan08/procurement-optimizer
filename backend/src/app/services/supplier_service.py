@@ -1,4 +1,4 @@
-"""Supplier service — org-scoped business logic for supplier CRUD.
+"""Supplier service - org-scoped business logic for supplier CRUD.
 
 Services never commit: the request-scoped `get_db` dependency (app/api/deps.py)
 commits on success and rolls back on any raised exception. Every mutation
@@ -176,7 +176,7 @@ class SupplierService:
                 # `getattr(body, field)`, not `changes[field]`: `model_dump()`
                 # runs `DecimalString`'s `PlainSerializer` unconditionally (its
                 # `when_used` defaults to "always", not "json"), so `changes`
-                # holds the *wire* string form — `quantize_qty()` needs the
+                # holds the *wire* string form - `quantize_qty()` needs the
                 # parsed `Decimal` from the model attribute.
                 value = quantize_qty(getattr(body, field))
             setattr(supplier, field, value)

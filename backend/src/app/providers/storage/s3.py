@@ -1,15 +1,15 @@
-"""S3 `StorageProvider` — `boto3`-backed, for `PO_STORAGE_PROVIDER=s3`
+"""S3 `StorageProvider` - `boto3`-backed, for `PO_STORAGE_PROVIDER=s3`
 deployments (`app.core.config.Settings.s3_endpoint_url/s3_bucket/
 s3_access_key/s3_secret_key`, all required together by `Settings._fail_fast`
 when `storage_provider` is `s3`).
 
 Configuration is threaded through the constructor by
 `providers/storage/__init__.py`'s factory, never read from `Settings`
-directly in this module — the same constructor-injection shape
+directly in this module - the same constructor-injection shape
 `FilesystemStorageProvider`/`MemoryStorageProvider` already use, so every
 provider is equally testable without a real settings object.
 
-**Not exercised by `tests/unit/test_storage_providers.py`** — that suite runs
+**Not exercised by `tests/unit/test_storage_providers.py`** - that suite runs
 the shared put/get/exists/delete/key-regex/org-namespacing contract against
 the filesystem and memory providers only; this module talks to a real (or
 mocked-at-the-socket-level) S3-compatible endpoint, which is out of scope for
@@ -17,7 +17,7 @@ a no-network unit test, per the delegating task's own instruction.
 
 `boto3`/`botocore` ship no inline type stubs and this project does not vendor
 `boto3-stubs`, so the import and the client's dynamically-generated methods
-are `Any` from mypy's point of view — `type: ignore[import-untyped]` on the
+are `Any` from mypy's point of view - `type: ignore[import-untyped]` on the
 import is therefore precise (not a blanket suppression) rather than a
 project-wide mypy config change, which is outside this task's only-permitted
 `pyproject.toml` edit (the one added dependency line).

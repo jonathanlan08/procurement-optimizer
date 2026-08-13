@@ -98,7 +98,7 @@ describe("AuditPage", () => {
 
   afterEach(() => {
     // vite.config.ts sets `test.globals: false`, so @testing-library/react's
-    // automatic post-test cleanup never registers itself — see
+    // automatic post-test cleanup never registers itself - see
     // ../comparison/comparison.test.tsx's identical comment for why this is
     // required.
     cleanup();
@@ -119,9 +119,9 @@ describe("AuditPage", () => {
     // system-initiated event (no actor, no explanation, null entity_id)
     // renders placeholders without crashing, never a fabricated name.
     const row2 = screen.getByText("Quote created").closest("tr");
-    expect(within(row2 as HTMLElement).getByText("— system")).toBeInTheDocument();
+    expect(within(row2 as HTMLElement).getByText("system")).toBeInTheDocument();
     // null entity_id + null actor both render an em dash (2 cells)
-    expect(within(row2 as HTMLElement).getAllByText("—").length).toBeGreaterThanOrEqual(1);
+    expect(within(row2 as HTMLElement).getAllByText("-").length).toBeGreaterThanOrEqual(1);
   });
 
   it("appends items on Load more and passes next_cursor as the cursor param", async () => {
@@ -136,14 +136,14 @@ describe("AuditPage", () => {
     fireEvent.click(screen.getByRole("button", { name: /load more/i }));
 
     expect(await screen.findByText("Scenario completed")).toBeInTheDocument();
-    // first page's rows are still present — Load more appends, not replaces.
+    // first page's rows are still present - Load more appends, not replaces.
     expect(screen.getByText("Rfq status changed")).toBeInTheDocument();
     expect(screen.getByText("Quote created")).toBeInTheDocument();
 
     expect(secondPageCalls).toHaveLength(1);
     expect(secondPageCalls[0]).toContain("cursor=cursor-2");
 
-    // next_cursor is null on the second page — no further "Load more".
+    // next_cursor is null on the second page - no further "Load more".
     expect(screen.queryByRole("button", { name: /load more/i })).not.toBeInTheDocument();
   });
 

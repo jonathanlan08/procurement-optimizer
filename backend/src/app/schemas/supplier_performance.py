@@ -13,7 +13,7 @@ bound and the model/migration only enforce non-negativity
 here as `>= 0` only, deliberately looser than the two rate fields.
 
 Records have no `version`/`archived_at` (SupplierPerformanceRecord mixes in
-neither VersionedMixin nor ArchivableMixin — see app.models.suppliers): they
+neither VersionedMixin nor ArchivableMixin - see app.models.suppliers): they
 are point-in-time history, not a mutable aggregate with a lifecycle. There is
 no update/delete route for them in the contract's route table (§4.4 lists
 only GET and POST), so no corresponding schemas exist here.

@@ -3,7 +3,7 @@
 
 Runs `app.seed.demo_dataset.seed_demo_dataset` against a fresh, migrated
 database (the `db` fixture: a session wrapped in an outer transaction that
-is always rolled back — see tests/conftest.py) and asserts every item on the
+is always rolled back - see tests/conftest.py) and asserts every item on the
 SPEC's checklist, including that running the seed a second time on top of
 itself is a true no-op (idempotency).
 """

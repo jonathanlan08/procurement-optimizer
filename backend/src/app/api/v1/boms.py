@@ -3,7 +3,7 @@ mirroring api/v1/parts.py / api/v1/suppliers.py.
 
 No `ETag`/`If-Match` here: §1.7 explicitly enumerates which resources carry
 optimistic-concurrency headers ("suppliers, parts, RFQs, quotes, scoring
-configurations") and BOMs are not among them — consistent with
+configurations") and BOMs are not among them - consistent with
 `BillOfMaterials` carrying no `VersionedMixin` (see app/models/boms.py
 module docstring: the copy-on-write chain itself is the concurrency
 control for the one mutation that matters, forking the next version).
@@ -14,7 +14,7 @@ per instructions but both are recorded here:
 1. **`POST /boms/{id}/activate`** has no entry in §4.7's table at all. The
    contract lists `PATCH /boms/{id}` ("metadata only while draft") but never
    specifies how a BOM actually moves `draft -> active`, nor when a
-   predecessor becomes `superseded` — see `services/bom_service.py`'s
+   predecessor becomes `superseded` - see `services/bom_service.py`'s
    module docstring for the full status-transition design this fills that
    gap with. This task's brief explicitly asks for this route ("if
    genuinely undefined: draft on create, activate endpoint promotes
@@ -25,7 +25,7 @@ per instructions but both are recorded here:
    routes this module implements (GET/POST /boms, GET /boms/{id}, POST
    .../versions, POST .../activate, POST .../archive, GET .../versions) and
    does not include metadata-only `PATCH`. Lines are already fully
-   immutable in place (no line-edit route exists anywhere — the model has
+   immutable in place (no line-edit route exists anywhere - the model has
    no columns to update a line with, per app/models/boms.py); a metadata-
    only `PATCH` would be a legitimate follow-up but is out of scope for
    this task's allowlisted route set.
@@ -33,7 +33,7 @@ per instructions but both are recorded here:
    contract names the path parameter `{root_id}`, implying the caller must
    already know the root id. This router accepts *any* version's id in the
    chain and resolves it to its root internally
-   (`BomService.version_chain`) — a strict superset of the contract's
+   (`BomService.version_chain`) - a strict superset of the contract's
    literal behavior: passing the root id still works (a chain's v1 row has
    `id == root_bom_id`), and passing any other version's id additionally
    works, which is more convenient for a client that only has "the BOM I'm

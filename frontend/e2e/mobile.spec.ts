@@ -1,9 +1,9 @@
-/** Mobile viewport smoke test (2026-08 audit remediation, item 5 — "mobile
+/** Mobile viewport smoke test (2026-08 audit remediation, item 5 - "mobile
  * emulation"), against the real backend + seeded dataset like every other
  * spec in this suite. Chromium only (playwright.config.ts's own header):
  * this exercises the responsive layout itself (AppShell.tsx's hamburger ->
  * slide-in nav drawer, replacing the old <=768px "sidebar just vanishes"
- * bug — see that file's own header comment) rather than a cross-engine
+ * bug - see that file's own header comment) rather than a cross-engine
  * rendering concern, so it belongs in the full-coverage project, not
  * duplicated into the firefox/webkit smoke subset.
  *
@@ -24,7 +24,7 @@ test("mobile nav drawer: hamburger -> drawer -> navigate to Parts, with no page-
   // app-shell.css sets `aside.shell-sidebar { display: none }` on the
   // static desktop nav (its own "Primary" landmark goes fully out of the
   // accessibility tree, not just visually hidden) and the drawer's own copy
-  // of that landmark is `aria-hidden="true"` until opened (AppShell.tsx) —
+  // of that landmark is `aria-hidden="true"` until opened (AppShell.tsx) -
   // so there is genuinely no accessible "Primary" nav at all until the
   // hamburger is clicked. The page heading is this viewport's real
   // "loaded" signal instead.
@@ -52,7 +52,7 @@ test("mobile nav drawer: hamburger -> drawer -> navigate to Parts, with no page-
   // -- the page body itself never scrolls horizontally at this width ------
   // (the whole point of the hamburger/drawer fix: a narrow viewport must
   // not force the page itself wider than the device, even though the dense
-  // data table it contains legitimately needs its OWN horizontal scroll —
+  // data table it contains legitimately needs its OWN horizontal scroll -
   // asserted separately below).
   const bodyOverflowsPage = await page.evaluate(
     () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
@@ -60,7 +60,7 @@ test("mobile nav drawer: hamburger -> drawer -> navigate to Parts, with no page-
   expect(bodyOverflowsPage).toBe(false);
 
   // -- the Parts table itself scrolls horizontally inside its own
-  // container (DataTable.css's `.data-table-wrap { overflow: auto }`) —
+  // container (DataTable.css's `.data-table-wrap { overflow: auto }`) -
   // six-plus columns (Part number/MPN/Name/Category/Unit/Target price/
   // Status) legitimately don't fit in 390px, so this container, not the
   // page, is where that overflow must land.

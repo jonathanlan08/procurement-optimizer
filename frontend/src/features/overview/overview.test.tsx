@@ -81,7 +81,7 @@ describe("OverviewPage", () => {
   });
 
   afterEach(() => {
-    // vite.config.ts sets `test.globals: false` — see parts.test.tsx's
+    // vite.config.ts sets `test.globals: false` - see parts.test.tsx's
     // identical comment for why this manual cleanup is required.
     cleanup();
     vi.unstubAllGlobals();
@@ -144,7 +144,7 @@ describe("OverviewPage", () => {
 
     renderPage();
 
-    // KPI counts — scoped to the KPI value spans (the workflow guide also
+    // KPI counts - scoped to the KPI value spans (the workflow guide also
     // renders small step numbers like "4", which would otherwise collide).
     await screen.findByText("12");
     const kpiValues = document
@@ -152,7 +152,7 @@ describe("OverviewPage", () => {
     const kpiTexts = Array.from(kpiValues).map((el) => el.textContent);
     expect(kpiTexts).toEqual(["12", "340", "4"]);
 
-    expect(screen.getByText(/Demo — synthetic data/i)).toBeInTheDocument();
+    expect(screen.getByText(/Demo - synthetic data/i)).toBeInTheDocument();
 
     expect(await screen.findByText("RFQ-1001")).toBeInTheDocument();
     expect(screen.getByText("Balanced award")).toBeInTheDocument();
@@ -194,6 +194,6 @@ describe("OverviewPage", () => {
 
     expect(await screen.findByText(/No RFQs yet/i)).toBeInTheDocument();
     // Not the seeded "demo" note when demo_mode is false.
-    expect(screen.queryByText(/Demo — synthetic data/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Demo - synthetic data/i)).not.toBeInTheDocument();
   });
 });

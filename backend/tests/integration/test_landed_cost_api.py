@@ -1,7 +1,7 @@
 """Landed-cost API integration tests (docs/planning/03-api-contract.md
 §4.15): the worked example from docs/planning/05-calculation-methodology.md
 §9, reproduced end to end through the HTTP API and asserted against the
-principal's hand-verified exact decimal strings — completeness, component
+principal's hand-verified exact decimal strings - completeness, component
 amounts, components-sum-to-total, cross-org 404, role gating (viewer may
 preview but not persist), audit coverage, and "recalculation inserts a new
 row, latest wins".
@@ -612,7 +612,7 @@ class TestCompleteReachable:
     commercial field on the quote line is populated (including the two new
     columns), same-currency/same-unit so FX/unit conversion never enter the
     picture, and every assumption-only input (quality/delay risk rate,
-    required lead time, financing) is supplied so nothing is left missing —
+    required lead time, financing) is supplied so nothing is left missing -
     the result must be `complete`, not merely `assumption_dependent`.
     """
 
@@ -678,7 +678,7 @@ class TestCompleteReachable:
                     # these five have no source column anywhere in this
                     # schema by design (module docstrings of
                     # services/landed_cost_service.py and
-                    # services/scenario_service.py) — under "full
+                    # services/scenario_service.py) - under "full
                     # assumptions" they are supplied, not omitted.
                     "quality_risk_rate": "0.02",
                     "delay_risk_per_day": "5",

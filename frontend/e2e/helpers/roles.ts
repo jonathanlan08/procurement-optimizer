@@ -1,7 +1,7 @@
 /** Demo credentials + storage-state paths shared by every spec.
  *
  * Credentials are seeded (and publicly documented) by
- * backend/src/app/seed/demo_dataset.py — see the repo README's "Demo
+ * backend/src/app/seed/demo_dataset.py - see the repo README's "Demo
  * credentials" table. Synthetic organization, synthetic accounts, no real
  * secrets.
  */
@@ -32,7 +32,7 @@ export const DEMO_OWNER: DemoCredentials = {
   password: "demo-owner-2026",
 };
 
-/** Storage state written by ./global-setup.ts — pre-authenticated cookie
+/** Storage state written by ./global-setup.ts - pre-authenticated cookie
  * jars so specs that aren't specifically testing the login flow itself
  * (auth.spec.ts) can skip the UI login round trip and start authenticated. */
 export const ANALYST_STORAGE = path.join(AUTH_DIR, "analyst.json");

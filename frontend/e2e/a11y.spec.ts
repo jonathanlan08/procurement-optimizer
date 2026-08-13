@@ -3,7 +3,7 @@
  * axe-core scan of the same seven surfaces a human accessibility reviewer
  * would check first, as the analyst role at desktop size, asserting zero
  * `wcag2a`/`wcag2aa` violations on each. Chromium only (playwright.config.ts
- * — axe-core's rule engine is the thing under test here, not a rendering
+ * - axe-core's rule engine is the thing under test here, not a rendering
  * difference between browser engines, so this stays out of the
  * firefox/webkit smoke subset).
  *
@@ -14,7 +14,7 @@
  * fetching per workspace.css's `:disabled { opacity: 0.5 }`) or a
  * `disabled`-until-data-loads control (Compare's "Calculate" button,
  * disabled while `columns.length === 0`) genuinely fails color-contrast for
- * that instant — a real static analysis should read the settled UI a user
+ * that instant - a real static analysis should read the settled UI a user
  * actually acts on, not a sub-150ms transition frame, so every test below
  * waits for its page's own real "loaded" signal (a table, or a specific
  * enabled control) before scanning. `reducedMotion: "reduce"` on top
@@ -35,7 +35,7 @@ test.use({
 });
 
 /** Wait for every finite animation (the motion.dev entrance staggers, any
- * CSS transition) to finish before scanning — axe must audit the settled UI,
+ * CSS transition) to finish before scanning - axe must audit the settled UI,
  * not a mid-fade frame. Infinite animations (the skeleton pulse) are
  * excluded: awaiting their `finished` would hang forever. This is the
  * deterministic settle signal; `reducedMotion: "reduce"` in `test.use` above
@@ -65,7 +65,7 @@ async function expectNoViolations(page: Page): Promise<void> {
  * to 0.01ms, but a freshly-`toBeEnabled()` button can still be observed
  * mid-transition for a few ms after that assertion resolves (proven
  * empirically: axe once caught the "Calculate" button at computed opacity
- * ~0.85, producing a real but entirely transient sub-4.5:1 reading — not a
+ * ~0.85, producing a real but entirely transient sub-4.5:1 reading - not a
  * static markup defect). Polling the element's own computed `opacity` to
  * `"1"` waits for the actual rendered, settled state deterministically,
  * instead of guessing at a fixed delay. */
@@ -106,7 +106,7 @@ test.describe("accessibility (wcag2a/wcag2aa, zero violations)", () => {
     await selectOptionContaining(selectByLabel(page, "RFQ"), "RFQ-2026-ENC-PILOT");
     await expect(page.getByRole("heading", { name: "Scenario history" })).toBeVisible();
     // the comparison table only renders once `columns` (matched quotes) has
-    // loaded — the same signal that flips the "Calculate" button's own
+    // loaded - the same signal that flips the "Calculate" button's own
     // `disabled={columns.length === 0}` off, so waiting for it here means
     // the button is scanned in its real, enabled resting state.
     await expect(page.getByRole("table")).toBeVisible();

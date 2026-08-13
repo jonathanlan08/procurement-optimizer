@@ -65,7 +65,7 @@ class TestInverse:
         assert eur_to_usd is not None
         # 05-calculation-methodology.md §4: "if only the inverse pair exists,
         # use 1/rate computed at precision 34" then quantized to the column
-        # scale (RATE_SCALE, 12dp) — recomputing that exact operation here
+        # scale (RATE_SCALE, 12dp) - recomputing that exact operation here
         # must reproduce the provider's own answer bit-for-bit.
         assert eur_to_usd == quantize_rate(Decimal(1) / usd_to_eur)
 
@@ -76,7 +76,7 @@ class TestInverse:
         assert usd_to_gbp is not None
         assert gbp_to_usd is not None
         # 12dp rounding on both legs means the round trip is extremely close
-        # to, but not necessarily bit-exact, 1 — bounded by two roundings.
+        # to, but not necessarily bit-exact, 1 - bounded by two roundings.
         assert abs(usd_to_gbp * gbp_to_usd - 1) < Decimal("0.000000001")
 
 

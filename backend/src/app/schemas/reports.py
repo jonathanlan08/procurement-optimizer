@@ -1,16 +1,16 @@
 """Report request/response schemas (docs/planning/03-api-contract.md
 §4.18, app/models/reports.py, app/services/report_service.py).
 
-**Wire shape is FROZEN** — a frontend agent builds against this
+**Wire shape is FROZEN** - a frontend agent builds against this
 concurrently (delegating task's own words). Every field name below is
 copied verbatim from that task's "WIRE CONTRACT" section; nothing here is
 free to rename.
 
-`content_sha256` is surfaced as a lowercase hex string, not raw bytes — the
+`content_sha256` is surfaced as a lowercase hex string, not raw bytes - the
 same `.hex()` convention `app/schemas/documents.py` already establishes for
 `QuoteDocument.content_sha256` (both columns are `bytea`; see migration
 0015's module docstring for why). `purged` is derived from `purged_at IS
-NOT NULL`, not a stored column of its own — the wire contract asks for a
+NOT NULL`, not a stored column of its own - the wire contract asks for a
 boolean, and `GeneratedReport` has no separate boolean flag to mirror
 (`purged_at` alone is both the marker and the timestamp, per ERD §11).
 """
@@ -31,7 +31,7 @@ from app.models.reports import GeneratedReport, ReportFormat, ReportType
 class ReportCreateRequest(BaseModel):
     """`POST /reports` body (03-api-contract.md §4.18:
     `{scenario_id, report_type, format}`, plus this build's own
-    `parameters?` — see `app/services/report_service.py` module docstring
+    `parameters?` - see `app/services/report_service.py` module docstring
     for what each `report_type` reads from `parameters`)."""
 
     model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")

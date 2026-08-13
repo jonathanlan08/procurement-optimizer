@@ -1,4 +1,4 @@
-"""Landed-cost service — assembles `LandedCostInput` from persisted data and
+"""Landed-cost service - assembles `LandedCostInput` from persisted data and
 runs the frozen `LandedCostCalculatorV1` (docs/planning/03-api-contract.md
 §4.15, app/domain/landed_cost/{contracts,calculator}.py, app/domain/fx/
 normalize.py, app/domain/units/normalize.py).
@@ -6,7 +6,7 @@ normalize.py, app/domain/units/normalize.py).
 Services never commit: the request-scoped `get_db` dependency (app/api/deps.py)
 commits on success and rolls back on any raised exception. `calculate_and_store`
 writes exactly one audit event (`landed_cost.calculated`) in the same
-transaction as the row it describes. `preview` writes none — it is a
+transaction as the row it describes. `preview` writes none - it is a
 stateless calculator, not a decision (03-api-contract.md §6 gap #2: "I
 believe that is correct... it is the one mutation-free money path with no
 audit row").
@@ -18,14 +18,14 @@ RFQ line's `required_quantity`) + `quote_terms` (payment terms days) + the FX
 effective rate (`FxService.get_effective_rate`, as-of the quote's
 `quote_date`) + a unit-conversion leg (`app.domain.units.normalize.
 convert_quantity`) when the quote line's unit differs from the matched RFQ
-line's unit — the RFQ line's unit is always the target. A missing input at
+line's unit - the RFQ line's unit is always the target. A missing input at
 any stage never becomes zero silently: it becomes a `Quantified.missing(...)`
 that the calculator itself turns into a `MissingInput` entry and degrades
 `completeness` (`app.domain.values`, `05-calculation-methodology.md` §2).
 
 **Two deliberate extensions beyond the five scenario-assumption fields this
 task's brief names** (`quality_risk_rate`, `delay_risk_per_day`,
-`annual_rate`, `baseline_terms_days`, `assume_missing_costs_zero`) — spelled
+`annual_rate`, `baseline_terms_days`, `assume_missing_costs_zero`) - spelled
 out here because both are load-bearing for the worked example
 (05-calculation-methodology.md §9) that `tests/integration/
 test_landed_cost_api.py` must reproduce exactly, and neither has any other
@@ -33,11 +33,11 @@ possible source:
 
 1. **`tariff_rate`/`duty_rate`.** `ImportCosts` (contracts.py) requires a
    rate for each of tariff/duty when the corresponding amount is not quoted
-   (the "derive amount = rate x basis" path) — the worked example's import
+   (the "derive amount = rate x basis" path) - the worked example's import
    component is entirely rate-derived (`0.035 x (material + logistics)`,
    `tariff_amount`/`duty_amount` both unstated on the quote line). Neither
    rate has any column anywhere in this schema (`quote_lines`,
-   `rfq_lines`, `quote_terms`) — a scenario assumption is the only possible
+   `rfq_lines`, `quote_terms`) - a scenario assumption is the only possible
    source, exactly like `quality_risk_rate`. Added as two more optional
    `LandedCostAssumptions` fields.
 2. **`promised_lead_time_days`/`required_lead_time_days`.** `RiskAssumptions`
@@ -45,7 +45,7 @@ possible source:
    `QuoteLine.lead_time_days` supplies "promised" when the supplier stated
    it (used here as a `SUPPLIER`-provenance fallback before falling back to
    an assumption override), but **no table anywhere in this schema has a
-   "required lead time" column** — `RfqLine` deliberately omits it
+   "required lead time" column** - `RfqLine` deliberately omits it
    (app/models/rfqs.py module docstring point 3: "RfqLine does not carry
    required_by_date... omitted from the delegating task's field list").
    Since the worked example states "no delay" (an affirmative, non-missing
@@ -311,7 +311,7 @@ class LandedCostService:
         self, from_unit_id: uuid.UUID, to_unit_id: uuid.UUID, part_id: uuid.UUID
     ) -> Decimal | None:
         """An org-recorded `UnitConversion` row for this exact pair (either
-        direction) and part, if one exists — the source of the "per-part
+        direction) and part, if one exists - the source of the "per-part
         pack size" factor `convert_quantity` needs when a count-dimension
         container (pack/box/tray/reel) has no universal ratio."""
         stmt = select(UnitConversion).where(
@@ -335,7 +335,7 @@ class LandedCostService:
         part_id: uuid.UUID,
     ) -> tuple[Quantified, dict[str, Any]]:
         """Convert `price` (per quote-line unit) into a price per RFQ-line
-        unit — the RFQ line's unit is always the target (this task's own
+        unit - the RFQ line's unit is always the target (this task's own
         instruction). A missing conversion factor never guesses: the price
         becomes MISSING with an explanatory note, which the calculator turns
         into an INCOMPLETE result (never a silent 1:1 passthrough)."""
@@ -430,7 +430,7 @@ class LandedCostService:
         """Currency-convert one fixed/logistics/import money amount. Mirrors
         `app.domain.fx.normalize.normalize_price`'s missing/passthrough
         semantics, but quantizes at `MONEY_SCALE` (these are totals, not
-        unit prices) — that module's own function always quantizes at
+        unit prices) - that module's own function always quantizes at
         `UNIT_PRICE_SCALE`, so it cannot be reused verbatim for these
         columns without silently mis-scaling the worked example (§9)."""
         if value is None:
@@ -535,7 +535,7 @@ class LandedCostService:
             tooling=money(line.tooling_cost, "tooling"),
             setup=money(line.setup_cost, "setup"),
             # migration 0016 (2026-08 product-audit remediation): real
-            # source column now — see module docstring.
+            # source column now - see module docstring.
             documentation=money(line.documentation_cost, "documentation"),
             other_fixed=money(line.other_fixed_cost, "other_fixed"),
         )
@@ -543,7 +543,7 @@ class LandedCostService:
             shipping=money(line.shipping_cost, "shipping"),
             insurance=money(line.insurance_cost, "insurance"),
             packaging=money(line.packaging_cost, "packaging"),
-            # migration 0016: real source column now — see module docstring.
+            # migration 0016: real source column now - see module docstring.
             handling=money(line.handling_cost, "handling"),
         )
 

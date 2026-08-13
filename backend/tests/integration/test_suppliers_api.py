@@ -175,7 +175,7 @@ class TestSupplierCrudRoundTrip:
         assert body["page"]["total"] >= 1
 
         # analyst-owned lifecycle continues under an administrator (archive is
-        # O/A only per the contract's route table — see module docstring)
+        # O/A only per the contract's route table - see module docstring)
         admin_headers = _headers(_login_as(client, org_a, Role.ADMINISTRATOR))
         archive_resp = client.post(
             f"/api/v1/suppliers/{supplier_id}/archive",
@@ -199,7 +199,7 @@ class TestSupplierCrudRoundTrip:
     def test_patch_decimal_fields_round_trip(
         self, client: TestClient, org_a: dict[str, Any]
     ) -> None:
-        """Regression: PATCHing a `DecimalString` field 500'd — the service's
+        """Regression: PATCHing a `DecimalString` field 500'd - the service's
         `model_dump()` re-serialized the parsed Decimal back to its wire string
         (PlainSerializer's `when_used` defaults to "always"), and
         `quantize_qty()` then blew up on the str."""
@@ -315,7 +315,7 @@ class TestViewerReadOnly:
 
     def test_analyst_cannot_archive(self, client: TestClient, org_a: dict[str, Any]) -> None:
         # archive/unarchive are O/A only per the contract's route table, so an
-        # analyst — who may create/read/update — is still blocked here
+        # analyst - who may create/read/update - is still blocked here
         headers_a = _headers(_login_as(client, org_a, Role.ANALYST))
         create_resp = client.post(
             "/api/v1/suppliers", json=_supplier_payload(), headers=headers_a

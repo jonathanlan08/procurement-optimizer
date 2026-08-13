@@ -6,10 +6,10 @@
  *  - **Unit resolution** (P1 audit finding: "creating and editing require a
  *    raw unit-definition UUID... list rows display UUID fragments, and
  *    units ha[ve] no frontend workflow"). `GET /api/v1/units` IS mounted
- *    (backend/src/app/api/v1/units.py) and already has a typed hook —
+ *    (backend/src/app/api/v1/units.py) and already has a typed hook -
  *    `useUnits()` in ../boms/api.ts, the same one RfqsPage.tsx/BomsPage.tsx
  *    use to resolve their own `unit_definition_id` columns/pickers. The
- *    create/edit form's "Unit" field is a `<select>` of `"code — name"`
+ *    create/edit form's "Unit" field is a `<select>` of `"code - name"`
  *    options (mirrors RfqLineFormRow's line-unit `<select>`); the list's
  *    "Unit" column and the detail drawer's "Unit" row resolve the id
  *    through a `unitsById` map the same way BomLineViewRow/RfqLineRow do,
@@ -211,7 +211,7 @@ function PartForm({
             <option value="">Select unit…</option>
             {units.map((u) => (
               <option key={u.id} value={u.id}>
-                {u.code} — {u.name}
+                {u.code} - {u.name}
               </option>
             ))}
           </select>
@@ -245,14 +245,14 @@ function PartForm({
   );
 }
 
-/** Resolve an internal-alternative part id to its human identity — raw UUIDs
+/** Resolve an internal-alternative part id to its human identity - raw UUIDs
  * in the list were a 2026-08 external-review P2 (same resolve-at-render
  * convention as extraction's MatchCandidatePartLabel). */
 function InternalAltLabel({ partId }: { partId: string }) {
   const q = usePart(partId);
   return (
     <span title={partId}>
-      {q.data ? `Internal · ${q.data.internal_part_number} — ${q.data.name}` : "Internal · …"}
+      {q.data ? `Internal · ${q.data.internal_part_number} - ${q.data.name}` : "Internal · …"}
     </span>
   );
 }
@@ -332,12 +332,12 @@ function PartAlternativesSection({ partId, canWrite }: { partId: string; canWrit
                   {alt.alternative_part_id ? (
                     <InternalAltLabel partId={alt.alternative_part_id} />
                   ) : (
-                    `External MPN · ${alt.alternative_mpn ?? "—"}`
+                    `External MPN · ${alt.alternative_mpn ?? "-"}`
                   )}
                 </span>
                 <span className="detail-label">
                   {alt.approval_status}
-                  {alt.rationale ? ` — ${alt.rationale}` : ""}
+                  {alt.rationale ? ` - ${alt.rationale}` : ""}
                 </span>
               </div>
               {canWrite &&
@@ -419,10 +419,10 @@ function PartAlternativesSection({ partId, canWrite }: { partId: string; canWrit
                         type="button"
                         className="btn-ghost-sm"
                         onClick={() =>
-                          setSelectedPart({ id: p.id, label: `${p.internal_part_number} — ${p.name}` })
+                          setSelectedPart({ id: p.id, label: `${p.internal_part_number} - ${p.name}` })
                         }
                       >
-                        {p.internal_part_number} — {p.name}
+                        {p.internal_part_number} - {p.name}
                       </button>
                     </li>
                   ))}
@@ -569,13 +569,13 @@ function PartDetail({
         <h3 className="detail-section-title">Overview</h3>
         <div className="detail-grid">
           <DetailRow label="Internal part number" value={part.internal_part_number} mono />
-          <DetailRow label="Manufacturer part number" value={part.manufacturer_part_number ?? "—"} mono />
+          <DetailRow label="Manufacturer part number" value={part.manufacturer_part_number ?? "-"} mono />
           <DetailRow label="Name" value={part.name} />
-          <DetailRow label="Manufacturer" value={part.manufacturer ?? "—"} />
-          <DetailRow label="Category" value={part.category ?? "—"} />
+          <DetailRow label="Manufacturer" value={part.manufacturer ?? "-"} />
+          <DetailRow label="Category" value={part.category ?? "-"} />
           <DetailRow
             label="Unit"
-            value={unit ? `${unit.code} — ${unit.name}` : part.unit_definition_id}
+            value={unit ? `${unit.code} - ${unit.name}` : part.unit_definition_id}
             mono={!unit}
           />
           <DetailRow
@@ -583,11 +583,11 @@ function PartDetail({
             value={
               part.target_price !== null && part.target_price_currency !== null
                 ? formatMoney(part.target_price, { currency: part.target_price_currency })
-                : "—"
+                : "-"
             }
             num
           />
-          <DetailRow label="Description" value={part.description ?? "—"} full />
+          <DetailRow label="Description" value={part.description ?? "-"} full />
         </div>
       </section>
 
@@ -597,9 +597,9 @@ function PartDetail({
           <div className="detail-grid">
             <DetailRow
               label="Archived at"
-              value={part.archived_at ? new Date(part.archived_at).toLocaleString() : "—"}
+              value={part.archived_at ? new Date(part.archived_at).toLocaleString() : "-"}
             />
-            <DetailRow label="Reason" value={part.archive_reason ?? "—"} full />
+            <DetailRow label="Reason" value={part.archive_reason ?? "-"} full />
           </div>
         </section>
       )}
@@ -694,7 +694,7 @@ export function PartsPage() {
         accessorKey: "manufacturer_part_number",
         header: "MPN",
         meta: { mono: true },
-        cell: (ctx) => ctx.getValue<string | null>() ?? "—",
+        cell: (ctx) => ctx.getValue<string | null>() ?? "-",
       },
       {
         id: "name",
@@ -705,7 +705,7 @@ export function PartsPage() {
         id: "category",
         accessorKey: "category",
         header: "Category",
-        cell: (ctx) => ctx.getValue<string | null>() ?? "—",
+        cell: (ctx) => ctx.getValue<string | null>() ?? "-",
       },
       {
         id: "unit",
@@ -729,7 +729,7 @@ export function PartsPage() {
           const row = ctx.row.original;
           return row.target_price !== null && row.target_price_currency !== null
             ? formatMoney(row.target_price, { currency: row.target_price_currency })
-            : "—";
+            : "-";
         },
       },
       {

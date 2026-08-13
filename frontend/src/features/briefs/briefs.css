@@ -1,4 +1,4 @@
-/* Negotiation-briefs panel — attaches to the comparison workspace (see
+/* Negotiation-briefs panel - attaches to the comparison workspace (see
    ../comparison/ComparisonPage.tsx's insertion point). Provenance badges use
    five distinct styles per MASTER.md's "never rely on color alone" rule for
    data-source provenance labels; "ai_narrative" additionally gets an accent
@@ -44,7 +44,7 @@
   flex: 1;
 }
 
-/* provenance badges — five distinct styles, always paired with a text label */
+/* provenance badges - five distinct styles, always paired with a text label */
 .badge--brief-provenance-supplier_provided {
   background: rgba(21, 128, 61, 0.1);
   color: var(--color-positive);

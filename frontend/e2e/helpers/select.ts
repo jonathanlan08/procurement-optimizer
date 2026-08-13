@@ -1,11 +1,11 @@
 /** `<select>` locating + option-picking helpers.
  *
  * `selectByLabel` exists because this app's `FormField.tsx` wraps every
- * control in an IMPLICIT `<label>` — for a `<select>`, every `<option>`'s
+ * control in an IMPLICIT `<label>` - for a `<select>`, every `<option>`'s
  * own text becomes part of the `<label>` element's plain DOM `textContent`.
  * Playwright's `getByLabel(name, { exact: true })` matches against that raw
  * label text, not the browser's real accessible name (which correctly
- * excludes an embedded control's own content per the accname spec) — so an
+ * excludes an embedded control's own content per the accname spec) - so an
  * exact-match `getByLabel` on any `<select>` here spuriously finds zero
  * elements (verified empirically against this app's own RFQ picker:
  * `getByLabel("RFQ", {exact:true})` -> 0 matches, while
@@ -23,10 +23,10 @@
  * picker exists).
  *
  * `selectOptionContaining` then picks an `<option>` by a text SUBSTRING
- * rather than an exact label — several of this app's option labels are
- * built with an em dash (e.g. `"RFQ-2026-ENC-PILOT — Enclosure Pilot Build
+ * rather than an exact label - several of this app's option labels are
+ * built with an em dash (e.g. `"RFQ-2026-ENC-PILOT - Enclosure Pilot Build
  * (Under Review)"`, ../../src/features/rfqs/RfqsPage.tsx) or embed a value
- * that varies per seed run (dates, ids) — matching a stable substring (the
+ * that varies per seed run (dates, ids) - matching a stable substring (the
  * internal reference code, a supplier code, a scenario name) instead of the
  * full label keeps these specs resilient to formatting/whitespace details
  * that aren't the point of the test.

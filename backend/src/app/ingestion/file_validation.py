@@ -1,4 +1,4 @@
-"""Upload security core — PRINCIPAL-OWNED. Every uploaded document is untrusted.
+"""Upload security core - PRINCIPAL-OWNED. Every uploaded document is untrusted.
 
 Pure module (no I/O): callers stream bytes and enforce the size cap at the
 transport layer; this module rules on what the bytes claim to be.
@@ -129,7 +129,7 @@ def validate_upload(
 def sanitize_filename(raw: str) -> str:
     """Reduce an untrusted filename to a safe display/metadata form.
 
-    Never used as a filesystem path — storage keys are server-generated — but
+    Never used as a filesystem path - storage keys are server-generated - but
     sanitized anyway for defense in depth and safe rendering.
     """
     # strip any path components (both separators) and null/control chars

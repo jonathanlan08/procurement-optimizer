@@ -13,7 +13,7 @@ HTTP API against the four committed synthetic fixtures
   (`lines[0].unit_price` at 0.55) -> materializing before it is confirmed is
   `409`; confirming it (and everything else pending) lets materialization
   succeed.
-- **Nordic Fastener (CSV):** the SPEC's prompt-injection acceptance test —
+- **Nordic Fastener (CSV):** the SPEC's prompt-injection acceptance test -
   `injection_suspected=True` on the run, a `security.injection_suspected`
   audit event with a matched snippet, and the extracted/materialized price is
   the REAL `0.024`, never the injected `0.01`.
@@ -22,7 +22,7 @@ HTTP API against the four committed synthetic fixtures
   correction made to an already-materialized run's field writes a real
   `QuoteCorrection` row (before/after) plus an audit event (see
   `services/extraction_service.py`'s own module docstring for why a
-  correction can only produce a `QuoteCorrection` row once a quote exists —
+  correction can only produce a `QuoteCorrection` row once a quote exists -
   a genuine conflict with the FROZEN `QuoteCorrection.quote_id NOT NULL`
   constraint, flagged there in detail).
 
@@ -94,14 +94,14 @@ def client(
 
 
 def _seed_each_unit(migrated_engine: Engine, organization_id: str) -> str:
-    """An org-scoped unit definition with code `"each"` — every golden
+    """An org-scoped unit definition with code `"each"` - every golden
     fixture's `unit_of_measure` is either literally `"each"` or genuinely
     MISSING, both of which resolve through `_resolve_unit_definition_id`'s
     "each" fallback (see `services/extraction_service.py`'s own module
     docstring). Deliberately **org-scoped, not global**: a global
     (`organization_id IS NULL`) row is shared, real-committed, cross-test-
     file state (`unit_definitions` carries a partial unique index on
-    `lower(code)` for global rows only — migration 0003) — the same
+    `lower(code)` for global rows only - migration 0003) - the same
     `_seed_unit(..., organization_id=...)` technique
     test_documents_api.py/test_quotes_api.py already use for exactly this
     reason, just with a fixed code instead of a random one."""
@@ -406,7 +406,7 @@ class TestPdfHappyPath:
         assert line1["unit_definition_id"] == each_unit_id
         assert line1["lead_time_days"] == 35
         # "China" (a full country name, not ISO alpha-2) cannot be losslessly
-        # written into the CHAR(2) column — see extraction_service.py's own
+        # written into the CHAR(2) column - see extraction_service.py's own
         # module docstring; left NULL rather than truncated/guessed.
         assert line1["country_of_origin"] is None
 
@@ -510,7 +510,7 @@ class TestCsvInjection:
         assert any("IGNORE" in s and "INSTRUCTIONS" in s for s in snippets)
 
         # The field extracted from the injected line is the REAL price
-        # (0.024), not the "0.01" the injected text tried to set — there is
+        # (0.024), not the "0.01" the injected text tried to set - there is
         # no schema slot the instruction could have landed in even in
         # principle (ExtractedLine has no "notes" field at all).
         injected_line_price = _field_by_path(client, run["id"], "lines[1].unit_price")
@@ -753,7 +753,7 @@ class TestBulkConfirmFields:
         fixture (sha256 dedupe is per-org, so this is the only way to get
         two runs with genuinely identical extracted fields within one test)
         and drive one run to `ready` field-by-field, the other via the new
-        bulk route — the run must land in the same state either way, and
+        bulk route - the run must land in the same state either way, and
         the same set of fields ends up confirmed."""
         headers_a = _headers(_login_as(client, org_a, Role.ANALYST))
         each_unit_a = _seed_each_unit(migrated_engine, org_a["org_id"])

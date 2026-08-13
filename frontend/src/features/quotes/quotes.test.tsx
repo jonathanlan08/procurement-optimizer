@@ -163,7 +163,7 @@ describe("QuotesSection", () => {
 
   afterEach(() => {
     // vite.config.ts sets `test.globals: false`, so @testing-library/react's
-    // automatic post-test cleanup never registers itself — see rfqs.test.tsx
+    // automatic post-test cleanup never registers itself - see rfqs.test.tsx
     // / boms.test.tsx's own identical comment for why this is required.
     cleanup();
     vi.unstubAllGlobals();
@@ -181,7 +181,7 @@ describe("QuotesSection", () => {
 
     renderSection(rfqFixture());
 
-    expect(await screen.findByText("SUP-1 — Acme Components")).toBeInTheDocument();
+    expect(await screen.findByText("SUP-1 - Acme Components")).toBeInTheDocument();
     expect(screen.getByText("Draft")).toHaveClass("quote-badge--draft");
   });
 
@@ -241,14 +241,14 @@ describe("QuotesSection", () => {
     fireEvent.change(minInputs[0]!, { target: { value: "1" } });
     const maxInputs = screen.getAllByLabelText(/^Max qty/i);
     fireEvent.change(maxInputs[0]!, { target: { value: "10" } });
-    // Second tier's min (5) falls inside the first tier's 1-10 range —
+    // Second tier's min (5) falls inside the first tier's 1-10 range -
     // mirrors QuoteService._validate_price_breaks's overlap rule.
     fireEvent.change(minInputs[1]!, { target: { value: "5" } });
 
     expect(await screen.findByText(/overlaps the next tier/i)).toBeInTheDocument();
   });
 
-  it("leaves per-line cost fields empty by default — never prefilled 0", async () => {
+  it("leaves per-line cost fields empty by default - never prefilled 0", async () => {
     installFetchMock([
       ...baseHandlers("analyst"),
       {
@@ -308,7 +308,7 @@ describe("QuotesSection", () => {
 
     const dialog = screen.getByRole("dialog");
     // Both the supplier and unit <select>s only get their real <option>s once
-    // useRfqSuppliers()/useUnits() resolve — wait for those options to exist
+    // useRfqSuppliers()/useUnits() resolve - wait for those options to exist
     // before selecting, or fireEvent.change on a not-yet-populated <select>
     // silently no-ops and the form fails superRefine validation instead of
     // submitting (supplier_id/unit_definition_id both required).
@@ -319,13 +319,13 @@ describe("QuotesSection", () => {
       target: { value: "As-quoted connector line" },
     });
     fireEvent.change(within(dialog).getByLabelText(/^Quantity/i), { target: { value: "100" } });
-    await within(dialog).findByRole("option", { name: /EA — Each/i });
+    await within(dialog).findByRole("option", { name: /EA - Each/i });
     fireEvent.change(within(dialog).getByLabelText(/^Unit$/i), { target: { value: "unit-1" } });
 
     fireEvent.click(within(dialog).getByRole("button", { name: /add costs/i }));
     fireEvent.change(within(dialog).getByLabelText(/^Documentation/i), { target: { value: "12.50" } });
     fireEvent.change(within(dialog).getByLabelText(/^Handling/i), { target: { value: "7.25" } });
-    // Packaging/shipping (the fields these sit beside) are left blank —
+    // Packaging/shipping (the fields these sit beside) are left blank -
     // must round-trip as null, never a false "0" (./api.ts's "Missing stays
     // missing" rule, same as every other optional cost).
 

@@ -1,6 +1,6 @@
-/** Comparison workspace data layer — TanStack Query hooks over the live
+/** Comparison workspace data layer - TanStack Query hooks over the live
  * API: landed-cost calculation, scoring-configuration CRUD, and the full
- * comparison-scenario surface (create/list/get/clone/archive — scoring AND
+ * comparison-scenario surface (create/list/get/clone/archive - scoring AND
  * allocation together, see the "Scenarios" section of this header) are all
  * real, wired routes.
  *
@@ -10,17 +10,17 @@
  *    string** (`LandedCostAssumptionsRequest`'s own module note: these are
  *    recorded in `landed_cost_results.inputs_snapshot`/`.assumptions`
  *    JSONB, not a fixed-scale `NUMERIC` column, so there is no boundary
- *    scale to enforce — unlike `QuantityString`/`UnitPriceString`
+ *    scale to enforce - unlike `QuantityString`/`UnitPriceString`
  *    elsewhere). Omitted means "not supplied" and the corresponding
  *    component becomes `is_missing`, never a silent zero
- *    (`app.domain.values.Quantified`) — this file's `emptyToNull`-style
+ *    (`app.domain.values.Quantified`) - this file's `emptyToNull`-style
  *    helper in ComparisonPage.tsx must never default a blank assumption
  *    field to `"0"`, same rule ../quotes/QuotesSection.tsx's own file
  *    header states for quote-line cost fields.
  *  - **The task brief names six assumption controls** (quality risk %,
  *    delay cost/day, annual rate %, baseline terms days, tariff %,
  *    assume-missing-zero) but the real request body carries **eight**
- *    decimal fields — `duty_rate` (symmetric with `tariff_rate`) and
+ *    decimal fields - `duty_rate` (symmetric with `tariff_rate`) and
  *    `promised_lead_time_days`/`required_lead_time_days` (both required
  *    for the `DELAY_RISK` component to ever be non-missing;
  *    `services/landed_cost_service.py`'s own module docstring: "no table
@@ -35,18 +35,18 @@
  *  - **`GET /rfqs/{rfq_id}/landed-costs` returns the latest result PER
  *    QUOTE LINE across every quote against that RFQ** (`services/
  *    landed_cost_service.py`'s `latest_per_line_for_rfq`, joined
- *    `quote_line -> quote -> rfq_id`), not one row per supplier —
+ *    `quote_line -> quote -> rfq_id`), not one row per supplier -
  *    ComparisonPage.tsx groups these by `quote_line_id` itself to build
  *    per-supplier comparison columns for one selected RFQ line.
  *  - **`POST /rfqs/{rfq_id}/landed-costs` persists exactly one quote
- *    line's result per call** (`quote_line_id` in the body) — "Calculate"
+ *    line's result per call** (`quote_line_id` in the body) - "Calculate"
  *    in ComparisonPage.tsx therefore calls `useCalculateLandedCost` once
  *    per compared supplier's matched line for the currently-selected RFQ
  *    line, not a single batch call (api/v1/analysis.py's own module
  *    docstring point 2: no batch route exists).
  *  - **`ScoringConfigurationResponse.is_sample`** is the whole-config flag
  *    the "Sample weights (demonstration)" label reads (seeded via task
- *    5.10, `docs/planning/09-task-decomposition.md`) — `weights[]` also
+ *    5.10, `docs/planning/09-task-decomposition.md`) - `weights[]` also
  *    carries a per-criterion `is_sample_weight`, but the config-level flag
  *    is what the scoring-config `<select>` badges.
  *
@@ -55,12 +55,12 @@
  * Phase 6 (`docs/planning/09-task-decomposition.md` 6.1-6.13) landed the
  * real backend surface below: `backend/src/app/services/scenario_service.py`
  * + `backend/src/app/api/v1/scenarios.py`, mounted in `app/main.py`. There is
- * no separate "ranked scoring" endpoint on its own — scoring only ever
+ * no separate "ranked scoring" endpoint on its own - scoring only ever
  * happens as half of creating a `ComparisonScenario`
  * (`POST /rfqs/{rfq_id}/comparison-scenarios`, per that service's own module
  * docstring: no job queue exists in this codebase, so scoring AND
  * allocation both run synchronously in one call, one transaction, and the
- * response already carries both `scoring_result` and `allocation_result` —
+ * response already carries both `scoring_result` and `allocation_result` -
  * this file no longer needs a thin ad-hoc adapter that throws the
  * allocation half away).
  *
@@ -68,33 +68,33 @@
  * field-for-field:
  *  - **`AllocationEntryResponse.quantity`/`PriceBreakResponse.min_quantity`/
  *    `.max_quantity`** are genuine JSON integers (`int` in the Pydantic
- *    schema, not a scaled decimal wire string) — safe to use as `number`
+ *    schema, not a scaled decimal wire string) - safe to use as `number`
  *    without violating lib/money.ts's no-`Number()`-on-decimals rule, which
  *    only covers money/quantity *decimal* strings.
  *  - **`ScenarioConstraintsRequest.max_supplier_count`** is likewise a
- *    genuine `int`, not a decimal string — `ScenarioConstraintsInput` below
+ *    genuine `int`, not a decimal string - `ScenarioConstraintsInput` below
  *    carries it as `number | null`.
  *  - **`ScenarioConstraintsRequest.max_concentration`** is a `FractionString`
- *    (RATIO_SCALE = 6dp, e.g. `"0.350000"` for 35%) — ScenarioControls.tsx
+ *    (RATIO_SCALE = 6dp, e.g. `"0.350000"` for 35%) - ScenarioControls.tsx
  *    collects this as a percent in the UI and converts with a pure-string
  *    `percentToFraction` helper, never `Number()`/`parseFloat`.
  *  - **`ComparisonScenario.state`** (draft/running/complete/failed) is a
  *    coarser signal than `AllocationResultResponse.solver_status`
  *    (optimal/feasible/infeasible/error): `scenario_service.py`'s
  *    `_run_and_persist` maps `state = FAILED` only when
- *    `allocation.status is ERROR` — an INFEASIBLE allocation still reports
+ *    `allocation.status is ERROR` - an INFEASIBLE allocation still reports
  *    `state = "complete"`. `ScenarioSummaryResponse` (the list-row shape)
  *    carries only `state`, not the granular solver status or the expected
- *    cost — both require the full `GET /comparison-scenarios/{id}` fetch.
+ *    cost - both require the full `GET /comparison-scenarios/{id}` fetch.
  *    ScenarioHistory.tsx therefore shows the state badge in the collapsed
  *    row (an honest label, not a fabricated solver-status badge) and only
  *    fetches+shows the true solver status/expected-cost once a row is
- *    expanded — the same "don't N+1 the list, flag the shape gap" judgement
+ *    expanded - the same "don't N+1 the list, flag the shape gap" judgement
  *    RfqsPage.tsx's own file header already documents for its own list-vs-
  *    detail gap.
  *  - **`constraints_snapshot`/`assumptions_snapshot`/`weights_snapshot`/
  *    `fx_snapshot`** are `dict[str, Any]`/`list[Any]` JSONB columns in the
- *    FROZEN model (`app/models/scenarios.py`) — genuinely untyped on the
+ *    FROZEN model (`app/models/scenarios.py`) - genuinely untyped on the
  *    backend, not just under-documented here. Typed loosely
  *    (`Record<string, unknown>`/`unknown[]`) and narrowed defensively at the
  *    one render site (ScenarioHistory.tsx's snapshot summary), the same way
@@ -131,7 +131,7 @@ export const EMPTY_ASSUMPTIONS: LandedCostAssumptionsInput = {
 };
 
 /** All seven `CostComponent` values, stable order
- * (`domain/landed_cost/contracts.py`'s `CostComponent` StrEnum) —
+ * (`domain/landed_cost/contracts.py`'s `CostComponent` StrEnum) -
  * `LandedCostResult.components` always carries all seven
  * (`LandedCostResult`'s own docstring: "always all seven, stable order"). */
 export type CostComponentKind =
@@ -307,7 +307,7 @@ export interface ComparisonStrategyDescriptor {
   value: ComparisonStrategyValue;
   label: string;
   description: string;
-  /** Mirrors `scenario_service.py`'s `_STRATEGIES_NEEDING_CONFIG` — only
+  /** Mirrors `scenario_service.py`'s `_STRATEGIES_NEEDING_CONFIG` - only
    * `balanced`/`custom` read `scoring_configuration_id`; the server ignores
    * it entirely for the other four (a fixed built-in weight set is used
    * instead), and 422s if it's missing for these two. */
@@ -328,7 +328,7 @@ export const COMPARISON_STRATEGIES: ComparisonStrategyDescriptor[] = [
   {
     value: "lowest_landed_cost",
     label: "Lowest landed cost",
-    description: "Ranks suppliers by total landed cost — material, logistics, risk, and financing.",
+    description: "Ranks suppliers by total landed cost - material, logistics, risk, and financing.",
     needsScoringConfig: false,
   },
   {
@@ -387,7 +387,7 @@ export interface BindingConstraintResponse {
 export interface InfeasibilityExplanationResponse {
   conflicting_constraint_groups: string[];
   narrative: string;
-  /** Singular — the solver never computes more than one relaxation option
+  /** Singular - the solver never computes more than one relaxation option
    * (backend/src/app/schemas/scenarios.py's own module docstring). */
   minimal_relaxation: string | null;
 }
@@ -425,7 +425,7 @@ export interface AllocationResultResponse {
 
 // -- scenarios ------------------------------------------------------------
 
-/** Mirrors `app.models.scenarios.ScenarioState` (FROZEN) — see this file's
+/** Mirrors `app.models.scenarios.ScenarioState` (FROZEN) - see this file's
  * header note on why this is coarser than `AllocationStatus`. */
 export type ScenarioState = "draft" | "running" | "complete" | "failed";
 
@@ -456,7 +456,7 @@ export interface ScenarioResponse {
   allocation_result: AllocationResultResponse;
 }
 
-/** `GET /rfqs/{id}/comparison-scenarios` list rows — deliberately lean (no
+/** `GET /rfqs/{id}/comparison-scenarios` list rows - deliberately lean (no
  * embedded scoring/allocation payload); see this file's header note on the
  * `state`-vs-`solver_status`/expected-cost gap this leaves in the list view. */
 export interface ScenarioSummaryResponse {
@@ -483,7 +483,7 @@ export interface PageInfo {
 }
 
 export interface ScenarioConstraintsInput {
-  /** Genuine JSON integer — see this file's header note. */
+  /** Genuine JSON integer - see this file's header note. */
   max_supplier_count: number | null;
   /** `FractionString` wire format (RATIO_SCALE = 6dp), e.g. `"0.350000"`. */
   max_concentration: string | null;
@@ -518,7 +518,7 @@ export function useRfqScenarios(rfqId: string | null) {
   });
 }
 
-/** Full scenario package (scoring + allocation + snapshots) — used both for
+/** Full scenario package (scoring + allocation + snapshots) - used both for
  * the "load a history row into the panels" flow and for the snapshot-summary
  * detail expansion in ScenarioHistory.tsx. */
 export function useScenario(scenarioId: string | null) {
@@ -536,8 +536,8 @@ export interface CreateScenarioVars {
   scoringConfigurationId: string | null;
   constraints: ScenarioConstraintsInput;
   /** The workspace's assumption panel values at run time (null = untouched
-   * panel, sent as EMPTY_ASSUMPTIONS). Hardcoding this to empty — the
-   * pre-2026-08 behaviour — meant every from-scratch UI scenario on quotes
+   * panel, sent as EMPTY_ASSUMPTIONS). Hardcoding this to empty - the
+   * pre-2026-08 behaviour - meant every from-scratch UI scenario on quotes
    * with any missing cost input was honestly-but-confusingly
    * presolve-infeasible; the seeded demo scenarios only worked because the
    * seed passes assumptions service-side (principal acceptance finding). */
@@ -580,7 +580,7 @@ export interface CloneScenarioVars {
   scenarioId: string;
 }
 
-/** `POST /comparison-scenarios/{id}/clone` — this codebase's "rerun": a NEW
+/** `POST /comparison-scenarios/{id}/clone` - this codebase's "rerun": a NEW
  * scenario, freshly solved from the original's stored snapshots (backend/
  * src/app/api/v1/scenarios.py's own module docstring, "Deviation 2"). */
 export function useCloneScenario() {

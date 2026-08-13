@@ -1,4 +1,4 @@
-/** Audit log workspace — routed at `/audit` (replaces the `PlaceholderPage`,
+/** Audit log workspace - routed at `/audit` (replaces the `PlaceholderPage`,
  * per this task's ALLOWED App.tsx edit): a dense, filterable, cursor-paged
  * table of every recorded audit event, with a row drawer showing the
  * explanation plus a before/after state diff.
@@ -6,7 +6,7 @@
  * Design decisions:
  *  - **Pages are keyed by the cursor that produced them, not concatenated
  *    blindly.** `useAuditEvents` is a plain `useQuery` keyed on the full
- *    params object (including `cursor`) — a background refetch of an
+ *    params object (including `cursor`) - a background refetch of an
  *    already-loaded page (e.g. on window refocus) must *replace* that
  *    page's slot, not duplicate it, so accumulated rows are stored as
  *    `Record<cursorKey, items>` plus an ordered list of cursor keys, and
@@ -15,18 +15,18 @@
  *    This is the officially-documented "adjust state when a prop changes"
  *    pattern (comparing a derived `filterKey` against a ref-like previous
  *    value and calling `setState` conditionally mid-render) rather than an
- *    Effect that would cost an extra render pass — appending a *new* page
+ *    Effect that would cost an extra render pass - appending a *new* page
  *    once fresh data arrives is a genuine side effect (synchronizing with
  *    the query result) and stays in a `useEffect` below.
  *  - **`entity_type` is a free-text filter, not a `<select>`.** The frozen
  *    contract gives no fixed enum of entity types (unlike e.g.
- *    `RfqStatus`/`QuoteStatus` elsewhere in this codebase) — a text input
+ *    `RfqStatus`/`QuoteStatus` elsewhere in this codebase) - a text input
  *    avoids fabricating a shape the contract doesn't define, the same
  *    "don't fake a shape that doesn't exist" call this codebase makes
  *    repeatedly (e.g. ../comparison/ScenarioHistory.tsx's file header on
  *    not faking a missing list-row field).
  *  - **`event_type` accepts a comma-separated list**, split into the
- *    contract's repeatable `event_type` query parameter — the task brief
+ *    contract's repeatable `event_type` query parameter - the task brief
  *    asks for "event_type text filter" (singular text input) while the
  *    contract itself says the parameter repeats; comma-splitting a single
  *    input reconciles both without adding a multi-select UI the brief
@@ -47,17 +47,17 @@ import "./audit.css";
 
 const FIRST_PAGE_KEY = "__first__";
 
-/** "supplier.created" -> "Supplier created" — a display courtesy only; the
+/** "supplier.created" -> "Supplier created" - a display courtesy only; the
  * raw key remains the filter vocabulary and the detail panel's value. */
 function humanizeEventType(raw: string): string {
   const words = raw.replace(/[._]/g, " ").trim();
   return words ? words.charAt(0).toUpperCase() + words.slice(1) : raw;
 }
 
-/** UUIDs read as noise in a scanning column — show the first 8 chars with the
+/** UUIDs read as noise in a scanning column - show the first 8 chars with the
  * full identifier one hover (and, always, in the detail panel). */
 function ShortId({ id }: { id: string | null | undefined }) {
-  if (!id) return <>—</>;
+  if (!id) return <>-</>;
   return <span title={id}>{id.length > 12 ? `${id.slice(0, 8)}…` : id}</span>;
 }
 
@@ -100,8 +100,8 @@ function AuditDrawer({
           <div className="detail-grid">
             <DetailRow label="Event type" value={event.event_type} />
             <DetailRow label="Entity type" value={event.entity_type} />
-            <DetailRow label="Entity ID" value={event.entity_id ?? "—"} mono full />
-            <DetailRow label="Actor user ID" value={event.actor_user_id ?? "— system"} mono />
+            <DetailRow label="Entity ID" value={event.entity_id ?? "-"} mono full />
+            <DetailRow label="Actor user ID" value={event.actor_user_id ?? "system"} mono />
             <DetailRow label="Occurred at" value={new Date(event.occurred_at).toLocaleString()} />
             {event.request_id && <DetailRow label="Request ID" value={event.request_id} mono full />}
           </div>
@@ -144,7 +144,7 @@ export function AuditPage() {
   const [pages, setPages] = useState<Record<string, AuditEventResponse[]>>({});
   const [pageOrder, setPageOrder] = useState<string[]>([]);
 
-  // Adjust state when the (debounced) filters change — see this file's
+  // Adjust state when the (debounced) filters change - see this file's
   // header on why this runs during render rather than in an Effect.
   if (filterKey !== prevFilterKey) {
     setPrevFilterKey(filterKey);
@@ -227,7 +227,7 @@ export function AuditPage() {
         meta: { mono: true },
         cell: (ctx) => {
           const v = ctx.getValue<string>();
-          return v ? <ShortId id={v} /> : "— system";
+          return v ? <ShortId id={v} /> : "system";
         },
       },
       {
@@ -237,7 +237,7 @@ export function AuditPage() {
         enableSorting: false,
         cell: (ctx) => {
           const v = ctx.getValue<string>();
-          return <span className="audit-explanation-cell">{v || "—"}</span>;
+          return <span className="audit-explanation-cell">{v || "-"}</span>;
         },
       },
     ],

@@ -1,4 +1,4 @@
-"""Quote request/response schemas — manual entry only (docs/planning/
+"""Quote request/response schemas - manual entry only (docs/planning/
 03-api-contract.md §4.11, docs/SPEC.md §6-7/§11, app/models/quotes.py).
 
 Wire conventions (§1.2): decimal fields are JSON strings, never numbers.
@@ -7,14 +7,14 @@ Wire conventions (§1.2): decimal fields are JSON strings, never numbers.
 duty/customs/tax amount, and a price break's `min_quantity`/`max_quantity`/
 `setup_fee`) and `NUMERIC(18,8)` (both tables' `unit_price`). `app.core.money`
 defines `QTY_SCALE` and `MONEY_SCALE` as the *same* value
-(`Decimal("0.000001")`, 6dp) — so rather than mint a byte-identical
+(`Decimal("0.000001")`, 6dp) - so rather than mint a byte-identical
 `MoneyAmountString` type next to `QuantityString`, every 6dp field below
 reuses `app.schemas.boms.QuantityString` directly (the same de-duplication
 already applied to `CurrencyCode`/`RequiredSpecifications` in
 app/schemas/rfqs.py); the 8dp fields reuse `app.schemas.parts.UnitPriceString`.
 
 **Missing stays missing (SPEC §7, §1.2).** Every commercial field on a quote
-line is optional and nullable with no default — omitting a field from the
+line is optional and nullable with no default - omitting a field from the
 request body, or sending it as `null`, is preserved as `NULL` end to end
 (`QuoteService` never coerces an absent amount to `0`; the DB's own
 `ck_quote_lines_*_nonneg` constraints already read "IS NULL OR ... >= 0" for
@@ -23,7 +23,7 @@ exactly this reason, per app/models/quotes.py).
 **`rfq_id` is a path parameter, not a body field.** The delegating task's
 prose lists `rfq_id` among `QuoteCreate`'s fields, but the contract's own
 route table nests quote creation under the RFQ
-(`POST /rfqs/{id}/quotes`, §4.11) — the same shape already established for
+(`POST /rfqs/{id}/quotes`, §4.11) - the same shape already established for
 every other RFQ sub-resource create in this codebase (`RfqLineCreate`,
 `RfqSupplierInviteRequest`, and `POST /rfqs/{id}/quote-documents`'s
 `supplier_id`-only body all take their parent id from the path, never
@@ -35,7 +35,7 @@ supplied by the route from the path.
 Unlike `RfqLineCreate.unit_definition_id`/`BomLineCreate.unit_definition_id`
 (both optional, defaulting to the referenced part's own unit), `QuoteLine.
 part_id` is itself optional (app/models/quotes.py module docstring point 4:
-"a line can be linked straight to a catalogued Part... [or not]") — there is
+"a line can be linked straight to a catalogued Part... [or not]") - there is
 no reliable fallback to default *from* when a line has no catalogued part at
 all (a supplier's raw, as-quoted line item). `unit_definition_id` is
 therefore always required on `QuoteLineCreate`.
@@ -45,15 +45,15 @@ task's prose omitting them.** The task's line-schema bullet lists description/
 quantity/unit_price/moq/... but says to "follow models/quotes.py placement
 EXACTLY", and `QuoteLine.quoted_part_number`/`quoted_mpn` are real, named
 columns on that model (the supplier's own as-quoted identifiers, independent
-of `part_id`/`matched_rfq_line_id`) — SPEC §7's own extraction-field list
+of `part_id`/`matched_rfq_line_id`) - SPEC §7's own extraction-field list
 opens with "part number". Read as the task's shorthand being incomplete
 relative to its own "follow the model exactly" instruction, the same
 judgement app/models/quotes.py's own docstring (point 8) already made once
 for this exact phrase.
 
 **`documentation_cost`/`handling_cost` (migration 0016, 2026-08 product-audit
-remediation) — no longer folded into `other_fixed_cost`.** This paragraph
-previously read "handling has no separate column — maps to
+remediation) - no longer folded into `other_fixed_cost`.** This paragraph
+previously read "handling has no separate column - maps to
 `other_fixed_cost`", because at the time `QuoteLine` genuinely had no
 `handling_cost` column and `app.domain.landed_cost.contracts.LogisticsCosts.
 handling` could only ever be supplied as missing (see
@@ -64,7 +64,7 @@ fixed/logistics-cost field: nullable `NUMERIC(18,6)`, `>= 0`, missing stays
 missing), so both are included below as ordinary optional fields, mirroring
 `packaging_cost`/`other_fixed_cost` exactly. `other_fixed_cost` remains this
 model's own general-purpose catch-all for anything that isn't one of the
-named fixed-cost fields — it does not "mean" handling anymore.
+named fixed-cost fields - it does not "mean" handling anymore.
 
 **No `expiration_date >= quote_date` validation.** The contract's §5
 "Validation rules" section lists this as a rule, but 00-decisions.md §4
@@ -77,7 +77,7 @@ validator for this pairing exists in this module.
 
 **Update scope: whole-quote metadata only.** `QuoteUpdate` (`PATCH
 /quotes/{id}`) only carries `quote_number`/`quote_date`/`expiration_date`/
-`currency`/`notes` — §4.11's other quote-shaped routes (`PATCH .../lines
+`currency`/`notes` - §4.11's other quote-shaped routes (`PATCH .../lines
 [...]`, `PUT .../price-breaks`, `PUT .../terms`) are separate, later-phase
 sub-resource endpoints not in this task's file-creation brief; a manual
 quote's lines/price-breaks/terms are written once, atomically, at create (or
@@ -85,7 +85,7 @@ quote's lines/price-breaks/terms are written once, atomically, at create (or
 
 **Supersede reuses the old quote's `rfq_id`/`supplier_id`.**
 `QuoteSupersedeRequest` has the same shape as `QuoteCreate` minus
-`supplier_id` (and `rfq_id`, already excluded) — a manual revision
+`supplier_id` (and `rfq_id`, already excluded) - a manual revision
 (app/models/quotes.py module docstring point 2, 00-decisions.md §4 #16) is a
 new quote from the *same* supplier against the *same* RFQ as the one it
 replaces, not a way to reassign a quote to a different supplier (that is
@@ -113,8 +113,8 @@ CountryCode = Annotated[str, StringConstraints(pattern=r"^[A-Z]{2}$")]
 class QuotePriceBreakCreate(BaseModel):
     """One all-units pricing tier (00-decisions.md §2 ruling 1). Structural
     validation only lives here (per-field bounds); the cross-tier no-overlap
-    matrix — duplicate `min_quantity`, overlapping ranges, an open-ended
-    `max_quantity` on a non-highest tier — is a service-layer concern
+    matrix - duplicate `min_quantity`, overlapping ranges, an open-ended
+    `max_quantity` on a non-highest tier - is a service-layer concern
     (`QuoteService._validate_price_breaks`), since it can only be evaluated
     across a whole line's tiers at once. Price *direction* across tiers is
     deliberately not validated anywhere: real quotes sometimes increase
@@ -332,7 +332,7 @@ class QuoteCreate(BaseModel):
 
 
 class QuoteSupersedeRequest(BaseModel):
-    """`POST /quotes/{id}/supersede` body — see module docstring: same shape
+    """`POST /quotes/{id}/supersede` body - see module docstring: same shape
     as `QuoteCreate` minus `supplier_id` (inherited from the quote being
     superseded)."""
 
@@ -351,7 +351,7 @@ class QuoteUpdate(BaseModel):
     """Partial update (PATCH): only fields present in the payload are
     applied. Concurrency is carried by the `If-Match` header (§1.7), not the
     body. See module docstring for the deliberately narrow field set (no
-    lines/price-breaks/terms — separate, later-phase routes)."""
+    lines/price-breaks/terms - separate, later-phase routes)."""
 
     model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")
 
@@ -433,7 +433,7 @@ class QuoteResponse(BaseModel):
 
 class QuoteSummaryResponse(BaseModel):
     """Version-free summary for `GET /rfqs/{rfq_id}/quotes` (list): no
-    `lines`/`terms`, to keep list payloads bounded — mirrors
+    `lines`/`terms`, to keep list payloads bounded - mirrors
     `RfqSummaryResponse`."""
 
     model_config = ConfigDict(from_attributes=True)

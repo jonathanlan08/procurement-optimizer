@@ -7,7 +7,7 @@
 ## Changes
 
 <!-- List the meaningful changes. Call out any new dependency, new route, or
-     migration explicitly — these require extra review per the working rules
+     migration explicitly - these require extra review per the working rules
      in docs/planning/09-task-decomposition.md §10. -->
 
 -

@@ -1,20 +1,20 @@
 """Extraction request/response schemas (docs/planning/03-api-contract.md
 §4.10 `/quote-documents/{id}/extraction-runs`, app/models/documents.py).
 
-Not on the delegating task's own "NEW files" list — the same
+Not on the delegating task's own "NEW files" list - the same
 not-listed-but-necessary situation `app/schemas/documents.py`'s own module
 docstring already documents for an earlier phase.
 
 **JSON field names follow §4.10's own literal annotation for
 `GET /extraction-runs/{id}`** (`state, provider, simulated, schema_version,
 overall_confidence, fields_requiring_review, error`), not the model's column
-names verbatim — `provider` (not `provider_name`) and `simulated` (not
+names verbatim - `provider` (not `provider_name`) and `simulated` (not
 `is_simulated`) mirror the contract's own words; `error` is a single nested
 `{code, message}` object (or `null`) rather than two flat columns, matching
 this codebase's general error-envelope shape (`app/core/errors.py`).
 `injection_suspected` is added beyond the contract's terse annotation per
 this task's own explicit instruction (its OBJECTIVE literally lists it among
-the fields `GET /extraction-runs/{id}` must surface) — computed from
+the fields `GET /extraction-runs/{id}` must surface) - computed from
 `ExtractionRun.raw_response["injection_scan"]`, the run-level place
 `ExtractionService.start_run` persists the canary scanner's verdict (there is
 no dedicated column for it; see that service's module docstring).

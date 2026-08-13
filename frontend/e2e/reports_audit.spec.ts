@@ -22,7 +22,7 @@ test("generate a supplier-comparison report and download it", async ({ page }) =
   await selectOptionContaining(selectByLabel(page, "RFQ"), "RFQ-2026-ENC-PILOT");
   const scenarioSelect = selectByLabel(page, "Scenario");
   await expect(scenarioSelect).toBeEnabled();
-  await selectOptionContaining(scenarioSelect, "Enclosure Pilot — Lowest Landed Cost");
+  await selectOptionContaining(scenarioSelect, "Enclosure Pilot - Lowest Landed Cost");
 
   await selectByLabel(page, "Report type").selectOption({ label: "Supplier comparison" });
   await selectByLabel(page, "Format").selectOption({ label: "CSV" });
@@ -32,7 +32,7 @@ test("generate a supplier-comparison report and download it", async ({ page }) =
   // 60s, not 20s: report generation runs on the thread job runner and the
   // FIRST one in a process also pays for reportlab/openpyxl import warm-up.
   // That fits comfortably on a dev machine but exceeded 20s on a cold, shared
-  // CI runner (observed as a flake on the first GitHub Actions run) — the
+  // CI runner (observed as a flake on the first GitHub Actions run) - the
   // work is genuinely slow there, not stuck, so the wait is what should give.
   await expect(row).toContainText("Ready", { timeout: 60_000 });
 
@@ -41,7 +41,7 @@ test("generate a supplier-comparison report and download it", async ({ page }) =
   expect(downloadUrl).toBeTruthy();
 
   // the download itself, through the real UI control (a plain `<a href
-  // download>`, per ReportsPage.tsx's own header — no JS blob dance)
+  // download>`, per ReportsPage.tsx's own header - no JS blob dance)
   const downloadPromise = page.waitForEvent("download");
   await downloadLink.click();
   const download = await downloadPromise;
@@ -91,7 +91,7 @@ test("audit log: cursor load-more reveals additional rows when more than one pag
 
   // unfiltered: the seed alone (org/users/suppliers/parts/BOMs/RFQs/quotes/
   // scenarios/documents/extraction/corrections) produces many more than one
-  // 50-row page, but the exact count isn't this test's contract — skip
+  // 50-row page, but the exact count isn't this test's contract - skip
   // gracefully if a future seed ever shrinks below one page.
   await expect(page.getByRole("table")).toBeVisible();
   // wait for the first real page to actually land (skeleton-loading rows

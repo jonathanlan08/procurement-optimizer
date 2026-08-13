@@ -5,13 +5,13 @@
 draft|open|under_review|awarded|closed|archived. The only allowed
 transitions are draft->open, open->under_review, under_review->awarded,
 under_review->open (reopen), awarded->closed, draft->archived,
-closed->archived — nothing else, including no self-transitions. This is
+closed->archived - nothing else, including no self-transitions. This is
 captured as *data*, not scattered logic, in `ALLOWED_RFQ_TRANSITIONS` below,
 so services and tests share one source of truth (02-erd.md §8: "State
 machines are enforced in the service layer with an explicit transition
 table; a DB `CHECK` cannot express 'from -> to'"). Every transition is
 expected to write an `RfqStatusHistory` row (from_status, to_status,
-actor_user_id, note, occurred_at) — enforced by the service layer in a
+actor_user_id, note, occurred_at) - enforced by the service layer in a
 later phase, not by a DB trigger, the same reasoning `BillOfMaterials`'
 copy-on-write chain already established (boms.py) for its own state
 transition (draft -> active -> superseded).
@@ -28,19 +28,19 @@ as a decision:
    ("Every transition writes an rfq_status_history row (from_status,
    to_status, actor_user_id, note, occurred_at)"), stated twice in the task,
    so treated as intentional rather than a paraphrase.
-2. `requested_payment_terms` and `requested_incoterm` live on `Rfq` —
+2. `requested_payment_terms` and `requested_incoterm` live on `Rfq` -
    principal's correction, matching the ERD. `Rfq` still does not carry
    `assembly_quantity` (present on
    `RFQS` in the ERD): the delegating task's field list for `Rfq` omits all
    three, and is followed verbatim rather than padded back out from the ERD
    box.
 3. `RfqLine` does not carry `required_by_date` or `target_unit_price` (both
-   present on `RFQ_LINES` in the ERD), for the same reason — omitted from
+   present on `RFQ_LINES` in the ERD), for the same reason - omitted from
    the delegating task's field list for `RfqLine`.
 4. `RfqSupplier` drops the ERD's `invite_status_enum status` column and
    `responded_at` entirely. Invitation/exclusion state is instead carried by
    two nullable timestamps (`invited_at`, always set at creation;
-   `excluded_at`, set only if excluded) plus `exclusion_reason` — the
+   `excluded_at`, set only if excluded) plus `exclusion_reason` - the
    delegating task spells this out explicitly ("invited_at, excluded_at +
    exclusion_reason (invitation/exclusion states)"). A `notes` column is
    added (not present in the ERD box at all).
@@ -56,9 +56,9 @@ code.
 
 `Rfq.due_date`/`Rfq.requested_delivery_date` are plain `DATE` columns (no
 timezone) per 00-decisions.md §4 #25's "organization-local business date"
-ruling — a calendar date, not an instant. `due_date` is NOT NULL (the RFQ
+ruling - a calendar date, not an instant. `due_date` is NOT NULL (the RFQ
 response deadline is core to what an RFQ *is*); `requested_delivery_date` is
-nullable — the "requested" wording in both the ERD and SPEC §5 signals an
+nullable - the "requested" wording in both the ERD and SPEC §5 signals an
 aspirational ask, not a hard requirement at creation time.
 """
 
@@ -109,7 +109,7 @@ RFQ_STATUS_ENUM = SaEnum(
     values_callable=lambda e: [m.value for m in e],
 )
 
-# Principal's status-transition ruling — the single source of truth for the
+# Principal's status-transition ruling - the single source of truth for the
 # RFQ state machine. Services and tests both import this dict rather than
 # re-encoding the transition rules. Every RfqStatus is a key (including the
 # terminal ARCHIVED, mapped to an empty frozenset) so lookups never need a
@@ -130,7 +130,7 @@ class Rfq(TimestampedMixin, VersionedMixin, ArchivableMixin, OrgOwnedBase):
     `internal_reference` uniqueness is enforced by a partial,
     case-insensitive index `(organization_id, lower(internal_reference))
     WHERE archived_at IS NULL` created in the migration (02-erd.md §8
-    `uq_rfqs_org_ref_active`) — the same convention as `Supplier.code` /
+    `uq_rfqs_org_ref_active`) - the same convention as `Supplier.code` /
     `Part.internal_part_number`. Archiving frees the reference for reuse.
     """
 
@@ -138,7 +138,7 @@ class Rfq(TimestampedMixin, VersionedMixin, ArchivableMixin, OrgOwnedBase):
     __table_args__ = (
         org_identity_constraint("rfqs"),
         # composite org FK: an RFQ may be exploded from a specific BOM
-        # version (02-erd.md §5 "source of"). Nullable — a manually built
+        # version (02-erd.md §5 "source of"). Nullable - a manually built
         # RFQ with no BOM origin is exempt from the constraint (Postgres
         # default MATCH SIMPLE), the same pattern as
         # BillOfMaterialLine.substitute_part_id (boms.py).
@@ -152,7 +152,7 @@ class Rfq(TimestampedMixin, VersionedMixin, ArchivableMixin, OrgOwnedBase):
     )
 
     name: Mapped[str] = mapped_column(Text())
-    # citext UK in 02-erd.md §5; no citext extension (00-decisions.md §7) —
+    # citext UK in 02-erd.md §5; no citext extension (00-decisions.md §7) -
     # case-insensitive uniqueness is a functional partial index in the
     # migration instead, same as Part.internal_part_number / Supplier.code.
     internal_reference: Mapped[str] = mapped_column(Text())
@@ -212,7 +212,7 @@ class RfqLine(OrgOwnedBase):
     # part of composite FK #2 above, not a single-column ForeignKey
     part_id: Mapped[uuid.UUID] = mapped_column()
     required_quantity: Mapped[Decimal] = mapped_column(Numeric(18, 6))
-    # plain FK, not composite — unit_definitions.organization_id is nullable
+    # plain FK, not composite - unit_definitions.organization_id is nullable
     # (global catalogue), same reasoning as Part.unit_definition_id (parts.py).
     unit_definition_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("unit_definitions.id", ondelete="RESTRICT")
@@ -228,7 +228,7 @@ class RfqSupplier(OrgOwnedBase):
 
     No timestamp/version/archive mixins: 02-erd.md §5 lists none for
     `RFQ_SUPPLIERS`. Invitation/exclusion state is carried by
-    `invited_at`/`excluded_at` rather than an enum `status` column — module
+    `invited_at`/`excluded_at` rather than an enum `status` column - module
     docstring point #4.
     """
 
@@ -283,7 +283,7 @@ class RfqStatusHistory(OrgOwnedBase):
     No timestamp/version/archive mixins beyond `occurred_at` itself: rows
     here are never updated, so `TimestampedMixin`'s `updated_at` would be
     meaningless. Unlike `audit_events` (audit.py) this is *not* the
-    append-only-with-a-DB-trigger table — 02-erd.md §3 reserves that
+    append-only-with-a-DB-trigger table - 02-erd.md §3 reserves that
     enforcement for `audit_events` specifically; this table is
     append-friendly by convention (the service layer never issues an
     UPDATE/DELETE against it) but carries no trigger, per the delegating
@@ -324,7 +324,7 @@ class RfqStatusHistory(OrgOwnedBase):
 # participates in several FKs on most mappers here (the plain org FK plus one
 # or two composite FKs each), so `foreign_keys` disambiguates which
 # constraint each relationship follows, and `overlaps` silences SQLAlchemy's
-# warning about the shared organization_id column between them — the same
+# warning about the shared organization_id column between them - the same
 # pattern as BillOfMaterials/BillOfMaterialLine (boms.py).
 Rfq.organization = relationship(
     "Organization", foreign_keys=[Rfq.organization_id], lazy="select"

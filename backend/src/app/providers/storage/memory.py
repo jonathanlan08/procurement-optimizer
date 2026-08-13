@@ -1,4 +1,4 @@
-"""In-memory `StorageProvider` — test double for `document_service.py` and
+"""In-memory `StorageProvider` - test double for `document_service.py` and
 `tests/unit/test_storage_providers.py`. No filesystem, no network; state
 lives only for the life of the Python object.
 """

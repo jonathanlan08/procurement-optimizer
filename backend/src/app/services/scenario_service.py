@@ -1,4 +1,4 @@
-"""Scenario service — Phase 6 assembly: scoring + order-allocation over one
+"""Scenario service - Phase 6 assembly: scoring + order-allocation over one
 RFQ's quotes, persisted as `ComparisonScenario` + `ScenarioResult` +
 `AllocationResultRecord` (docs/planning/03-api-contract.md §4.16,
 app/models/scenarios.py FROZEN, app/domain/optimization/{contracts,solver}.py
@@ -7,7 +7,7 @@ FROZEN, app/domain/scoring/{contracts,scorer}.py FROZEN).
 Services never commit: the request-scoped `get_db` dependency (app/api/deps.py)
 commits on success and rolls back on any raised exception.
 
-## Deviation 1 — one synchronous call does BOTH scoring and allocation
+## Deviation 1 - one synchronous call does BOTH scoring and allocation
 
 §4.16's literal route table is a two-step, async-job design: `POST
 .../comparison-scenarios` (`202` job, scores only) then a separate `POST
@@ -26,7 +26,7 @@ or two):
 2. **The FROZEN persistence shape has no state for "scored but not yet
    allocated."** `ComparisonScenario.state` is `draft -> running ->
    complete|failed` (one machine, not two), and both `ScenarioResult` and
-   `AllocationResultRecord` carry `UNIQUE (organization_id, scenario_id)` —
+   `AllocationResultRecord` carry `UNIQUE (organization_id, scenario_id)` -
    "re-scoring/re-solving creates a NEW scenario entirely" (models/
    scenarios.py module docstring, "Immutability"). There is structurally no
    row shape for "this scenario has been scored but not solved" to live in.
@@ -36,15 +36,15 @@ or two):
 
 `POST .../{id}/optimize` and `GET .../{id}/results` /`GET .../{id}/allocation`
 are still mounted in `api/v1/scenarios.py` (contract's literal paths kept for
-compatibility) — `/optimize` is idempotent there, simply returning the
+compatibility) - `/optimize` is idempotent there, simply returning the
 allocation half of the *already-solved* scenario (this service exposes no
 "solve again in place" operation; `rerun` below is the only way to get a
 fresh solve, and it always produces a new scenario id, never mutates one in
 place, per the immutability rule above).
 
-## Deviation 2 — `POST .../clone` IS this task's own `rerun`
+## Deviation 2 - `POST .../clone` IS this task's own `rerun`
 
-§4.16 names this route `clone` ("new scenario pre-filled from an old one —
+§4.16 names this route `clone` ("new scenario pre-filled from an old one -
 the supported way to change assumptions without mutating history"); this
 task's own OBJECTIVE names the same operation `rerun` and is far more
 specific about its behavior ("creates a NEW scenario cloned from the stored
@@ -54,26 +54,26 @@ is adopted verbatim (an unsolved "draft copy" has nowhere to live, per
 Deviation 1) under the contract's route name: `POST .../{id}/clone` in the
 API layer calls `ScenarioService.rerun` here. `rerun` reuses the ORIGINAL
 scenario's `quote_snapshot_refs` byte-for-byte (does not re-resolve "latest"
-landed-cost results) — this is what makes "rerun reproduces identical
+landed-cost results) - this is what makes "rerun reproduces identical
 scores/allocations (same model_hash) when nothing changed" true: the scorer
 and solver are pure functions of their inputs, so identical
 `SupplierScoringInput`/`AllocationProblem` construction from the identical
 stored refs yields an identical `model_hash`.
 
-## Deviation 3 — quote eligibility: not-superseded, not-rejected (NOT "confirmed")
+## Deviation 3 - quote eligibility: not-superseded, not-rejected (NOT "confirmed")
 
 06-optimization-methodology.md §2 lists "quote not confirmed... " as a
 pre-solve filter. `QuoteStatus` is `draft|in_review|confirmed|superseded|
 rejected`, but `services/quote_service.py`'s own module docstring confirms
 this build's manual-entry-only quote pipeline never transitions a quote past
-`draft`/`in_review` — there is no route anywhere in `api/v1/quotes.py` that
+`draft`/`in_review` - there is no route anywhere in `api/v1/quotes.py` that
 reaches `CONFIRMED`. Gating scenario eligibility on `CONFIRMED` would make
 `create_and_run` permanently unusable (409 "no eligible quote lines" on every
 RFQ, forever). This module instead treats any quote returned by
 `QuoteRepository.list_by_rfq` (already excludes `SUPERSEDED`) that is not
-`REJECTED` as eligible — `DRAFT`/`IN_REVIEW`/`CONFIRMED` all count.
+`REJECTED` as eligible - `DRAFT`/`IN_REVIEW`/`CONFIRMED` all count.
 
-## Deviation 4 — `Offer.incomplete_landed_cost` = INCOMPLETE, not "!= COMPLETE"
+## Deviation 4 - `Offer.incomplete_landed_cost` = INCOMPLETE, not "!= COMPLETE"
 
 `app.domain.optimization.contracts.Offer`'s own docstring says
 "completeness != COMPLETE -> excluded unless overridden." Followed literally
@@ -82,14 +82,14 @@ would always have been flagged incomplete: `documentation`/`handling` costs
 had no source column anywhere in this schema at all, so `Completeness.
 COMPLETE` was structurally unreachable through the service path (the best
 any result could do was `ASSUMPTION_DEPENDENT`). Migration 0016 (2026-08
-product-audit remediation) closed that gap — `quote_lines.documentation_cost`
+product-audit remediation) closed that gap - `quote_lines.documentation_cost`
 /`handling_cost` are now real columns, and `Completeness.COMPLETE` is
 reachable end to end (a fully-specified quote line under full assumptions
 produces it; see `tests/integration/test_landed_cost_api.py`). The mapping
 below is unchanged regardless: literal adherence would still force
 `allow_incomplete_offers=True` on every scenario whose quotes simply don't
 carry every optional cost field (documentation/handling remain manual-entry-
-only, rarely populated in practice — see `services/landed_cost_service.py`'s
+only, rarely populated in practice - see `services/landed_cost_service.py`'s
 module docstring), which is not "honest uncertainty reporting" (the
 product's stated ethos), it is a UX trap. This module maps
 `incomplete_landed_cost = (completeness is Completeness.INCOMPLETE)`:
@@ -107,7 +107,7 @@ single-criterion; `lowest_risk` is quality/defect/on-time-delivery in
 0.34/0.33/0.33. `balanced`/`custom` use the referenced `ScoringConfiguration`
 verbatim. One deliberate, load-bearing choice: **`lowest_unit_price` scores
 `Criterion.USER_DEFINED`** ("quoted unit price, FX/unit-normalized, BEFORE
-landed-cost extras" — sourced from the `extended_material` component's own
+landed-cost extras" - sourced from the `extended_material` component's own
 `normalized_unit_price` input on each offer's landed-cost result), not
 `Criterion.EFFECTIVE_UNIT_COST` (which IS the landed number, extras
 included). The FROZEN `Criterion` enum has no literal "raw quoted price"
@@ -120,8 +120,8 @@ the explicit test requirement that the two strategies disagree.
 ## Multi-line-per-supplier scoring aggregation
 
 `ScenarioResult` is one row per SCENARIO with one `SupplierScore` per
-SUPPLIER (models/scenarios.py module docstring point 7) — not per (supplier,
-RFQ line) — but a supplier may have matched, landed-costed offers against
+SUPPLIER (models/scenarios.py module docstring point 7) - not per (supplier,
+RFQ line) - but a supplier may have matched, landed-costed offers against
 several RFQ lines. Aggregation policy per criterion (documented here because
 none of it is spelled out upstream): `TOTAL_LANDED_COST` sums across the
 supplier's offers (what buying everything from them costs);
@@ -145,7 +145,7 @@ normalized_unit_price` (the material price actually used to compute that
 result, read back off the `extended_material` component's own `inputs`).
 When the quote line has price breaks, each tier's `landed_unit_cost =
 tier.unit_price + overhead_per_unit` (assumes fixed/logistics/import/risk/
-financing overhead is flat across tiers — a documented approximation, not a
+financing overhead is flat across tiers - a documented approximation, not a
 re-run of the calculator at each tier's quantity, which is out of this task's
 scope). When there are no price breaks, this collapses to exactly the
 OBJECTIVE's own stated simplification: one tier at `effective_unit_cost`
@@ -159,8 +159,8 @@ again would double-count it.
 FROZEN `DemandLine.required_quantity`/`Offer` tier bounds/`moq`/`capacity`
 are plain `int`. This schema stores quantities as `NUMERIC(18,6)`. Per
 06-optimization-methodology.md §3 ("`QTY_MULT` default 1 for integral
-parts"), this module always uses `QTY_MULT=1` — i.e. rounds to the nearest
-whole unit (`ROUND_HALF_EVEN`) — and does not implement the methodology's
+parts"), this module always uses `QTY_MULT=1` - i.e. rounds to the nearest
+whole unit (`ROUND_HALF_EVEN`) - and does not implement the methodology's
 optional scaling for continuous-dimension (kg/m) parts. Flagged as a known,
 accepted v0.1 gap, not a silent truncation.
 """
@@ -271,7 +271,7 @@ _STRATEGIES_NEEDING_CONFIG: Final[frozenset[ComparisonStrategy]] = frozenset(
 
 
 def _to_int_qty(value: Decimal) -> int:
-    """QTY_MULT=1 normalization — see module docstring."""
+    """QTY_MULT=1 normalization - see module docstring."""
     return int(value.to_integral_value(rounding=ROUND_HALF_EVEN))
 
 
@@ -626,7 +626,7 @@ class ScenarioService:
         self, strategy: ComparisonStrategy, scoring_configuration_id: uuid.UUID | None
     ) -> ScoringConfiguration | None:
         if strategy not in _STRATEGIES_NEEDING_CONFIG:
-            return None  # ignored even if provided — module docstring
+            return None  # ignored even if provided - module docstring
         if scoring_configuration_id is None:
             raise ValidationAppError(
                 f"scoring_configuration_id is required for strategy '{strategy.value}'."
@@ -718,7 +718,7 @@ class ScenarioService:
     def _load_offer_contexts_from_refs(
         self, refs: list[Any]
     ) -> list[_OfferContext]:
-        """rerun path — reconstructs offers from a scenario's OWN
+        """rerun path - reconstructs offers from a scenario's OWN
         `quote_snapshot_refs`, never re-resolving "latest" (module docstring
         Deviation 2, reproducibility)."""
         contexts: list[_OfferContext] = []
@@ -817,7 +817,7 @@ class ScenarioService:
         self, ctxs: list[_OfferContext], *, include_user_defined: bool
     ) -> tuple[SupplierCriterionValue, ...]:
         # In CALC_CONTEXT and quantized at the unit-price boundary, exactly as
-        # brief_service/report_service compute the same figure — the three
+        # brief_service/report_service compute the same figure - the three
         # paths must agree on the wire (2026-08 calculation audit F4).
         with localcontext(CALC_CONTEXT):
             total_landed = sum((c.landed_row.total_landed_cost for c in ctxs), Decimal("0"))
@@ -1169,7 +1169,7 @@ class ScenarioService:
 
         return self._score_and_solve(
             rfq=rfq,
-            # distinguish reruns in history — two identically named rows on the
+            # distinguish reruns in history - two identically named rows on the
             # same day are indistinguishable (2026-08 external review P2)
             name=f"{original.name} (rerun)",
             strategy=original.strategy,

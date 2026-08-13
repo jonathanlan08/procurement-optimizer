@@ -1,12 +1,12 @@
 /* FX-specific chrome layered on top of components/workspace.css +
    components/badges.css + components/DataTable.css (all imported by
    FxPanel.tsx). Kept in its own file rather than editing any shared
-   stylesheet — same rationale as every other feature's own css file. */
+   stylesheet - same rationale as every other feature's own css file. */
 
-/* Source badges — provenance, never color-alone (MASTER.md). `synthetic`
+/* Source badges - provenance, never color-alone (MASTER.md). `synthetic`
    uses the info/neutral token (an unremarkable fixture answer); `manual`
    uses the warning token (a human override of what the fixture would have
-   said, worth a second look) — same "info vs. warning" split MASTER.md's
+   said, worth a second look) - same "info vs. warning" split MASTER.md's
    own provenance-label guidance describes. */
 .fx-badge--synthetic {
   background: rgba(3, 105, 161, 0.1);

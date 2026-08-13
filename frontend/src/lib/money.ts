@@ -1,4 +1,4 @@
-/** Money rendering — PRINCIPAL-OWNED.
+/** Money rendering - PRINCIPAL-OWNED.
  *
  * Monetary values arrive from the API as decimal STRINGS and must never pass
  * through Number()/parseFloat, which silently corrupt precision. Formatting is
@@ -21,13 +21,13 @@ export interface FormatMoneyOptions {
   signed?: boolean;
 }
 
-/** Widest adaptive precision `formatMoney` will reach for sub-unit values —
+/** Widest adaptive precision `formatMoney` will reach for sub-unit values -
  * matches the largest stored price scale (unit prices are NUMERIC(20,8)). */
 const MAX_ADAPTIVE_PLACES = 8;
 
 /**
  * Sub-unit values rendered at a fixed 2dp mislead: a 0.004 USD part shows as
- * $0.00 and a 0.006 one as $0.01 (a 67% distortion) — in procurement, unit
+ * $0.00 and a 0.006 one as $0.01 (a 67% distortion) - in procurement, unit
  * prices below one currency unit are routine. When |value| < 1, extend the
  * display precision just far enough to include the first TWO significant
  * fraction digits (never below `places`, capped at the stored scale), so
@@ -109,7 +109,7 @@ export interface FormatDecimalOptions {
 /**
  * Display a plain decimal string (FX rates, quantities, assumption values) at
  * its stored precision with the noise removed: trailing fraction zeros are
- * trimmed, but never below `minPlaces` — "0.920000000000" -> "0.92",
+ * trimmed, but never below `minPlaces` - "0.920000000000" -> "0.92",
  * "199.500000000000" -> "199.50", "0.004" -> "0.004". String-only; the input
  * is returned untouched if it is not a decimal string.
  */

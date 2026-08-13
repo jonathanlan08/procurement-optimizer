@@ -1,14 +1,14 @@
 """Part-matching request/response schemas (docs/planning/03-api-contract.md
 §4.12, app/models/documents.py's `PartMatchCandidate`).
 
-Not on the delegating task's own "NEW files" list — the same
+Not on the delegating task's own "NEW files" list - the same
 not-listed-but-necessary situation `app/schemas/extractions.py`'s own module
 docstring already documents for an earlier phase.
 
 **`GET /quotes/{id}/matches`'s own literal annotation** ("per quote line:
 ranked candidates with `strategy`, `confidence`, `explanation`") shapes
 `QuoteMatchesResponse` as one entry per quote line, each carrying its own
-ranked candidate list — not a flat candidate list — matching that sentence
+ranked candidate list - not a flat candidate list - matching that sentence
 exactly. `POST /quotes/{id}/match` (generate) returns the same shape, since
 it is "the same computation, freshly run" rather than a different resource.
 
@@ -107,7 +107,7 @@ class QuoteMatchesResponse(BaseModel):
 class QuoteLineMatchConfirmRequest(BaseModel):
     """`POST /quote-lines/{id}/match` body, §4.12's own literal shape
     (`{rfq_line_id, confirmed:true, reason?}`). `confirmed` has no `?` in the
-    contract's own annotation (unlike `reason`) — required, and validated
+    contract's own annotation (unlike `reason`) - required, and validated
     `True` (this route only ever confirms; `DELETE .../match` is the
     unmatch path)."""
 

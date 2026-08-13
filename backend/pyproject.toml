@@ -59,7 +59,7 @@ ignore = ["SIM108"]
 # was removed after the 2026-08 calculation audit showed it matched an import
 # path that cannot exist and therefore enforced nothing. The no-floats-in-money
 # discipline is maintained by review (audit-verified: zero `float(` calls in
-# backend/src) — see docs/METHODOLOGY.md §1.
+# backend/src) - see docs/METHODOLOGY.md §1.
 
 [tool.mypy]
 python_version = "3.12"

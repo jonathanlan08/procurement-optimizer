@@ -1,4 +1,4 @@
-"""Supplier repository — org-scoped data access (docs/planning/02-erd.md §4).
+"""Supplier repository - org-scoped data access (docs/planning/02-erd.md §4).
 
 Extends OrgScopedRepository, so every query is filtered by organization_id
 before any other predicate (isolation control #2).

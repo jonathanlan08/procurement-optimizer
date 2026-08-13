@@ -2,7 +2,7 @@
 
 See app/models/briefs.py module docstring for the full ERD/task
 reconciliation: `sections` (ERD-literal name, not the delegating task's
-`content` paraphrase) is the structured brief — one JSONB object keyed by
+`content` paraphrase) is the structured brief - one JSONB object keyed by
 SPEC section, each value carrying its own `provenance` label
 (`supplier_provided|user_assumption|calculated|ai_narrative|missing`, SPEC
 §Negotiation brief); `simulated` (ERD-literal name, not the task's
@@ -19,7 +19,7 @@ wrapping already establishes).
 `archive_reason` are not in the ERD §7 box's own abbreviated per-table
 listing, but are added per 02-erd.md §1's global convention
 ("created_at/updated_at on every MUTABLE table", "version ... on mutable
-AGGREGATES") and §11's explicit "never hard-delete ... briefs" — the same
+AGGREGATES") and §11's explicit "never hard-delete ... briefs" - the same
 gap-filling `comparison_scenarios` (migration 0013) already documents for
 itself. A brief mutates (`draft -> human_reviewed`) via `POST .../review`,
 so it is mutable in the same sense `ComparisonScenario`/`Rfq`/`Quote` are.
@@ -58,7 +58,7 @@ def upgrade() -> None:
         sa.Column("scenario_id", pg.UUID(as_uuid=True), nullable=False),
         sa.Column("supplier_id", pg.UUID(as_uuid=True), nullable=False),
         # the structured brief: one object per SPEC content item, each
-        # carrying its own {provenance, text, data} — see module docstring.
+        # carrying its own {provenance, text, data} - see module docstring.
         sa.Column("sections", pg.JSONB(), nullable=False, server_default=sa.text("'{}'::jsonb")),
         sa.Column("price_target", sa.Numeric(18, 8), nullable=True),
         sa.Column("stretch_target", sa.Numeric(18, 8), nullable=True),
@@ -135,7 +135,7 @@ def upgrade() -> None:
         "ix_negotiation_briefs_organization_id", "negotiation_briefs", ["organization_id"]
     )
     op.create_index(
-        # history for one scenario, newest first — mirrors ix_scen_rfq
+        # history for one scenario, newest first - mirrors ix_scen_rfq
         # (02-erd.md §9) and supports "list briefs for a scenario/RFQ" (the
         # latter joins through comparison_scenarios.rfq_id).
         "ix_negotiation_briefs_scenario",

@@ -4,7 +4,7 @@ Seeded once, shared by every organization: `UnitDefinition.organization_id` is
 NULL for every row this module creates ("null = global catalog", 02-erd.md
 §4; docs/planning/09-task-decomposition.md task 2.5 "global unit catalogue
 seed"). An organization's own units are separate `UnitDefinition` rows with
-that organization's id — not this module's concern.
+that organization's id - not this module's concern.
 
 Exact factors (docs/planning/05-calculation-methodology.md §5): ``1 lb =
 0.45359237 kg``, ``1 ft = 0.3048 m``, ``1 in = 0.0254 m`` are legally defined
@@ -41,7 +41,7 @@ class CatalogUnit:
 
 
 # Canonical unit per dimension (05-calculation-methodology.md §5): each
-# (count), kilogram (mass), meter (length) — factor 1 by definition.
+# (count), kilogram (mass), meter (length) - factor 1 by definition.
 STANDARD_UNIT_CATALOG: tuple[CatalogUnit, ...] = (
     CatalogUnit("each", "Each", UnitDimension.COUNT, Decimal("1")),
     CatalogUnit("pack", "Pack", UnitDimension.COUNT, None),
@@ -73,8 +73,8 @@ def seed_unit_catalog(
     bootstrap flow: whichever call arrives first creates the missing rows,
     later calls are no-ops for those codes.
 
-    ``organization_id`` is accepted — and required, matching the shape of
-    other per-organization seed routines such as ``scripts/seed_demo.py`` —
+    ``organization_id`` is accepted - and required, matching the shape of
+    other per-organization seed routines such as ``scripts/seed_demo.py`` -
     so a caller always states which organization's bootstrap triggered this,
     but it is never written onto the global rows this function creates:
     02-erd.md §4 marks ``unit_definitions.organization_id`` nullable

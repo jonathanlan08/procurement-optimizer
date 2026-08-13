@@ -1,8 +1,8 @@
 /** Compact FX panel, routed at `/fx` (App.tsx + AppShell.tsx's NAV both get
- * a one-line ALLOWED addition for this — see those files' own comments at
+ * a one-line ALLOWED addition for this - see those files' own comments at
  * the edit site).
  *
- * Shapes mirror backend/src/app/schemas/fx.py / api/v1/fx.py exactly — see
+ * Shapes mirror backend/src/app/schemas/fx.py / api/v1/fx.py exactly - see
  * ./api.ts's file header for the full rationale (the two-shapes-one-route
  * split, the `base`/`quote` query-param vs `base_currency`/`quote_currency`
  * body-field naming mismatch, why there's no `If-Match` here). Two
@@ -10,7 +10,7 @@
  *
  *  - **Currency pickers are the same fixed six-option list already used by
  *    RfqsPage.tsx/QuotesSection.tsx** (`USD/EUR/GBP/JPY/CNY/MXN`), not a
- *    free-text ISO-3 input — `CurrencyCode` accepts any 3-letter code
+ *    free-text ISO-3 input - `CurrencyCode` accepts any 3-letter code
  *    server-side, but every other currency control in this app is already
  *    a bounded select for the same reason RfqsPage.tsx's own `<select>`
  *    is: predictable, no typo-shaped 422s. Duplicated locally rather than
@@ -19,7 +19,7 @@
  *    reaching into a sibling feature directory.
  *  - **The overrides list reuses `components/DataTable`** (paginated via
  *    `page: {limit, offset, total}`, exactly like every other list page in
- *    this app) — `GET /exchange-rates` without all three of `base`/
+ *    this app) - `GET /exchange-rates` without all three of `base`/
  *    `quote`/`as_of` already returns that same list envelope, so this is
  *    the same "plain paginated resource list" shape as Suppliers/Parts/
  *    BOMs/RFQs, not a bespoke one.
@@ -60,7 +60,7 @@ function todayIso(): string {
 }
 
 /** `source` is `"synthetic_fixture"` or `"manual"` (see ./api.ts's file
- * header) — badge text/token switches on the exact string, with a neutral
+ * header) - badge text/token switches on the exact string, with a neutral
  * fallback for any future third source rather than silently rendering
  * nothing. */
 function SourceBadge({ source }: { source: string }) {
@@ -150,7 +150,7 @@ const overrideFormSchema = z.object({
     .refine((v) => !v.startsWith("-"), "Must not be negative")
     .refine((v) => !/^0+(\.0+)?$/.test(v), "Must be greater than zero"),
   effective_date: z.string().trim().min(1, "Effective date is required"),
-  // Required, non-blank — mirrors `ExchangeRateOverrideCreate.override_reason`
+  // Required, non-blank - mirrors `ExchangeRateOverrideCreate.override_reason`
   // (`Field(min_length=1, ...)`), backed by a DB CHECK per fx.py's docstring.
   override_reason: z.string().trim().min(1, "Reason is required").max(1000, "Max 1000 characters"),
 });
@@ -284,7 +284,7 @@ function OverridesList() {
         id: "override_reason",
         accessorKey: "override_reason",
         header: "Reason",
-        cell: (ctx) => ctx.getValue<string | null>() ?? "—",
+        cell: (ctx) => ctx.getValue<string | null>() ?? "-",
       },
       {
         id: "created_at",

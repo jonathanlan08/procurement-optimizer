@@ -6,46 +6,46 @@
  * this file follows too):
  *
  *  - **Search and status filter are server-side.** Unlike `GET /boms` (no
- *    `q` param — BomsPage.tsx filters client-side), `GET /rfqs` accepts both
+ *    `q` param - BomsPage.tsx filters client-side), `GET /rfqs` accepts both
  *    `q` and repeated `status` query params (backend/src/app/api/v1/rfqs.py
  *    `list_rfqs`), so both are passed straight through as query params
  *    rather than filtering the loaded page in JS.
  *  - **Status filter is a row of toggle chips**, not a native
- *    `<select multiple>` — six options are easy to scan and toggle as chips,
+ *    `<select multiple>` - six options are easy to scan and toggle as chips,
  *    and it reuses the same "distinct badge per status" visual language
  *    (rfqs.css) the list/drawer already use elsewhere.
  *  - **Selecting "Archived" implies `include_archived=true`.** The backend
  *    repository ANDs `status IN (...)` with `archived_at IS NULL` unless
  *    `include_archived` is passed (backend/src/app/repositories/
- *    rfq_repository.py `_filters`) — an archived RFQ always has
+ *    rfq_repository.py `_filters`) - an archived RFQ always has
  *    `archived_at` set, so without this the "Archived" chip would silently
  *    return zero rows. There is no separate "include archived" toolbar
  *    control (the brief's toolbar list is search + status filter + New RFQ
  *    only), so this derives the flag from the chip selection instead of
  *    adding an unrequested fourth control.
  *  - **List column "Lines" renders `RfqSummaryResponse.line_count` when
- *    present, "—" otherwise.** The field was added to the list route
- *    concurrently by a backend agent (P2 audit finding — this column used
- *    to always render "—"; see ./api.ts's file header for why it's typed
- *    optional rather than required). "—" is kept as the fallback for
+ *    present, "-" otherwise.** The field was added to the list route
+ *    concurrently by a backend agent (P2 audit finding - this column used
+ *    to always render "-"; see ./api.ts's file header for why it's typed
+ *    optional rather than required). "-" is kept as the fallback for
  *    backward compatibility with any stale cached row shape, not removed
- *    outright — the same defensive posture PartsPage.tsx/BomsPage.tsx apply
+ *    outright - the same defensive posture PartsPage.tsx/BomsPage.tsx apply
  *    to their own genuine API-shape gaps.
  *  - **Edit gating mirrors the server rule exactly**: `RfqService.
  *    _ensure_draft_or_override` (backend/src/app/services/rfq_service.py)
  *    blocks metadata *and* line edits once status isn't `draft`, with an
  *    administrator-override escape hatch. This UI only implements the
- *    common path — editable while `draft`, a quiet lock hint otherwise — and
+ *    common path - editable while `draft`, a quiet lock hint otherwise - and
  *    does not surface the admin-override `{override_reason}` flow, which is
  *    a deliberate scope call for this workspace, not an oversight.
  *  - **Status-change actions are driven entirely by `ALLOWED_RFQ_TRANSITIONS`**
  *    (./api.ts, a client-side mirror of backend/src/app/models/rfqs.py's
- *    dict of the same name) — only legal next statuses ever render a button,
+ *    dict of the same name) - only legal next statuses ever render a button,
  *    and the server re-validates every transition regardless.
  *  - **No user-name resolution for status-history actors / audit actors.**
  *    backend/src/app/main.py mounts no `/users` (or similar) list endpoint,
  *    so `RfqStatusHistoryResponse.actor_user_id` is rendered as a raw
- *    (mono) UUID — the same kind of gap PartsPage.tsx already flags for
+ *    (mono) UUID - the same kind of gap PartsPage.tsx already flags for
  *    `unit_definition_id` before ../boms/api.ts's `useUnits` existed.
  */
 
@@ -124,13 +124,13 @@ function statusLabel(status: RfqStatus): string {
 }
 
 /** `due_date`/`requested_delivery_date` are plain calendar dates (`DATE`
- * columns, no timezone — backend/src/app/models/rfqs.py's file header cites
+ * columns, no timezone - backend/src/app/models/rfqs.py's file header cites
  * 00-decisions.md §4 #25's "organization-local business date" ruling).
  * Parsing via `new Date(y, m-1, d)` (local-timezone constructor) rather than
  * `new Date(raw)` (which parses "YYYY-MM-DD" as UTC midnight) avoids an
  * off-by-one day shift in negative-UTC-offset timezones. */
 function formatDate(raw: string | null): string {
-  if (!raw) return "—";
+  if (!raw) return "-";
   const [y, m, d] = raw.split("-").map(Number);
   if (!y || !m || !d) return raw;
   return new Date(y, m - 1, d).toLocaleDateString(undefined, {
@@ -149,14 +149,14 @@ function formatQuantity(raw: string): string {
 }
 
 /** Renders the line's spec-key count, or the app's standard missing-data
- * string when there is nothing recorded (`null` or an empty object) — a
+ * string when there is nothing recorded (`null` or an empty object) - a
  * fabricated `0` there would read as "confirmed zero specifications
  * required," which is not what an absent/empty value means (P2 audit
  * finding). A non-empty object's real count still renders as a plain
  * number: that IS supplied data. */
 function formatSpecsCell(specs: Record<string, unknown> | null): string {
   const count = specs ? Object.keys(specs).length : 0;
-  return count > 0 ? String(count) : "— not stated";
+  return count > 0 ? String(count) : "not stated";
 }
 
 function RfqStatusBadge({ status }: { status: RfqStatus }) {
@@ -192,9 +192,9 @@ function PartPicker({
               <button
                 type="button"
                 className="btn-ghost-sm"
-                onClick={() => onSelect(p.id, `${p.internal_part_number} — ${p.name}`)}
+                onClick={() => onSelect(p.id, `${p.internal_part_number} - ${p.name}`)}
               >
-                {p.internal_part_number} — {p.name}
+                {p.internal_part_number} - {p.name}
               </button>
             </li>
           ))}
@@ -207,7 +207,7 @@ function PartPicker({
   );
 }
 
-/** Active BOMs only — `RfqService.create` rejects a non-`active` source BOM
+/** Active BOMs only - `RfqService.create` rejects a non-`active` source BOM
  * (backend/src/app/services/rfq_service.py: "only an active BOM version can
  * be exploded into an RFQ"). `GET /boms` has no `q` param (../boms/api.ts's
  * file header), so this filters the loaded page client-side, same caveat
@@ -241,9 +241,9 @@ function BomPicker({ onSelect }: { onSelect: (id: string, label: string) => void
               <button
                 type="button"
                 className="btn-ghost-sm"
-                onClick={() => onSelect(b.id, `${b.name} — ${b.product_name} (v${b.version_number})`)}
+                onClick={() => onSelect(b.id, `${b.name} - ${b.product_name} (v${b.version_number})`)}
               >
-                {b.name} — {b.product_name} (v{b.version_number})
+                {b.name} - {b.product_name} (v{b.version_number})
               </button>
             </li>
           ))}
@@ -296,7 +296,7 @@ function SupplierInvitePicker({
                 disabled={inviteMutation.isPending}
                 onClick={() => void handleInvite(s.id)}
               >
-                {s.code} — {s.name}
+                {s.code} - {s.name}
               </button>
             </li>
           ))}
@@ -313,9 +313,9 @@ function SupplierInvitePicker({
 
 const rfqLineFormSchema = z.object({
   part_id: z.string(),
-  // Display-only — never sent to the API. Kept inside the RHF field array
+  // Display-only - never sent to the API. Kept inside the RHF field array
   // (not separate component state) so useFieldArray's append/remove keeps
-  // it in sync by index automatically — same pattern as BomLineFormRow.
+  // it in sync by index automatically - same pattern as BomLineFormRow.
   part_label: z.string(),
   required_quantity: z.string(),
   unit_definition_id: z.string(),
@@ -331,7 +331,7 @@ type CreateMode = (typeof CREATE_MODES)[number];
 // would validate every element unconditionally, including the placeholder
 // line still sitting in `lines` while `mode === "from_bom"`. Line validation
 // therefore runs only inside `superRefine`, only for the branch that's
-// actually active — the same "flat dotted-path" issue keys BomLineFormRow's
+// actually active - the same "flat dotted-path" issue keys BomLineFormRow's
 // `err()` helper reads (lib/zodResolver.ts's file header) still apply, since
 // `ctx.addIssue({ path: ["lines", i, field] })` joins to `"lines.i.field"`.
 const rfqFormSchema = z
@@ -516,7 +516,7 @@ function RfqLineFormRow({
   const resolvedPart = usePart(partLabel ? null : partId || null);
   const partDisplay =
     partLabel ||
-    (resolvedPart.data ? `${resolvedPart.data.internal_part_number} — ${resolvedPart.data.name}` : partId);
+    (resolvedPart.data ? `${resolvedPart.data.internal_part_number} - ${resolvedPart.data.name}` : partId);
 
   return (
     <div className="rfq-line-row">
@@ -565,12 +565,12 @@ function RfqLineFormRow({
             inputMode="decimal"
           />
         </FormField>
-        <FormField label="Unit" hint="optional — defaults to the part's own unit">
+        <FormField label="Unit" hint="optional - defaults to the part's own unit">
           <select {...register(`lines.${index}.unit_definition_id`)}>
             <option value="">(same as part)</option>
             {units.map((u) => (
               <option key={u.id} value={u.id}>
-                {u.code} — {u.name}
+                {u.code} - {u.name}
               </option>
             ))}
           </select>
@@ -750,7 +750,7 @@ function RfqForm({
             </FormField>
             <FormField
               label="Assembly quantity"
-              hint="optional — defaults to 1"
+              hint="optional - defaults to 1"
               error={errors.assembly_quantity?.message}
             >
               <input {...register("assembly_quantity")} inputMode="decimal" placeholder="1" />
@@ -908,7 +908,7 @@ function StatusTimeline({ id }: { id: string }) {
   const historyQuery = useRfqStatusHistory(id);
   const items = useMemo(() => {
     const list = historyQuery.data?.items ?? [];
-    // Chronological read order (oldest first) — the route's own ordering
+    // Chronological read order (oldest first) - the route's own ordering
     // isn't documented, so this sorts client-side to guarantee it rather
     // than assume server insertion order.
     return [...list].sort((a, b) => a.occurred_at.localeCompare(b.occurred_at));
@@ -1087,7 +1087,7 @@ function AddRfqLineForm({
             <option value="">(same as part)</option>
             {units.map((u) => (
               <option key={u.id} value={u.id}>
-                {u.code} — {u.name}
+                {u.code} - {u.name}
               </option>
             ))}
           </select>
@@ -1182,7 +1182,7 @@ function RfqLineRow({
                 <option value="">(same as part)</option>
                 {units.map((u) => (
                   <option key={u.id} value={u.id}>
-                    {u.code} — {u.name}
+                    {u.code} - {u.name}
                   </option>
                 ))}
               </select>
@@ -1211,14 +1211,14 @@ function RfqLineRow({
   return (
     <tr>
       <td className="mono">
-        {partQuery.data ? `${partQuery.data.internal_part_number} — ${partQuery.data.name}` : line.part_id}
+        {partQuery.data ? `${partQuery.data.internal_part_number} - ${partQuery.data.name}` : line.part_id}
       </td>
       <td data-align="right" className="mono">
         {formatQuantity(line.required_quantity)}
       </td>
       <td className="mono">{unit ? unit.code : line.unit_definition_id}</td>
       <td data-align="right">{formatSpecsCell(line.required_specifications)}</td>
-      <td>{line.notes ?? "—"}</td>
+      <td>{line.notes ?? "-"}</td>
       {editable && (
         <td>
           <div className="detail-actions">
@@ -1349,7 +1349,7 @@ function RfqSupplierRow({
     <li className={`rfq-supplier-row${isExcluded ? " is-excluded" : ""}`}>
       <div className="rfq-supplier-row-top">
         <div className="rfq-supplier-row-main">
-          <span>{supplierQuery.data ? `${supplierQuery.data.code} — ${supplierQuery.data.name}` : rs.supplier_id}</span>
+          <span>{supplierQuery.data ? `${supplierQuery.data.code} - ${supplierQuery.data.name}` : rs.supplier_id}</span>
           <span className="detail-label">
             Invited {new Date(rs.invited_at).toLocaleDateString()}
             {isExcluded && rs.excluded_at
@@ -1498,7 +1498,7 @@ function RfqDetail({
 
   // Mirrors RfqService._ensure_draft_or_override's common path: editable
   // only while draft. The administrator-override escape hatch is
-  // deliberately not surfaced here — see this file's header.
+  // deliberately not surfaced here - see this file's header.
   const canEditNow = canWrite && rfq.status === "draft" && !rfq.is_archived;
 
   return (
@@ -1525,8 +1525,8 @@ function RfqDetail({
           <DetailRow label="Base currency" value={rfq.base_currency} />
           <DetailRow label="Due date" value={formatDate(rfq.due_date)} />
           <DetailRow label="Requested delivery date" value={formatDate(rfq.requested_delivery_date)} />
-          <DetailRow label="Payment terms" value={rfq.requested_payment_terms ?? "—"} />
-          <DetailRow label="Incoterm" value={rfq.requested_incoterm ?? "—"} />
+          <DetailRow label="Payment terms" value={rfq.requested_payment_terms ?? "-"} />
+          <DetailRow label="Incoterm" value={rfq.requested_incoterm ?? "-"} />
           <DetailRow label="Version" value={String(rfq.version)} mono />
           <DetailRow label="Updated" value={new Date(rfq.updated_at).toLocaleString()} />
           {rfq.source_bom_id && (
@@ -1540,7 +1540,7 @@ function RfqDetail({
               mono={!sourceBomQuery.data}
             />
           )}
-          <DetailRow label="Notes" value={rfq.notes ?? "—"} full />
+          <DetailRow label="Notes" value={rfq.notes ?? "-"} full />
         </div>
       </section>
 
@@ -1550,9 +1550,9 @@ function RfqDetail({
           <div className="detail-grid">
             <DetailRow
               label="Archived at"
-              value={rfq.archived_at ? new Date(rfq.archived_at).toLocaleString() : "—"}
+              value={rfq.archived_at ? new Date(rfq.archived_at).toLocaleString() : "-"}
             />
-            <DetailRow label="Reason" value={rfq.archive_reason ?? "—"} full />
+            <DetailRow label="Reason" value={rfq.archive_reason ?? "-"} full />
           </div>
         </section>
       )}
@@ -1593,7 +1593,7 @@ export function RfqsPage() {
   const [statusFilter, setStatusFilter] = useState<Set<RfqStatus>>(new Set());
   const [offset, setOffset] = useState(0);
   const [drawerState, setDrawerState] = useState<DrawerState>(null);
-  // ALLOWED insertion: "Review extraction" wiring — a full-screen surface
+  // ALLOWED insertion: "Review extraction" wiring - a full-screen surface
   // (../extraction/ReviewPane.tsx), rendered as a page-level sibling of the
   // RFQ drawer rather than nested inside it (see that file's own header for
   // why), so it needs its own state here rather than living inside
@@ -1668,10 +1668,10 @@ export function RfqsPage() {
         enableSorting: false,
         meta: { align: "right" },
         // Present once the backend's widened list contract lands for a given
-        // row; "—" for backward compat otherwise — see this file's header.
+        // row; "-" for backward compat otherwise - see this file's header.
         cell: (ctx) => {
           const v = ctx.row.original.line_count;
-          return typeof v === "number" ? v : "—";
+          return typeof v === "number" ? v : "-";
         },
       },
       {

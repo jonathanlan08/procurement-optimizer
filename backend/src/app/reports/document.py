@@ -3,7 +3,7 @@ exports, docs/planning/03-api-contract.md §4.18).
 
 `app/services/report_service.py` builds exactly one `ReportDocument` per
 `GeneratedReport` row from stored data (scenario snapshots, `ScenarioResult`/
-`AllocationResultRecord`, `NegotiationBrief`, audit events) — never from
+`AllocationResultRecord`, `NegotiationBrief`, audit events) - never from
 anything recomputed differently than the routes that already expose that
 same data (SPEC: "ALL numbers come from stored rows/snapshots"). Each of
 `app/reports/csv_renderer.py`, `xlsx_renderer.py`, `pdf_renderer.py` renders
@@ -13,7 +13,7 @@ any format-specific concern.
 Every `ReportDocument` carries the SPEC-mandated header material (§Reports
 and exports: "methodology, disclaimer, generation date, calculation
 version") plus a `missing_data` disclosure list, so a caller who forgets one
-report type cannot silently ship a report missing them — they are fields on
+report type cannot silently ship a report missing them - they are fields on
 the shared model, not something each renderer must remember to print.
 """
 
@@ -35,7 +35,7 @@ class TableBlock:
 
 @dataclass(frozen=True, slots=True)
 class KeyValueBlock:
-    """A titled list of label/value pairs — scenario metadata, allocation
+    """A titled list of label/value pairs - scenario metadata, allocation
     totals, and similar "one fact per line" content."""
 
     heading: str
@@ -44,7 +44,7 @@ class KeyValueBlock:
 
 @dataclass(frozen=True, slots=True)
 class TextBlock:
-    """A titled list of paragraphs — narrative content (negotiation-brief
+    """A titled list of paragraphs - narrative content (negotiation-brief
     sections, infeasibility explanations, notes)."""
 
     heading: str

@@ -1,15 +1,15 @@
-/** Parts data layer — TanStack Query hooks over the live API.
+/** Parts data layer - TanStack Query hooks over the live API.
  *
  * Shapes mirror backend/src/app/schemas/parts.py exactly:
  *  - list envelope is `{ items, page: { limit, offset, total } }`.
  *  - `target_price` is a NUMERIC(18,8) wire string (UNIT_PRICE_SCALE) and is
- *    always paired with `target_price_currency` — both null or both set
+ *    always paired with `target_price_currency` - both null or both set
  *    (DB check `ck_parts_target_price_currency_paired`).
  *  - `unit_definition_id` is a bare UUID on the wire, with no accompanying
- *    label — but `GET /api/v1/units` (backend/src/app/api/v1/units.py) IS
+ *    label - but `GET /api/v1/units` (backend/src/app/api/v1/units.py) IS
  *    mounted and resolves it to `{code, name, dimension, is_global}`.
  *    PartsPage.tsx resolves this the same way RfqsPage.tsx/BomsPage.tsx
- *    already do, via `useUnits()` (../boms/api.ts) — the "no /units
+ *    already do, via `useUnits()` (../boms/api.ts) - the "no /units
  *    endpoint" note that used to live here was stale by the time this task
  *    landed (a units-catalog audit finding fixed elsewhere added the
  *    route); Parts was simply the one workspace that hadn't been wired to
@@ -20,7 +20,7 @@
  *    relying on client.ts's automatic header).
  *  - `DELETE /parts/{id}/alternatives/{aid}` returns `204 No Content`. The
  *    shared `api()` helper always does `return (await resp.json()) as T`,
- *    which throws on an empty body — a real footgun for any 204 response,
+ *    which throws on an empty body - a real footgun for any 204 response,
  *    but client.ts is read-only for this task. `deleteAlternative` below
  *    re-implements just enough of `api()`'s fetch/error-envelope handling
  *    (same CSRF/credentials rules) to stop short of parsing a body that
@@ -249,7 +249,7 @@ async function deleteAlternative(
     credentials: "same-origin",
     headers,
   });
-  if (resp.ok) return; // 204 No Content — nothing to parse
+  if (resp.ok) return; // 204 No Content - nothing to parse
   let parsed: { error?: ApiErrorBody } | undefined;
   try {
     parsed = (await resp.json()) as { error?: ApiErrorBody };

@@ -2,19 +2,19 @@
 `/quote-documents`). Sync `def` by policy, mirroring every other router in
 this codebase.
 
-**Two routers, one module** — the same shape `api/v1/quotes.py` already
+**Two routers, one module** - the same shape `api/v1/quotes.py` already
 establishes and documents. The delegating task's own item 3 paraphrases the
 route table as four flat `/quote-documents...` paths, but §4.9's *actual*
 route table nests create/list under the parent RFQ
 (`POST`/`GET /rfqs/{id}/quote-documents`) while `GET /quote-documents/{id}`,
 `GET /quote-documents/{id}/content`, and `POST /quote-documents/{id}/archive`
-address the document directly — followed literally here per "follow the
+address the document directly - followed literally here per "follow the
 contract's actual paths if they differ" (this task's own instruction), the
 identical resolution `api/v1/quotes.py`'s module docstring already documents
 for the same task-prose-vs-contract-table gap. `rfq_documents_router` and
 `router` are both exported and both mounted in `app/main.py`.
 
-`.../pages/{n}/preview` (§4.9's fifth row) has no route here — it renders a
+`.../pages/{n}/preview` (§4.9's fifth row) has no route here - it renders a
 page image from Stage 4 (text/table acquisition) output, which
 `services/document_service.py` does not implement (Stage 1-3 scope only; see
 that module's own docstring).
@@ -22,14 +22,14 @@ that module's own docstring).
 Security, per this task's brief:
 - File size is checked with a **streamed** read against
   `settings.max_upload_bytes`, aborting with `413` before the whole file is
-  ever buffered — the same `_read_upload_within_limit` technique
+  ever buffered - the same `_read_upload_within_limit` technique
   `api/v1/part_imports.py` already uses, duplicated here rather than
   imported (that module exports only `router`).
 - `FileValidationError` raised by `DocumentService.upload` (via
   `app.ingestion.file_validation.validate_upload`) is mapped to an HTTP
   error **in this route**, per the task's own explicit instruction: any
   message that names the size limit maps to `413 payload_too_large`
-  (defense in depth — the streamed read above already catches most
+  (defense in depth - the streamed read above already catches most
   oversized uploads before `upload()` is ever called); everything else
   (magic-byte/extension/declared-type mismatches, an empty file) maps to
   `415 unsupported_media_type`.
@@ -89,7 +89,7 @@ def get_document_service(
     settings: SettingsDep,
 ) -> DocumentService:
     # Built per request from Settings, not injected via api/deps.py
-    # (principal-owned, off limits) — per this task's own instruction; see
+    # (principal-owned, off limits) - per this task's own instruction; see
     # providers/storage/__init__.py's module docstring.
     storage = build_storage_provider(settings)
     return DocumentService(
@@ -110,7 +110,7 @@ def _read_upload_within_limit(file: UploadFile, max_bytes: int) -> bytes:
     """Chunked size check bounding what THIS handler holds in memory. It is
     NOT the first line of defense: FastAPI resolves `UploadFile` by parsing
     the multipart body before the handler runs, and Starlette spools file
-    parts to a temp file with no size limit of its own — so oversized
+    parts to a temp file with no size limit of its own - so oversized
     DECLARED bodies are rejected pre-routing by `BodySizeLimitMiddleware`
     (app/api/middleware.py), and a chunked body without Content-Length must
     be capped by the reverse proxy (DEPLOYMENT.md §8). This check remains
@@ -181,7 +181,7 @@ def list_rfq_documents(
     rfq_id: UUID,
     service: DocumentServiceDep,
     _principal: Annotated[Principal, Depends(require_role(Role.VIEWER))],
-    # B008 suppressed below — ruff's immutable-type allowlist for the
+    # B008 suppressed below - ruff's immutable-type allowlist for the
     # "function call in a default" check doesn't recognize an enum/`UUID` as
     # immutable the way it does `str`/`bool`/`int`; `Query()` itself is a
     # side-effect-free, idempotent call either way (same reasoning

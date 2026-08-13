@@ -80,7 +80,7 @@ describe("SuppliersPage", () => {
   afterEach(() => {
     // vite.config.ts sets `test.globals: false`, so @testing-library/react's
     // automatic post-test cleanup (which checks for a *global* `afterEach`)
-    // never registers itself — without this, each `render()` in this file
+    // never registers itself - without this, each `render()` in this file
     // would stack on top of the previous test's still-mounted DOM.
     cleanup();
     vi.unstubAllGlobals();

@@ -7,21 +7,21 @@ table** (contract wins per instructions; every deviation recorded here):
 
 1. `POST /landed-costs:preview` is mounted with **no router prefix** (a bare
    `APIRouter(tags=[...])` route, not nested under `/landed-costs`), because
-   `:preview` is not a path parameter — it is a literal suffix on the
+   `:preview` is not a path parameter - it is a literal suffix on the
    `landed-costs` segment itself (§4.15's own Google-style `resource:verb`
-   spelling). Gated `viewer+` (§4.15's own route table: "O A N V" — a
+   spelling). Gated `viewer+` (§4.15's own route table: "O A N V" - a
    stateless calculator with no audit row, §6 gap #2), **not** the
    "analyst+" this task's own paraphrase states; the contract's literal role
    column wins.
 2. `POST /rfqs/{rfq_id}/landed-costs` persists **one** quote line's result
    per call (`quote_line_id` in the body), not "all matched lines" as the
-   contract's prose describes — see `app/services/landed_cost_service.py`
+   contract's prose describes - see `app/services/landed_cost_service.py`
    module docstring: `LandedCostService.calculate_and_store` is this task's
    own explicit per-line service surface, and this route is a thin wrapper
    over it. A future task can add a batch loop over matched lines without
    changing this route's shape.
 3. `GET /rfqs/{rfq_id}/landed-costs` (latest result per line, with
-   components) has no literal entry in §4.15's table at all — it is this
+   components) has no literal entry in §4.15's table at all - it is this
    task's own explicit bullet ("GET /rfqs/{rfq_id}/landed-costs (viewer+;
    latest per line incl. components)"), additive to, not contradicting, the
    contract's `GET /landed-cost-results/{id}` (also implemented below, for

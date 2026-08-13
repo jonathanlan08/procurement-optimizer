@@ -1,4 +1,4 @@
-"""BOM repository — org-scoped data access, copy-on-write aware
+"""BOM repository - org-scoped data access, copy-on-write aware
 (docs/planning/02-erd.md §5 / §10, app/models/boms.py module docstring).
 
 Extends OrgScopedRepository, so every query is filtered by organization_id
@@ -7,18 +7,18 @@ before any other predicate (isolation control #2).
 Listing defaults to "latest version per root_bom_id" (03-api-contract.md
 §4.7: `GET /boms | latest version per root_bom_id by default; ?all_versions=
 true`). "Latest" means highest `version_number` for that root, computed with
-a `GROUP BY root_bom_id` subquery and joined back onto the full row — not
+a `GROUP BY root_bom_id` subquery and joined back onto the full row - not
 "latest non-archived version": if the current head happens to be archived
 and the caller has not passed `include_archived=true`, that root simply does
 not appear in the page, the same way an archived `Part`/`Supplier` simply
 does not appear in their default list. There is no fallback to an older,
-non-archived version of the same root — that would silently show the caller
+non-archived version of the same root - that would silently show the caller
 something other than the actual current state of the BOM.
 
 `BillOfMaterialLine` has no ORM relationship back to `BillOfMaterials` (see
 app/models/boms.py: the relationships defined there are all one-directional,
 `BillOfMaterialLine.bom`, with no `back_populates`/backref on the
-`BillOfMaterials` side) — this task's edit allowlist does not include
+`BillOfMaterials` side) - this task's edit allowlist does not include
 models/boms.py, so lines are fetched here with their own explicit queries
 ("line helpers" per this task's brief) rather than via eager-loading a
 relationship attribute that does not exist.
@@ -117,7 +117,7 @@ class BomRepository(OrgScopedRepository[BillOfMaterials]):
     def get_version_chain(self, root_bom_id: uuid.UUID) -> list[BillOfMaterials]:
         """Every version of one BOM, ascending by `version_number` (v1
         first). Org-scoped like every other query here; an empty list means
-        either no such root exists or it belongs to another organization —
+        either no such root exists or it belongs to another organization -
         callers translate that to a 404, never a 403 (§1.1)."""
         stmt = (
             self._base_query()
@@ -127,7 +127,7 @@ class BomRepository(OrgScopedRepository[BillOfMaterials]):
         return list(self.session.execute(stmt).scalars().all())
 
     def is_latest_version(self, bom: BillOfMaterials) -> bool:
-        """True when `bom` is the current head of its root's version chain —
+        """True when `bom` is the current head of its root's version chain -
         the only version a new version may be forked from (BomService.new_version)."""
         stmt = select(func.max(BillOfMaterials.version_number)).where(
             BillOfMaterials.organization_id == self.organization_id,

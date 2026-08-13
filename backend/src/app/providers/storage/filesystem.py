@@ -1,18 +1,18 @@
-"""Filesystem `StorageProvider` — the dev/default backend
+"""Filesystem `StorageProvider` - the dev/default backend
 (`PO_STORAGE_PROVIDER=filesystem`, `app.core.config.Settings.storage_root`).
 
-Layout: `<root>/<organization_id>/<key>` — org isolation is a real directory
+Layout: `<root>/<organization_id>/<key>` - org isolation is a real directory
 boundary, not just a query filter. `content_type` is recorded in a sidecar
 `<key>.meta` text file (the choice `document_service.py`'s task brief left
-open): the `StorageProvider.get()` signature returns only `bytes` — nothing
-in this package's Protocol ever reads the sidecar back — but it is written
+open): the `StorageProvider.get()` signature returns only `bytes` - nothing
+in this package's Protocol ever reads the sidecar back - but it is written
 anyway for defense in depth (an operator inspecting `storage_root` by hand,
 or a future admin/debug tool, should not have to guess a file's type from
 its extensionless key).
 
 Writes are atomic: bytes go to a temp file in the *same* directory first,
 `fsync`ed, then moved into place with `os.replace` (a single filesystem
-rename, atomic on POSIX and Windows alike) — a concurrent reader can only
+rename, atomic on POSIX and Windows alike) - a concurrent reader can only
 ever observe either the previous complete object or the new complete one,
 never a partial write.
 """

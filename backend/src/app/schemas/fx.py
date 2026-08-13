@@ -4,7 +4,7 @@
 Wire conventions (§1.2): money/decimal fields are JSON strings, never
 numbers. `RateString` mirrors `app.schemas.suppliers.DecimalString` but at
 `app.core.money.RATE_SCALE` (12dp, NUMERIC(24,12)) instead of the 6dp money
-scale — exchange rates are their own column type, not a money amount.
+scale - exchange rates are their own column type, not a money amount.
 `CurrencyCode`/`PageInfo` are imported rather than redefined: same ISO-3
 pattern and same `{limit, offset, total}` shape as every other paginated
 list in this API.
@@ -45,7 +45,7 @@ RateString = Annotated[
 
 class ExchangeRateOverrideCreate(BaseModel):
     """POST /exchange-rates body (§4.13): manual override. `override_reason`
-    is required and non-blank — `ck_exchange_rates_override_reason_required`
+    is required and non-blank - `ck_exchange_rates_override_reason_required`
     (migration 0008) is the same rule enforced again at the DB boundary."""
 
     model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")
@@ -99,7 +99,7 @@ class ExchangeRateListResponse(BaseModel):
 class EffectiveExchangeRateResponse(BaseModel):
     """GET /exchange-rates?base=&quote=&as_of= (§4.13: "returns the effective
     row plus its provenance"). `exchange_rate_id` is `null` when the answer
-    came from the synthetic fixture rather than a stored override — nothing
+    came from the synthetic fixture rather than a stored override - nothing
     was persisted to point at."""
 
     base_currency: str

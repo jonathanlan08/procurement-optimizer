@@ -1,7 +1,7 @@
 """CSV renderer: `ReportDocument` -> bytes (docs/SPEC.md §Reports and
 exports).
 
-CSV has no notion of "sections" — this flattens `ReportDocument` into a
+CSV has no notion of "sections" - this flattens `ReportDocument` into a
 single sheet: a header block (title/generated_at/calculation_version/
 methodology/disclaimer/missing_data), a blank row, then each block in
 order (its own heading row, then its content), separated by blank rows.

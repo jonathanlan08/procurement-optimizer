@@ -5,7 +5,7 @@ optimization/contracts.py FROZEN, app/domain/scoring/contracts.py FROZEN).
 Wire conventions (§1.2): every decimal crosses the wire as a JSON string,
 never a number. Reuses `app.schemas.analysis.LandedCostAssumptionsRequest`
 (unscaled decimal strings) for `assumptions` and `app.schemas.analysis.
-CriterionSpecResponse` for weight specs — both already shaped exactly right,
+CriterionSpecResponse` for weight specs - both already shaped exactly right,
 duplicating them here would drift.
 
 **§4.16's "Response sketch" is illustrative prose, not a schema** (its own
@@ -13,20 +13,20 @@ heading says "sketch"). Two of its fields are structurally incompatible with
 the FROZEN domain dataclasses this API persists and cannot honestly be
 reproduced:
 - `infeasibility_explanation.minimal_relaxations` (sketch: a structured list
-  of `{group, from, to, restores_feasibility}`) — `app.domain.optimization.
+  of `{group, from, to, restores_feasibility}`) - `app.domain.optimization.
   contracts.InfeasibilityExplanation.minimal_relaxation` is a single,
   already-composed human sentence (`str | None`), not a list of relaxation
   *options*; the solver never computes more than one. `minimal_relaxation`
   (singular) is exposed instead of inventing structure nothing built.
 - `rejected_alternatives` (sketch: `{description, total_cost, delta,
-  reason}` objects) — `AllocationResult.rejected_alternatives: tuple[str,
+  reason}` objects) - `AllocationResult.rejected_alternatives: tuple[str,
   ...]` is plain human sentences (contracts.py's own docstring: "human
   sentences, e.g. next-best single-supplier"). Exposed as `list[str]`.
-- `binding_constraints` (sketch: bare strings like `"max_supplier_count"`) —
+- `binding_constraints` (sketch: bare strings like `"max_supplier_count"`) -
   `BindingConstraint` is `{name, detail}`; `detail` carries the full
   sentence the sketch's bare strings cannot. Exposed as `{name, detail}[]`.
 - `determinism` (sketch: `{solver, seed, workers, deterministic_time,
-  model_hash}`) — `solver_version` is fixed, and `solver.py`'s own module
+  model_hash}`) - `solver_version` is fixed, and `solver.py`'s own module
   docstring rules `random_seed=0` a constant configuration value, not
   per-result data ("nothing to persist per-row"). Exposed as `stats`,
   the FROZEN `SolverStats` shape verbatim (`status_raw`,
@@ -34,7 +34,7 @@ reproduced:
 
 `AllocationResultRecord` has no `currency` column (module docstring point 8:
 "denominated in whatever ComparisonScenario's owning RFQ's base_currency
-already is") — `AllocationResultResponse.from_model` therefore takes the
+already is") - `AllocationResultResponse.from_model` therefore takes the
 owning RFQ's `base_currency` as an explicit argument.
 """
 
@@ -157,7 +157,7 @@ class SupplierScoreResponse(BaseModel):
 
 
 class ScoringResultResponse(BaseModel):
-    """Shaped field-for-field after the FROZEN `ScoringResult` dataclass —
+    """Shaped field-for-field after the FROZEN `ScoringResult` dataclass -
     also, deliberately, the exact shape `frontend/src/features/comparison/
     api.ts`'s `ScoringRunResponse` already anticipated."""
 
@@ -368,7 +368,7 @@ class ScenarioResponse(BaseModel):
 
 
 class ScenarioSummaryResponse(BaseModel):
-    """`GET /rfqs/{id}/comparison-scenarios`: history, newest first — a
+    """`GET /rfqs/{id}/comparison-scenarios`: history, newest first - a
     lean summary (no embedded scoring/allocation payload; fetch `GET
     /comparison-scenarios/{id}` for the full package)."""
 

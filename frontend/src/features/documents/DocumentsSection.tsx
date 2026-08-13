@@ -1,6 +1,6 @@
 /** Quote-document upload + extraction entry point, mounted inside the RFQ
  * detail drawer (RfqsPage.tsx's `RfqDetail`, per this task's ALLOWED
- * "minimal insertion" edit there — same mount pattern
+ * "minimal insertion" edit there - same mount pattern
  * features/quotes/QuotesSection.tsx already establishes).
  *
  * Design decisions:
@@ -10,10 +10,10 @@
  *    line.
  *  - **Upload is a small inline form, not a second stacked drawer.** Unlike
  *    quote entry (a multi-section form worth its own drawer), an upload is
- *    one file input plus an optional supplier — QuotesSection's own
+ *    one file input plus an optional supplier - QuotesSection's own
  *    `AddRfqLineForm`-style "inline reveal" pattern (see rfqs/RfqsPage.tsx)
  *    fits better than a third drawer layer.
- *  - **"Extract" is only offered while `document.state === 'stored'`** —
+ *  - **"Extract" is only offered while `document.state === 'stored'`** -
  *    the only state `ExtractionService.start_run` accepts
  *    (`services/extraction_service.py`: "extraction can only start from
  *    'stored'"); every other state either hasn't reached that point yet or
@@ -24,11 +24,11 @@
  *    `onReviewExtraction(run.id)` rather than leaving the analyst to find
  *    a new "Review extraction" link themselves.
  *  - **"Review extraction" opens the most recent run** (highest
- *    `run_number`) when one or more runs exist for a document — re-running
+ *    `run_number`) when one or more runs exist for a document - re-running
  *    extraction is supported (multiple runs per document), but this list
  *    view only surfaces the latest; ReviewPane.tsx itself is where a
  *    reviewer works one run in depth.
- *  - **Upload errors (413/415/409) need no special-case code** — see
+ *  - **Upload errors (413/415/409) need no special-case code** - see
  *    ./api.ts's file header: `ApiErrorBanner` already renders the shared
  *    error envelope's `message` + `details[]` generically for every status
  *    code this route can return.
@@ -70,7 +70,7 @@ function DocumentStateBadge({ state }: { state: DocumentResponse["state"] }) {
 
 function SupplierOption({ supplierId }: { supplierId: string }) {
   const q = useSupplier(supplierId);
-  return <option value={supplierId}>{q.data ? `${q.data.code} — ${q.data.name}` : supplierId}</option>;
+  return <option value={supplierId}>{q.data ? `${q.data.code} - ${q.data.name}` : supplierId}</option>;
 }
 
 // --- upload form ---------------------------------------------------------
@@ -103,9 +103,9 @@ function UploadForm({
     <div className="document-upload-form">
       <ApiErrorBanner error={uploadMutation.error} />
       <div className="document-upload-row">
-        <FormField label="Supplier" hint="optional — set once identified">
+        <FormField label="Supplier" hint="optional - set once identified">
           <select value={supplierId} onChange={(e) => setSupplierId(e.target.value)}>
-            <option value="">— unassigned —</option>
+            <option value="">- unassigned -</option>
             {invitedSupplierIds.map((id) => (
               <SupplierOption key={id} supplierId={id} />
             ))}
@@ -176,7 +176,7 @@ function DocumentRow({
           {formatBytes(document.size_bytes)} · uploaded{" "}
           {new Date(document.uploaded_at).toLocaleDateString()}
           {document.supplier_id
-            ? ` · ${supplierQuery.data ? `${supplierQuery.data.code} — ${supplierQuery.data.name}` : document.supplier_id}`
+            ? ` · ${supplierQuery.data ? `${supplierQuery.data.code} - ${supplierQuery.data.name}` : document.supplier_id}`
             : ""}
         </span>
         {document.state === "quarantined" && document.quarantine_reason && (

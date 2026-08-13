@@ -2,7 +2,7 @@
 validation, formula-injection rejection, decimal/currency validation,
 in-file duplicate detection, row/column caps, and encoding tolerance.
 
-No database anywhere in this file — matches the module under test.
+No database anywhere in this file - matches the module under test.
 """
 
 from __future__ import annotations
@@ -304,7 +304,7 @@ class TestXlsxParsing:
         # openpyxl never computes formulas; simulate a cached value the way
         # a real spreadsheet application would have written one by loading
         # with data_only=False and asserting our parser degrades gracefully
-        # when there genuinely is no cached value (see next test) instead —
+        # when there genuinely is no cached value (see next test) instead -
         # openpyxl cannot fabricate a cached value for us in this test setup.
         data = buf.getvalue()
         raw_file = parse_xlsx(data)

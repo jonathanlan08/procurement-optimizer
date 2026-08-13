@@ -3,7 +3,7 @@
 
 **All-units discount semantics**: the selected tier's `unit_price` applies to
 the *entire* accepted quantity, not just the units above the tier's minimum.
-Incremental (marginal-unit) discounts are not modelled in v0.1 — they are
+Incremental (marginal-unit) discounts are not modelled in v0.1 - they are
 roadmap.
 
 Interval semantics: **closed on both ends**, `[min_quantity, max_quantity]`,
@@ -12,7 +12,7 @@ SPEC's example table (1-99 / 100-499 / 500-999 / 1000+) is exactly this
 shape.
 
 Tiers are expected to already be non-overlapping and gap-free (that is a
-write-time validation concern — a DB exclusion constraint per
+write-time validation concern - a DB exclusion constraint per
 `02-erd.md` §8); this function is defensive about ordering (it sorts by
 `min_quantity` before selecting) but does not itself validate the absence of
 overlaps or gaps.
@@ -22,7 +22,7 @@ Two situations return `tier=None` rather than "nearest match":
 - the quantity is below every tier's minimum (`BelowMinimumTierError` territory
   at the caller); and
 - the quantity falls in a genuine gap between two tiers (a data defect
-  upstream, since well-formed tier sets are contiguous) — the `reason` names
+  upstream, since well-formed tier sets are contiguous) - the `reason` names
   the gap's bounding tiers so the caller can report it precisely.
 
 Nearest-matching a quantity to an adjacent tier is deliberately never done:

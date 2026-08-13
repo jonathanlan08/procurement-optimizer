@@ -1,6 +1,6 @@
 /* Comparison-workspace chrome layered on top of components/workspace.css +
    components/badges.css + components/DataTable.css (imported by
-   ComparisonPage.tsx). Kept in its own file — same rationale as every other
+   ComparisonPage.tsx). Kept in its own file - same rationale as every other
    feature's own css file (see features/quotes/quotes.css's own header). */
 
 .comparison-page {
@@ -19,7 +19,7 @@
   min-width: 220px;
 }
 
-/* completeness badges — same warning/positive/destructive split MASTER.md
+/* completeness badges - same warning/positive/destructive split MASTER.md
    uses for confidence bands, applied to a different concept (per the
    product's own "assumption-dependent results" example in its Warning row). */
 .badge--completeness-complete {
@@ -40,7 +40,7 @@
   border-color: rgba(220, 38, 38, 0.28);
 }
 
-/* provenance badges — MASTER.md "Data-source provenance labels... each get
+/* provenance badges - MASTER.md "Data-source provenance labels... each get
    a distinct badge style; never rely on color alone." */
 .badge--provenance-supplier {
   background: rgba(3, 105, 161, 0.1);
@@ -458,7 +458,7 @@ td.is-winning {
 }
 
 /* chips (shared row layout; chip/chip--assumed/chip--missing already exist
-   above for the landed-cost explain drawer — these add the allocation-panel
+   above for the landed-cost explain drawer - these add the allocation-panel
    and infeasibility-explainer variants) -------------------------------- */
 
 .chip-row {

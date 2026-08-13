@@ -1,23 +1,23 @@
 """Regression tests for the 2026-08 independent calculation audit fixes.
 
 One test class per finding:
-- F1  — `max_scaling_error` (methodology §7.4) computed and carried on
+- F1  - `max_scaling_error` (methodology §7.4) computed and carried on
   `SolverStats` for every solved result.
-- F2  — unit-price conversion divides by the UNQUANTIZED factor ratio, not
+- F2  - unit-price conversion divides by the UNQUANTIZED factor ratio, not
   the 6-dp-quantized converted quantity (measured 1.8e-5/unit error on the
   documented lb→kg example before the fix).
-- F3  — a supplier with no present value on any positive-weight criterion is
+- F3  - a supplier with no present value on any positive-weight criterion is
   reported as not-scoreable (excluded-style, rank 0, reason), never scored
   a fabricated worst-in-cohort 0.000000.
-- F6  — the brief numeric cross-check catches fabricated INTEGERS and
+- F6  - the brief numeric cross-check catches fabricated INTEGERS and
   separator-formatted money, matching numerically so `500` equals a stored
   `500.000000` while a rounded `14.48` still fails closed.
-- F7  — a degenerate cohort's reason says "only candidate", not the untrue
+- F7  - a degenerate cohort's reason says "only candidate", not the untrue
   "all candidates equal".
-- F8  — the concentration constraint's 10^6 multiplier is covered by the
+- F8  - the concentration constraint's 10^6 multiplier is covered by the
   pre-solve overflow guard.
-- F10 — negative criterion weights are rejected at construction.
-- F11 — `parse_decimal` rejects PEP-515 underscores and other shapes
+- F10 - negative criterion weights are rejected at construction.
+- F11 - `parse_decimal` rejects PEP-515 underscores and other shapes
   Python's `Decimal()` accepts but the wire contract does not.
 """
 

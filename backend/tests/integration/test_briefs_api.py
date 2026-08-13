@@ -6,12 +6,12 @@ per role, built directly against the migrated database, driven through the
 HTTP API. `_setup_two_supplier_case` reuses that file's own "Acme
 Low-Price"/"Beta Premium" signature shape (same unit prices/shipping costs,
 same 500-unit quantity) so a `lowest_landed_cost` scenario reliably ranks
-Beta ahead of Acme on landed cost — Acme is the brief's SUBJECT supplier in
+Beta ahead of Acme on landed cost - Acme is the brief's SUBJECT supplier in
 most tests below, Beta its (only, therefore BEST) alternative, which makes
 `price_target`/`stretch_target` deterministically checkable against the
 scenario's own reported `TOTAL_LANDED_COST` figure (divided by the known
 500-unit quantity) without re-deriving the whole landed-cost calculator by
-hand — the same "assert the relationship/formula, not a hand-verified
+hand - the same "assert the relationship/formula, not a hand-verified
 figure" discipline test_scenarios_api.py's own module docstring documents
 for itself.
 """
@@ -303,7 +303,7 @@ def _setup_two_supplier_case(
 ) -> dict[str, Any]:
     """Acme Low-Price (unit_price 8.00, shipping 3000 -> high landed cost)
     vs. Beta Premium (unit_price 11.00, shipping 100 -> low landed cost),
-    500 units — same signature case test_scenarios_api.py's own
+    500 units - same signature case test_scenarios_api.py's own
     `_setup_signature_case` builds, so Beta always ends up the lower-landed-
     cost alternative to Acme."""
     unit_id = _seed_unit(migrated_engine, org["org_id"])
@@ -456,7 +456,7 @@ class TestGenerateBrief:
     ) -> None:
         """Regression (2026-08 external review P1): for the supplier who is
         ALREADY the cheapest on the line, every alternative benchmark is more
-        expensive — the old blended math emitted that higher figure as the
+        expensive - the old blended math emitted that higher figure as the
         'price target', and the draft email invited a price increase. The
         guardrail must emit NO target with a disclosed explanation instead."""
         headers = _headers(_login_as(client, org_a, Role.ANALYST))
@@ -480,7 +480,7 @@ class TestGenerateBrief:
     ) -> None:
         """Regression (2026-08 external review P1): Acme quoted 8.00 bare;
         the landed-basis target (Beta's same-line landed unit cost, ~11.x) is
-        a valid brief figure but is ABOVE the number Acme wrote on the quote —
+        a valid brief figure but is ABOVE the number Acme wrote on the quote -
         the draft email must NOT ask Acme to move 'closer to' it."""
         headers = _headers(_login_as(client, org_a, Role.ANALYST))
         ctx = _setup_two_supplier_case(client, headers, migrated_engine, org_a)
@@ -593,7 +593,7 @@ class TestNumericCrossCheckGuard:
     ) -> None:
         """Injects a poisoned `AiNarrativeProvider` directly via
         `BriefService`'s own constructor DI (the same seam
-        `build_narrative_provider` uses at the API layer) — the mechanical
+        `build_narrative_provider` uses at the API layer) - the mechanical
         guard `app.services.brief_service.numeric_cross_check` must reject a
         fabricated figure a narrative provider slips into rendered text,
         per SPEC's "AI must not invent... savings, concessions..."."""

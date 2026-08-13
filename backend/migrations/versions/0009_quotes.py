@@ -74,7 +74,7 @@ def upgrade() -> None:
         ),
         sa.Column("notes", sa.Text(), nullable=True),
         # nullable: only set once a manual revision supersedes this quote
-        # (app/models/quotes.py module docstring point 2 — forward-pointing).
+        # (app/models/quotes.py module docstring point 2 - forward-pointing).
         sa.Column("superseded_by_id", pg.UUID(as_uuid=True), nullable=True),
         sa.Column("archived_at", sa.TIMESTAMP(timezone=True), nullable=True),
         sa.Column(
@@ -140,7 +140,7 @@ def upgrade() -> None:
         sa.Column("description", sa.Text(), nullable=True),
         sa.Column("quantity", sa.Numeric(18, 6), nullable=False),
         sa.Column(
-            # plain FK — unit_definitions.organization_id is nullable (global
+            # plain FK - unit_definitions.organization_id is nullable (global
             # catalogue); see migration 0007's rfq_lines.unit_definition_id.
             "unit_definition_id",
             pg.UUID(as_uuid=True),
@@ -296,7 +296,7 @@ def upgrade() -> None:
         sa.UniqueConstraint(
             "organization_id", "id", name="uq_quote_price_breaks_org_identity"
         ),
-        # CASCADE: 02-erd.md §11's explicit whitelist — a price break cannot
+        # CASCADE: 02-erd.md §11's explicit whitelist - a price break cannot
         # exist without its quote line.
         sa.ForeignKeyConstraint(
             ["organization_id", "quote_line_id"],
@@ -316,7 +316,7 @@ def upgrade() -> None:
             name="ck_quote_price_breaks_setup_fee_nonneg",
         ),
         # 02-erd.md §8 uq_price_break_min, org-scoped. Also stands in for the
-        # forbidden btree_gist EXCLUDE no-overlap constraint — see the
+        # forbidden btree_gist EXCLUDE no-overlap constraint - see the
         # migration module docstring and app/models/quotes.py.
         sa.UniqueConstraint(
             "organization_id",
@@ -357,7 +357,7 @@ def upgrade() -> None:
         sa.Column("exclusions", sa.Text(), nullable=True),
         sa.Column("notes", sa.Text(), nullable=True),
         sa.UniqueConstraint("organization_id", "id", name="uq_quote_terms_org_identity"),
-        # RESTRICT, not CASCADE — see migration module docstring: the ERD's
+        # RESTRICT, not CASCADE - see migration module docstring: the ERD's
         # cascade whitelist does not include quotes -> quote_terms.
         sa.ForeignKeyConstraint(
             ["organization_id", "quote_id"],

@@ -1,4 +1,4 @@
-"""Request-id, security headers, and rate limiting — PRINCIPAL-OWNED."""
+"""Request-id, security headers, and rate limiting - PRINCIPAL-OWNED."""
 
 from __future__ import annotations
 
@@ -54,7 +54,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
 
 class OriginCheckMiddleware(BaseHTTPMiddleware):
-    """Origin/Referer allowlist for EVERY mutating API request — including login,
+    """Origin/Referer allowlist for EVERY mutating API request - including login,
     which has no session yet and would otherwise be exposed to login-CSRF.
     The per-session CSRF token check in deps.py remains as the second factor."""
 
@@ -114,7 +114,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             # key with fresh hits: oldest-inserted eviction let an address-spray
             # reset the sprayer's own auth counter (2026-08 security audit,
             # MEDIUM-4). If every key is active, new clients share one bounded
-            # overflow bucket instead — existing counters survive, and the spray
+            # overflow bucket instead - existing counters survive, and the spray
             # itself gets collectively rate-limited.
             stale = [k for k, w in self._hits.items() if not w or now - w[-1] > 60.0]
             if stale:
@@ -148,7 +148,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 class BodySizeLimitMiddleware(BaseHTTPMiddleware):
     """Reject oversized request bodies from the Content-Length header BEFORE
     routing. FastAPI resolves `UploadFile` by awaiting `request.form()`, and
-    Starlette's multipart parser spools file parts to disk with no size limit —
+    Starlette's multipart parser spools file parts to disk with no size limit -
     so the route-level 413 checks only fire after the whole body is already on
     disk (2026-08 security audit, MEDIUM-2). This closes the declared-length
     path; a chunked body without Content-Length still spools, which is why
@@ -156,7 +156,7 @@ class BodySizeLimitMiddleware(BaseHTTPMiddleware):
     in front of any real deployment.
 
     The cap is max_upload_bytes plus slack for multipart framing and ordinary
-    JSON bodies — this is a guard against gigabyte-scale abuse, not the exact
+    JSON bodies - this is a guard against gigabyte-scale abuse, not the exact
     per-file limit (the route-level streamed check stays authoritative)."""
 
     _SLACK_BYTES = 1024 * 1024

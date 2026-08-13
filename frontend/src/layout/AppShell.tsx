@@ -4,14 +4,14 @@
  * to `display: none` the sidebar at <=768px with no replacement navigation
  * ("a never-fulfilled promise" per the audit). It's replaced here with a top
  * app-bar hamburger that opens the SAME sidebar markup (`<SidebarNav>`,
- * rendered once, used twice — "one nav, two presentations" per the design
+ * rendered once, used twice - "one nav, two presentations" per the design
  * contract) as a slide-in drawer from the left: overlay + scrim, Escape and
  * scrim-click close, focus moves into the drawer on open and returns to the
  * hamburger button on close, and a route change closes the drawer. The
  * focus-trap/Escape/restore-focus shape mirrors components/Drawer.tsx (this
  * codebase's existing drawer idiom) rather than reusing that component
  * directly, since Drawer.tsx is a right-docked content panel with its own
- * `title`/`children` contract — this is a left-docked nav drawer at the
+ * `title`/`children` contract - this is a left-docked nav drawer at the
  * shell layer with a fixed link list, not a generic content slot.
  */
 
@@ -27,10 +27,10 @@ import { useAuth } from "../auth/session";
 import { useRouteEntrance } from "../lib/motion";
 import "./app-shell.css";
 
-// `hue` (v2 functional hue extension, 2026-08 — see tokens.css's own "v2"
+// `hue` (v2 functional hue extension, 2026-08 - see tokens.css's own "v2"
 // comment + design-system/procurement-optimizer/MASTER.md) is only set for
 // the seven workspaces the design director actually assigned a hue to.
-// BOMs and FX rates have none — they keep today's plain accent-blue active
+// BOMs and FX rates have none - they keep today's plain accent-blue active
 // state unchanged (app-shell.css's base `.shell-nav-link.is-active` rule),
 // rather than this task inventing colors the design spec doesn't define.
 const NAV: { to: string; label: string; end?: boolean; hue?: string }[] = [
@@ -82,11 +82,11 @@ function CloseIcon() {
   );
 }
 
-/** The sidebar's brand + link list — shared markup for the static desktop
+/** The sidebar's brand + link list - shared markup for the static desktop
  * column and the mobile drawer panel (see file header). `identity` is an
  * optional slot between the brand and the nav list: the static desktop
  * <aside> never passes one (the header already shows name/role there), but
- * the mobile drawer does (audit P2 — see AppShell's own render below), since
+ * the mobile drawer does (audit P2 - see AppShell's own render below), since
  * hiding the header's name/role chip at <=768px would otherwise drop that
  * information entirely on mobile rather than relocating it. */
 function SidebarNav({ identity }: { identity?: ReactNode }) {
@@ -120,7 +120,7 @@ export function AppShell() {
   const { session, logout } = useAuth();
   const location = useLocation();
   // Sanctioned motion pattern 1 (lib/motion.ts): opacity-only fade of the
-  // routed content on every navigation. Never a transform here — <main>
+  // routed content on every navigation. Never a transform here - <main>
   // contains the position:fixed drawers.
   const contentRef = useRouteEntrance<HTMLElement>(location.pathname);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -181,7 +181,7 @@ export function AppShell() {
   function handlePanelKeyDown(e: ReactKeyboardEvent<HTMLDivElement>) {
     // Escape is also handled by the document-level listener above (needed
     // so it works even if focus is on the scrim); this is a harmless no-op
-    // duplicate guard kept out of the way — the effect owns the real logic.
+    // duplicate guard kept out of the way - the effect owns the real logic.
     if (e.key === "Escape") e.stopPropagation();
   }
 
@@ -243,16 +243,16 @@ export function AppShell() {
             <span className="demo-badge" title="All data in this workspace is synthetic">
               {/* Audit P2 fix: at <=768px the full label collapsed the header
                   into multiple wrapped rows alongside the username/role chip
-                  and Sign out button. Both spans render always — CSS (the
+                  and Sign out button. Both spans render always - CSS (the
                   <=768px block at the bottom of app-shell.css) shows exactly
                   one per viewport, the same "one nav, two presentations"
                   display:none swap AppShell already uses for the sidebar. */}
-              <span className="demo-badge-full">Demo — synthetic data</span>
+              <span className="demo-badge-full">Demo - synthetic data</span>
               <span className="demo-badge-compact">Demo</span>
             </span>
           )}
           <div className="shell-header-spacer" />
-          {/* Hidden at <=768px (app-shell.css) — the name/role chip is what
+          {/* Hidden at <=768px (app-shell.css) - the name/role chip is what
               made the mobile header wrap; it's not lost, just relocated: see
               .shell-drawer-identity below, rendered at the top of the mobile
               nav drawer instead. */}

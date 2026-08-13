@@ -1,4 +1,4 @@
-"""Quote service — org-scoped business logic for manual quote entry
+"""Quote service - org-scoped business logic for manual quote entry
 (docs/planning/03-api-contract.md §4.11, app/models/quotes.py module
 docstring, docs/SPEC.md §6-7/§11).
 
@@ -10,22 +10,22 @@ describes (`quote.created`/`quote.updated`/`quote.superseded`/
 
 **Scope: manual entry only.** §4.11's route table also lists
 `GET/POST/PATCH/DELETE .../lines[...]`, `PUT .../price-breaks`,
-`PUT .../terms`, `GET .../corrections`, and `POST .../confirm` — all of them
+`PUT .../terms`, `GET .../corrections`, and `POST .../confirm` - all of them
 belong to the extraction/correction/confirmation pipeline (00-decisions.md
 §2 ruling #6: "manual quotes before extraction", a later phase) and are out
 of this task's file-creation brief. A manually-entered quote's `source` is
 always `QuoteSource.MANUAL`, and its lines/price-breaks/terms are written
-once, atomically, at `create()` (or `supersede()`) time — there is no
+once, atomically, at `create()` (or `supersede()`) time - there is no
 route anywhere in this module that edits a line, a price break, or the terms
 block in place after creation.
 
 **RFQ + supplier eligibility gate (`create` and `supersede`).** Per this
 task's brief: the target RFQ must resolve in-org (404 otherwise, never 403,
-§1.1) and be `open` or `under_review` (else `409 conflict_state` — a
+§1.1) and be `open` or `under_review` (else `409 conflict_state` - a
 `draft` RFQ has not been sent to anyone yet, and `awarded`/`closed`/
 `archived` are all past the point where a new quote makes sense). The named
 supplier must exist in-org (404) and have a live invitation on that RFQ:
-`RfqSupplier` row present (else `409 conflict_state` — not invited) and not
+`RfqSupplier` row present (else `409 conflict_state` - not invited) and not
 excluded (`excluded_at IS NULL`, else `409 conflict_state`). `supersede`
 re-runs this same gate against the *old* quote's `rfq_id`/`supplier_id`
 rather than merely trusting the original quote's already-passed check: an
@@ -34,7 +34,7 @@ the time between the original quote and its revision arriving.
 
 **"only draft/received quotes" (task brief) reads as `DRAFT`/`IN_REVIEW`.**
 `QuoteStatus` (app/models/quotes.py) is
-`draft|in_review|confirmed|superseded|rejected` — there is no `received`
+`draft|in_review|confirmed|superseded|rejected` - there is no `received`
 value anywhere in the ERD, the model, or that model's own module docstring
 (which carefully enumerates every deliberate field/enum deviation from the
 ERD and lists none for status values). Read as the closest matching pair of
@@ -42,7 +42,7 @@ pre-confirmation statuses: `update()` is allowed while a quote is `draft` or
 `in_review`, blocked (`409 conflict_state`) once `confirmed`, `superseded`,
 or `rejected`.
 
-**Price-break validation matrix — this task IS the deferred validator.**
+**Price-break validation matrix - this task IS the deferred validator.**
 app/models/quotes.py's own module docstring states the gap explicitly: the
 DB's `uq_quote_price_breaks_org_line_min_quantity` "does not catch a tier
 whose range partially overlaps a different min_quantity... deferred to an
@@ -56,12 +56,12 @@ validator, run per line before any row is written:
   tier's `max_quantity` must be set AND strictly less than the next tier's
   `min_quantity` (`break[i].max_quantity < break[i+1].min_quantity`)
 - an open-ended (`max_quantity IS NULL`) tier is legal only as the single
-  highest tier — any lower tier left open-ended is `422`
+  highest tier - any lower tier left open-ended is `422`
 - `min_quantity >= 1` and `unit_price >= 0` are plain per-field bounds
   already enforced by `QuotePriceBreakCreate` (Pydantic `Field(...)`), not
   repeated here
 - price **direction** across tiers is deliberately never validated (this
-  task's brief is explicit: "do not enforce price direction" — real quotes
+  task's brief is explicit: "do not enforce price direction" - real quotes
   sometimes increase per-unit price at a higher-volume tier, e.g. a
   tooling-amortization break)
 
@@ -127,7 +127,7 @@ _UPDATABLE_QUOTE_STATUSES = frozenset({QuoteStatus.DRAFT, QuoteStatus.IN_REVIEW}
 
 # Module-level aliases, not inline `list[...]` annotations: see rfq_service.py/
 # bom_service.py for why this precaution is taken codebase-wide even where
-# (as here) no method happens to be named `list` — kept consistent rather
+# (as here) no method happens to be named `list` - kept consistent rather
 # than relying on a name that could change under refactor.
 _QuoteGraph = tuple[
     Quote, list[QuoteLine], dict[uuid.UUID, list[QuotePriceBreak]], QuoteTerms | None
@@ -445,7 +445,7 @@ class QuoteService:
         """Shared by `create()` and `supersede()`. Flushes between tiers so
         each composite org FK (quote_lines -> quotes, quote_price_breaks ->
         quote_lines) targets a row that actually exists, not merely one
-        pending in the session — same reasoning as RfqService.create's own
+        pending in the session - same reasoning as RfqService.create's own
         intermediate flush."""
         for i, lb in enumerate(line_bodies):
             self._validate_price_breaks(i, lb.price_breaks)
@@ -623,7 +623,7 @@ class QuoteService:
         self._db.flush()
 
         # A single audit event, per this task's brief ("audit quote.
-        # superseded") — entity_id is the OLD quote (the event name
+        # superseded") - entity_id is the OLD quote (the event name
         # describes what happened *to it*, the same semantics as the event
         # name itself, mirroring how BomService.activate() keys its own
         # two-entity mutation's one audit event to the entity its event name

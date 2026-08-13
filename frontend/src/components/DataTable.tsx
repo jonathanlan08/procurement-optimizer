@@ -1,4 +1,4 @@
-/** Reusable dense data table — MASTER.md "Data-Dense Analytical Workspace":
+/** Reusable dense data table - MASTER.md "Data-Dense Analytical Workspace":
  * sticky header, 36px rows, hover highlight (no zebra striping), sortable
  * headers, tabular-nums right-aligned numerics, skeleton loading, and a
  * designed empty/error state (never a blank table). Shared by the Suppliers

@@ -35,7 +35,7 @@ FastAPI application  (backend/src/app/main.py :: create_app)
 
 The request-scoped unit of work lives in `backend/src/app/api/deps.py::get_db`: it opens
 one session per request, commits on success, rolls back on any exception, and closes in a
-`finally`. **Services never call `commit()`** — that rule is repeated in every service
+`finally`. **Services never call `commit()`** - that rule is repeated in every service
 module docstring (`backend/src/app/services/scenario_service.py`,
 `backend/src/app/services/brief_service.py`, `backend/src/app/services/landed_cost_service.py`,
 …). One HTTP request is at most one database transaction.
@@ -72,11 +72,11 @@ consistently in the source.
 |---|---|---|
 | 1 | The client never chooses the org. `Principal.organization_id` comes from the session row (`sessions.active_organization_id`); any `organization_id` in a body or query string is ignored. | `backend/src/app/api/deps.py` |
 | 2 | `OrgScopedRepository` is generic over `OrgOwnedBase`, so `organization_id` is statically typed and every query starts from `_base_query()`, which is already filtered. A post-fetch assertion raises `OrgIsolationViolation` if a row ever escapes the filter. | `backend/src/app/repositories/base.py` |
-| 3 | Composite foreign keys: every business table carries `UNIQUE (organization_id, id)` (`org_identity_constraint` in `backend/src/app/models/base.py`) and children reference parents as `(organization_id, parent_id) → parent(organization_id, id)`. A cross-org reference is refused by PostgreSQL itself. | `backend/src/app/models/*.py`, migrations `0002`–`0014` |
+| 3 | Composite foreign keys: every business table carries `UNIQUE (organization_id, id)` (`org_identity_constraint` in `backend/src/app/models/base.py`) and children reference parents as `(organization_id, parent_id) → parent(organization_id, id)`. A cross-org reference is refused by PostgreSQL itself. | `backend/src/app/models/*.py`, migrations `0002`-`0014` |
 | 4 | A contract test walks the live FastAPI route table (via the generated OpenAPI schema) and fails when any route lacks a declaration in the permission matrix; integration suites assert **404, not 403**, for cross-org access on every resource. | `backend/tests/contract/test_permission_matrix.py`, `backend/src/app/api/permissions.py` |
 
-Cross-org lookups return `None` from the repository and surface as `404 not_found` — never
-`403` — because existence itself must not leak (`backend/src/app/core/errors.py`,
+Cross-org lookups return `None` from the repository and surface as `404 not_found` - never
+`403` - because existence itself must not leak (`backend/src/app/core/errors.py`,
 `NotFoundError` docstring).
 
 ## 4. Middleware chain
@@ -84,21 +84,21 @@ Cross-org lookups return `None` from the repository and surface as `404 not_foun
 Declared in `backend/src/app/main.py`; Starlette runs the *last added* middleware first, so
 the file adds them in reverse of the effective order. Effective order, outermost first:
 
-1. **CORS** — `allow_origins=settings.allowed_origins`, credentials on, methods limited to
+1. **CORS** - `allow_origins=settings.allowed_origins`, credentials on, methods limited to
    `GET/POST/PUT/PATCH/DELETE`, headers limited to `Content-Type`, `X-CSRF-Token`,
    `If-Match`; exposes `X-Request-ID`.
-2. **`RequestIdMiddleware`** — assigns `request.state.request_id` (uuid4 hex) and echoes it
+2. **`RequestIdMiddleware`** - assigns `request.state.request_id` (uuid4 hex) and echoes it
    in the `X-Request-ID` response header. Every error envelope carries the same id.
-3. **`SecurityHeadersMiddleware`** — sets `X-Content-Type-Options: nosniff`,
+3. **`SecurityHeadersMiddleware`** - sets `X-Content-Type-Options: nosniff`,
    `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`,
    `Content-Security-Policy: default-src 'none'; frame-ancestors 'none'; base-uri 'none'`,
    `Cross-Origin-Opener-Policy: same-origin`, `Cross-Origin-Resource-Policy: same-origin`,
    plus HSTS when `PO_ENVIRONMENT=prod`. The CSP is that strict because the API serves JSON
    only; the SPA is served separately.
-4. **`OriginCheckMiddleware`** — Origin/Referer allowlist on **every** mutating `/api/`
+4. **`OriginCheckMiddleware`** - Origin/Referer allowlist on **every** mutating `/api/`
    request, including `POST /api/v1/auth/login`, which has no session yet and would
    otherwise be exposed to login-CSRF.
-5. **`RateLimitMiddleware`** — in-memory sliding window per client IP;
+5. **`RateLimitMiddleware`** - in-memory sliding window per client IP;
    `PO_RATE_LIMIT_AUTH_PER_MINUTE` (default 10) for `/api/v1/auth/login`,
    `PO_RATE_LIMIT_PER_MINUTE` (default 120) elsewhere. Because exceptions raised inside
    middleware bypass FastAPI's exception handlers, this middleware renders the standard
@@ -136,13 +136,13 @@ tests never touch a network.
 | Protocol | Default implementation | Alternatives |
 |---|---|---|
 | `StorageProvider` (`backend/src/app/providers/storage/base.py`) | `filesystem.py` (org-namespaced `root/<org_id>/<key>`) | `s3.py` (MinIO/S3), `memory.py` (tests) |
-| `ExtractionProvider` (`backend/src/app/providers/extraction/base.py`) | `mock.py` — sha256-keyed golden fixtures, `is_simulated = True` | `anthropic` selectable in config; **adapter not implemented in this build** |
-| `AiNarrativeProvider` (`backend/src/app/providers/narrative/base.py`) | `template.py` — deterministic, `is_generated = False` | `anthropic` selectable in config; **adapter not implemented in this build** |
-| FX rates (`backend/src/app/providers/fx/base.py`) | `synthetic.py` — a fixed USD-base table, source label `synthetic_fixture` | none |
+| `ExtractionProvider` (`backend/src/app/providers/extraction/base.py`) | `mock.py` - sha256-keyed golden fixtures, `is_simulated = True` | `anthropic` selectable in config; **adapter not implemented in this build** |
+| `AiNarrativeProvider` (`backend/src/app/providers/narrative/base.py`) | `template.py` - deterministic, `is_generated = False` | `anthropic` selectable in config; **adapter not implemented in this build** |
+| FX rates (`backend/src/app/providers/fx/base.py`) | `synthetic.py` - a fixed USD-base table, source label `synthetic_fixture` | none |
 | `Clock` / `IdGenerator` | `SystemClock` / `RandomIdGenerator` (`backend/src/app/core/clock.py`, `ids.py`) | injected fakes in tests |
 
 Selecting `anthropic` for extraction or narrative raises `ProviderUnavailableError` rather
-than silently substituting the mock — the codebase never presents a simulated response as
+than silently substituting the mock - the codebase never presents a simulated response as
 live. `Settings` also fails fast at startup if `PO_EXTRACTION_PROVIDER=anthropic` or
 `PO_NARRATIVE_PROVIDER=anthropic` is set without `PO_ANTHROPIC_API_KEY`
 (`backend/src/app/core/config.py::Settings._fail_fast`).
@@ -151,8 +151,8 @@ live. `Settings` also fails fast at startup if `PO_EXTRACTION_PROVIDER=anthropic
 
 `Settings.job_runner` exists (`inline | thread`, default `thread`) and `jobs` is a real
 table created by migration `0001`, but **nothing in `backend/src/app/` reads that setting or
-writes a `jobs` row**. Every long-running operation — extraction runs, part matching,
-scenario solve, brief generation — executes synchronously inside the request and returns
+writes a `jobs` row**. Every long-running operation - extraction runs, part matching,
+scenario solve, brief generation - executes synchronously inside the request and returns
 `201` with the completed resource.
 
 This is the `JOB_RUNNER=inline` shape that `docs/planning/03-api-contract.md` §1.5
@@ -172,17 +172,17 @@ CP-SAT search (bounded by `max_deterministic_time=30.0` and `max_time_in_seconds
 
 ## 8. Domain layer
 
-`backend/src/app/domain/` contains pure code — no database, no clock, no network, no
-randomness — so financial correctness is testable without a database (a SPEC requirement).
+`backend/src/app/domain/` contains pure code - no database, no clock, no network, no
+randomness - so financial correctness is testable without a database (a SPEC requirement).
 
-- `domain/values.py` — `Quantified` (a `Decimal` plus `Provenance`), `Completeness`. The
+- `domain/values.py` - `Quantified` (a `Decimal` plus `Provenance`), `Completeness`. The
   invariant `value is None ⟺ provenance is MISSING` is enforced in `__post_init__`.
-- `domain/confidence.py` — the single source of truth for confidence bands (0.95 / 0.60).
-- `domain/landed_cost/` — `contracts.py` (frozen dataclasses + formulas), `calculator.py`
+- `domain/confidence.py` - the single source of truth for confidence bands (0.95 / 0.60).
+- `domain/landed_cost/` - `contracts.py` (frozen dataclasses + formulas), `calculator.py`
   (`LandedCostCalculatorV1`), `breaks.py` (all-units price-break selection).
-- `domain/scoring/` — `contracts.py` (criteria, directions, `SAMPLE_WEIGHTS`),
+- `domain/scoring/` - `contracts.py` (criteria, directions, `SAMPLE_WEIGHTS`),
   `scorer.py` (`ScorerV1`).
-- `domain/optimization/` — `contracts.py` (CP-SAT model shape, honest statuses),
+- `domain/optimization/` - `contracts.py` (CP-SAT model shape, honest statuses),
   `solver.py` (`AllocationSolver`).
 - `domain/fx/normalize.py`, `domain/units/normalize.py`, `domain/matching/matcher.py`.
 
@@ -194,7 +194,7 @@ their own module docstrings, every place they interpret the contract's prose.
 A React 18 + TypeScript SPA built with Vite (`frontend/`). Routing is `react-router-dom`;
 server state is TanStack Query; forms are `react-hook-form` + `zod` (through a small local
 resolver, `frontend/src/lib/zodResolver.ts`); tables are TanStack Table. Fonts are
-self-hosted via `@fontsource` — no CDN, so the demo works offline and the CSP stays tight.
+self-hosted via `@fontsource` - no CDN, so the demo works offline and the CSP stays tight.
 
 ```
 frontend/src/
@@ -203,7 +203,7 @@ frontend/src/
   auth/session.tsx     session context + RequireAuth route guard
   layout/AppShell.tsx  sidebar + header shell, demo badge, role display
   components/          DataTable, Drawer, StatusBadge, FormField, PaginationBar, …
-  lib/money.ts         decimal-string formatting via BigInt — never Number()/parseFloat
+  lib/money.ts         decimal-string formatting via BigInt - never Number()/parseFloat
   features/            suppliers · parts · boms · rfqs · quotes · documents ·
                        extraction · comparison · fx · briefs · reports · audit
   pages/               LoginPage, PlaceholderPage
@@ -234,7 +234,7 @@ the Origin allowlist check passes without extra configuration.
 
 `frontend/package.json` defines `npm run generate:api`, which runs `openapi-typescript` over
 `../docs/openapi.json`. **`docs/openapi.json` is not committed in this build**, and
-`.github/workflows/ci.yml` has no OpenAPI-drift job — both were ratified in
+`.github/workflows/ci.yml` has no OpenAPI-drift job - both were ratified in
 `docs/planning/00-decisions.md` §1.4 but not delivered. The frontend's API modules are
 hand-written types today (`frontend/src/features/*/api.ts`). Closing this gap is on the
 [roadmap](ROADMAP.md).

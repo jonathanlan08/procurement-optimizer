@@ -1,4 +1,4 @@
-# Release notes — v0.1.0
+# Release notes - v0.1.0
 
 First public release of the Procurement Optimizer: a vendor-negotiation and
 procurement-optimization platform that converts inconsistent supplier quotes into
@@ -12,8 +12,8 @@ data is included anywhere.
 
 ## Highlights
 
-**Exact-decimal landed cost.** Seven components — extended material, allocated fixed,
-logistics, import, quality risk, delay risk, and the one signed component, financing —
+**Exact-decimal landed cost.** Seven components - extended material, allocated fixed,
+logistics, import, quality risk, delay risk, and the one signed component, financing -
 computed at 34-digit precision with banker's rounding and quantized once per component, so
 displayed components sum exactly to the displayed total. Every component ships its formula
 with values substituted, its inputs, its provenance, and whether it was assumed or missing.
@@ -23,13 +23,13 @@ stack and the database.
 
 **Missing is never zero.** Every quantity carries a `Provenance`, with the invariant
 `value is None ⟺ MISSING` enforced at construction. A missing input produces a recorded
-`MissingInput` with a human consequence sentence and degrades the result's completeness — it
+`MissingInput` with a human consequence sentence and degrades the result's completeness - it
 never silently becomes `0`.
 
 **Deterministic, honest CP-SAT allocation.** Single search worker, fixed seed, deterministic
 time budget, canonically sorted inputs, and a stored `model_hash`. `FEASIBLE` is never
 presented as `OPTIMAL`. The reported cost is an exact `Decimal` recomputation of the chosen
-allocation — never the solver's scaled objective — guarded by a `ConsistencyError` if the
+allocation - never the solver's scaled objective - guarded by a `ConsistencyError` if the
 solver's tier and the exact price-break re-selection ever disagree. Infeasible scenarios
 return minimized assumption cores and, where one exists, a concrete minimal relaxation
 ("a budget of at least X restores feasibility").
@@ -46,7 +46,7 @@ ladder, per-field confirm and correct with audited before/after, and materializa
 while any low-confidence field is unconfirmed. Mock-provider output is labelled
 `simulated` everywhere it surfaces.
 
-**Transparent scoring.** Min–max normalization, explicit direction per criterion, ties
+**Transparent scoring.** Min-max normalization, explicit direction per criterion, ties
 scoring 1.0, per-supplier weight renormalization on missing data (never imputation),
 zero-weight criteria still shown, outliers deliberately unclipped, a reason string on every
 criterion score, and full reproducibility without an LLM.
@@ -68,7 +68,7 @@ declaration.
 ## Scope
 
 - Database: **PostgreSQL 16**, migrations **`0001` → `0015`**, **40 tables**.
-- API: `/api/v1` — auth, suppliers (+ contacts, performance), parts (+ alternatives,
+- API: `/api/v1` - auth, suppliers (+ contacts, performance), parts (+ alternatives,
   imports), BOMs, RFQs, quotes, quote documents, extraction runs, part matching, exchange
   rates, landed costs, scoring configurations, comparison scenarios, negotiation briefs,
   reports, audit events.
@@ -82,7 +82,7 @@ declaration.
 
 | Suite | Count | Notes |
 |---|---|---|
-| Backend unit | 415 | Pure domain — money, landed cost, price breaks, scoring, CP-SAT solver, matching, FX/unit normalization, file validation, storage |
+| Backend unit | 415 | Pure domain - money, landed cost, price breaks, scoring, CP-SAT solver, matching, FX/unit normalization, file validation, storage |
 | Backend integration | 479 | Against a **real PostgreSQL** (no SQLite anywhere) |
 | Backend contract | 2 | Every route must carry a permission declaration; no stale declarations |
 | **Backend total** | **896 passing** | `cd backend && uv run pytest` |
@@ -100,24 +100,24 @@ Carried over from [ROADMAP.md](ROADMAP.md) and the README, stated plainly:
   run inline inside the HTTP request; `Settings.job_runner` and the `jobs` table exist but
   are read by nothing. A long solve holds a request open.
 - **Template narrative provider only.** `AiNarrativeProvider` and `ExtractionProvider` are
-  real seams and `anthropic` is a valid setting, but no adapter ships — selecting it raises
+  real seams and `anthropic` is a valid setting, but no adapter ships - selecting it raises
   `ProviderUnavailableError` rather than silently substituting the deterministic default.
 - **No `PATCH` on negotiation briefs.** Generate, read, review, and archive only;
   `sections` has no per-field edit history to hang an audited diff off.
 - **Epsilon tie-break deferred.** Determinism holds for a fixed model; which of several
   exactly-tied optima surfaces is not pinned.
-- **`COMPLETE` completeness is structurally unreachable** — `documentation` and `handling`
+- **`COMPLETE` completeness is structurally unreachable** - `documentation` and `handling`
   costs have no source columns, so results are `INCOMPLETE` or `ASSUMPTION_DEPENDENT`. See
   [METHODOLOGY.md](METHODOLOGY.md) §7.
 - **Audit actor UUIDs are unresolved in the UI.**
 - **PDF reports use ReportLab's built-in Helvetica**, not the bundled DejaVu Sans of
-  `docs/planning/00-decisions.md` §4 #24 — a documented deviation; non-Latin-1 characters
+  `docs/planning/00-decisions.md` §4 #24 - a documented deviation; non-Latin-1 characters
   raise and surface as a `failed` report row.
 - **No report purge job**, no committed `docs/openapi.json` (and therefore no OpenAPI-drift
   CI job), no `pip-audit` or licence gate, no Playwright E2E suite.
 - **Single-node rate limiting** (in-memory), **no segregation of duties** between uploader
   and confirmer, no password-reset or invitation flow, and no session purge job.
-- **No lead-time pre-solve eligibility filter** — `rfq_lines` has no `required_by_date`
+- **No lead-time pre-solve eligibility filter** - `rfq_lines` has no `required_by_date`
   column; lead time influences outcomes through the scoring criterion instead.
 
 ## Synthetic data notice

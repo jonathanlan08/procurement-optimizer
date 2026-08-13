@@ -5,7 +5,7 @@
  *  - Row click opens the shared `Drawer` (see components/Drawer.tsx's
  *    file-level comment for why a drawer was chosen over a `/suppliers/:id`
  *    route).
- *  - Column sort is client-side over the current page — see DataTable.tsx's
+ *  - Column sort is client-side over the current page - see DataTable.tsx's
  *    file-level comment: `GET /suppliers` has no `sort` query parameter.
  *  - Archive uses an inline reason panel inside the drawer (textarea +
  *    Confirm/Cancel) rather than a native `window.prompt()`, to stay inside
@@ -340,15 +340,15 @@ function SupplierDetail({
           <DetailRow label="Code" value={supplier.code} mono />
           <DetailRow label="Name" value={supplier.name} />
           <DetailRow label="Country" value={supplier.country_code} />
-          <DetailRow label="Currencies" value={supplier.supported_currencies.join(", ") || "—"} />
+          <DetailRow label="Currencies" value={supplier.supported_currencies.join(", ") || "-"} />
           <DetailRow
             label="Lead time"
-            value={supplier.typical_lead_time_days !== null ? `${supplier.typical_lead_time_days} days` : "—"}
+            value={supplier.typical_lead_time_days !== null ? `${supplier.typical_lead_time_days} days` : "-"}
             num
           />
           <DetailRow
             label="MOQ"
-            value={supplier.default_moq !== null ? formatMoney(supplier.default_moq) : "—"}
+            value={supplier.default_moq !== null ? formatMoney(supplier.default_moq) : "-"}
             num
           />
           <DetailRow
@@ -356,12 +356,12 @@ function SupplierDetail({
             value={
               supplier.capacity_units_per_month !== null
                 ? formatMoney(supplier.capacity_units_per_month)
-                : "—"
+                : "-"
             }
             num
           />
-          <DetailRow label="Payment terms" value={supplier.standard_payment_terms ?? "—"} />
-          <DetailRow label="Incoterm" value={supplier.standard_incoterm ?? "—"} />
+          <DetailRow label="Payment terms" value={supplier.standard_payment_terms ?? "-"} />
+          <DetailRow label="Incoterm" value={supplier.standard_incoterm ?? "-"} />
         </div>
       </section>
 
@@ -371,9 +371,9 @@ function SupplierDetail({
           <div className="detail-grid">
             <DetailRow
               label="Archived at"
-              value={supplier.archived_at ? new Date(supplier.archived_at).toLocaleString() : "—"}
+              value={supplier.archived_at ? new Date(supplier.archived_at).toLocaleString() : "-"}
             />
-            <DetailRow label="Reason" value={supplier.archive_reason ?? "—"} full />
+            <DetailRow label="Reason" value={supplier.archive_reason ?? "-"} full />
           </div>
         </section>
       )}
@@ -467,7 +467,7 @@ export function SuppliersPage() {
         accessorFn: (row) => row.supported_currencies.join(", "),
         header: "Currencies",
         enableSorting: false,
-        cell: (ctx) => ctx.getValue<string>() || "—",
+        cell: (ctx) => ctx.getValue<string>() || "-",
       },
       {
         id: "lead_time",
@@ -476,7 +476,7 @@ export function SuppliersPage() {
         meta: { align: "right" },
         cell: (ctx) => {
           const v = ctx.getValue<number | null>();
-          return v === null ? "—" : v;
+          return v === null ? "-" : v;
         },
       },
       {
@@ -487,7 +487,7 @@ export function SuppliersPage() {
         sortingFn: (a, b) => compareDecimalStrings(a.original.default_moq, b.original.default_moq),
         cell: (ctx) => {
           const v = ctx.getValue<string | null>();
-          return v === null ? "—" : formatMoney(v);
+          return v === null ? "-" : formatMoney(v);
         },
       },
       {

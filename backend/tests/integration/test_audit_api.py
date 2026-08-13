@@ -5,7 +5,7 @@ Fixture pattern mirrors test_briefs_api.py: a committed org + one user per
 role, built directly against the migrated database, driven through the HTTP
 API. Audit events used for these tests are produced as a SIDE EFFECT of
 ordinary mutations (`supplier.created` from `POST /suppliers`, `rfq.created`
-from `POST /rfqs`) rather than inserted directly — there is no audit-event
+from `POST /rfqs`) rather than inserted directly - there is no audit-event
 create endpoint (§4.19: "no write ... route"), so this is the only way to
 populate real rows through the HTTP surface, and it exercises the same
 `AuditRecorder` path production traffic would.

@@ -1,6 +1,6 @@
 /* Extraction-review chrome. ReviewPane.tsx is a full-screen surface (the
    task brief's own words), deliberately NOT built on components/Drawer.tsx
-   (a fixed-width side panel, and FORBIDDEN to edit) — this file implements
+   (a fixed-width side panel, and FORBIDDEN to edit) - this file implements
    its own overlay/panel/focus styles, self-contained, the same way every
    other feature keeps its own css rather than reaching into a shared file. */
 
@@ -154,7 +154,7 @@
   font-size: 13px;
 }
 
-/* confidence badges — MASTER.md thresholds 0.95 / 0.60 */
+/* confidence badges - MASTER.md thresholds 0.95 / 0.60 */
 .badge--conf-high {
   background: rgba(21, 128, 61, 0.1);
   color: var(--color-conf-high);

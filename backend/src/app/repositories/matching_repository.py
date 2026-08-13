@@ -1,7 +1,7 @@
-"""Matching repository — org-scoped data access for `part_match_candidates`
+"""Matching repository - org-scoped data access for `part_match_candidates`
 (docs/planning/02-erd.md §6, app/models/documents.py).
 
-Not on the delegating task's own "NEW files" list — the same
+Not on the delegating task's own "NEW files" list - the same
 not-listed-but-necessary situation `app/repositories/extraction_repository.py`'s
 own module docstring already documents for the identical class of gap: every
 other service in this codebase delegates its org-scoped queries to a
@@ -15,7 +15,7 @@ the parent `quote_id` up front, but `docs/planning/03-api-contract.md`
 (`POST/DELETE /quote-lines/{id}/match`, no `quote_id` in the path at all).
 `QuoteRepository` is not on this task's edit allowlist, so rather than widen
 its API, this file adds the one missing "by id alone" lookup as its own
-tiny, non-duplicative repository bound to the same `QuoteLine` model —
+tiny, non-duplicative repository bound to the same `QuoteLine` model -
 `services/matching_service.py` reads `line.quote_id` off the fetched row to
 reach everything else (`Quote`, its RFQ, its price breaks) through the
 existing `QuoteRepository`/`RfqRepository`.
@@ -59,7 +59,7 @@ class MatchingRepository(OrgScopedRepository[PartMatchCandidate]):
     def delete_unconfirmed_for_line(self, quote_line_id: uuid.UUID) -> None:
         """Regeneration replaces the unconfirmed candidate set for a line
         (04-document-pipeline.md §10: "a confirmed match is sticky; re-
-        running matching does not overwrite human_confirmed rows") — deletes
+        running matching does not overwrite human_confirmed rows") - deletes
         every row for this line with `human_confirmed = False`, leaving any
         already-confirmed (including auto-confirmed strategy-1) rows
         untouched."""
@@ -73,7 +73,7 @@ class MatchingRepository(OrgScopedRepository[PartMatchCandidate]):
 
 class QuoteLineRepository(OrgScopedRepository[QuoteLine]):
     """See module docstring: the one "by id alone" lookup
-    `QuoteRepository.get_line` does not offer — `OrgScopedRepository.get`/
+    `QuoteRepository.get_line` does not offer - `OrgScopedRepository.get`/
     `.get_or_raise` already do exactly this for any `ModelT`, so no override
     is needed; this class exists purely to bind that base behavior to
     `QuoteLine`."""

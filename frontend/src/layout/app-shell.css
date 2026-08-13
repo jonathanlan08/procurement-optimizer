@@ -1,4 +1,4 @@
-/* Workspace shell styles — implements the MASTER.md analytical-workspace layout */
+/* Workspace shell styles - implements the MASTER.md analytical-workspace layout */
 
 .shell {
   display: grid;
@@ -24,7 +24,7 @@
   align-items: center;
   gap: var(--space-md);
   /* v2 hue extension: the one permitted gradient in the app (MASTER.md's
-     own rule — no gradients on CTAs/cards/anything else). White brand text
+     own rule - no gradients on CTAs/cards/anything else). White brand text
      (--color-on-primary) keeps ample contrast against both navy and indigo
      stops, so no separate a11y check was needed for this one. */
   background: linear-gradient(135deg, #0f172a, #312e81);
@@ -60,12 +60,12 @@
   font-weight: 600;
 }
 
-/* v2 hue extension: workspace identity on the active nav item — a 3px hue
+/* v2 hue extension: workspace identity on the active nav item - a 3px hue
    left bar plus hue-colored text (MASTER.md's own list). The border uses
    the base hue token (decorative, not text, so the hex given in the spec
    applies as-is); the text uses the `-on-dark` derivative (tokens.css's own
    comment on why) since the base hues fall well short of 4.5:1 against this
-   navy sidebar. Items with no `data-hue` (BOMs, FX — no hue assigned) fall
+   navy sidebar. Items with no `data-hue` (BOMs, FX - no hue assigned) fall
    through to the plain accent-blue rule above, unchanged. */
 .shell-nav-link.is-active[data-hue="overview"] {
   border-left-color: var(--hue-overview);
@@ -104,7 +104,7 @@
 
 /* Mobile nav: hamburger button (top app bar) + slide-in drawer that reuses
    the .shell-sidebar styling/markup (SidebarNav is rendered once for the
-   static aside, once for the drawer panel below — "one nav, two
+   static aside, once for the drawer panel below - "one nav, two
    presentations"). Everything here is `display: none` by default so it has
    zero effect on desktop (>768px); the <=768px media query at the bottom of
    this file is the only place that turns it on. */
@@ -148,7 +148,7 @@
 
 /* Compound selectors (`.shell-sidebar.shell-drawer-panel`) so these rules
    reliably win over the base `.shell-sidebar` rule (display: flex) above,
-   regardless of source order — both are still single-class-equivalent
+   regardless of source order - both are still single-class-equivalent
    elsewhere in the cascade, so relying on ordering alone would be fragile. */
 .shell-sidebar.shell-drawer-panel {
   display: none;
@@ -193,7 +193,7 @@
 
 /* Drawer-only identity block (audit P2): the header's name/role chip is
    `display:none` at <=768px (below) to keep the header a single row, so this
-   is where that same information lives on mobile instead — top of the
+   is where that same information lives on mobile instead - top of the
    drawer, below the brand. `.shell-role`'s own pill styling (workspace.css-
    adjacent, defined below) already carries its own light background, so it
    reads fine sitting on this dark sidebar surface unchanged. */
@@ -269,7 +269,7 @@
   white-space: nowrap;
 }
 
-/* Audit P2 fix: both spans always render (see AppShell.tsx's comment) — only
+/* Audit P2 fix: both spans always render (see AppShell.tsx's comment) - only
    one is ever visible at a time, per breakpoint below. */
 .demo-badge-compact {
   display: none;
@@ -312,7 +312,7 @@
 
   /* Tag-qualified so it targets only the static <aside>, not the drawer
      <div> (which also carries the .shell-sidebar class for shared
-     styling — see the "one nav, two presentations" comment above). */
+     styling - see the "one nav, two presentations" comment above). */
   aside.shell-sidebar {
     display: none;
   }
@@ -330,11 +330,11 @@
   }
 
   /* Audit P2 fix: "demo badge, username, role, and Sign out wrap awkwardly"
-     — the header is a single flex row with no wrap, so at narrow widths
+     - the header is a single flex row with no wrap, so at narrow widths
      those four items used to overflow instead. Below 768px: the demo badge
      collapses to its compact "Demo" chip, the name/role chip moves into the
      drawer (.shell-drawer-identity above) instead of sharing the row, and
-     Sign out shrinks to a compact button — leaving just the hamburger, the
+     Sign out shrinks to a compact button - leaving just the hamburger, the
      compact badge, and Sign out in one row. Desktop (>768px) is untouched:
      none of this block applies above the breakpoint. */
   .shell-header {

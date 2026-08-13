@@ -5,7 +5,7 @@
   background: var(--color-background);
 }
 
-/* Brand panel — the same navy->indigo wash as the app shell's brand block
+/* Brand panel - the same navy->indigo wash as the app shell's brand block
    (MASTER.md v2: the one permitted gradient), extended to a full panel so
    the front door carries the product identity the client asked for. */
 .login-brand {
@@ -163,7 +163,7 @@
   cursor: default;
 }
 
-/* Demo access block — public synthetic credentials, one-click sign-in
+/* Demo access block - public synthetic credentials, one-click sign-in
    (see LoginPage.tsx's own comment for why this is deliberately visible). */
 .login-demo {
   background: var(--color-surface);

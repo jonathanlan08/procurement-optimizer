@@ -1,6 +1,6 @@
-/** Reports data layer — TanStack Query hooks against the FROZEN wire
+/** Reports data layer - TanStack Query hooks against the FROZEN wire
  * contract given in this task's brief. The backend is being built
- * concurrently (unlike ../briefs/api.ts, whose backend already exists) —
+ * concurrently (unlike ../briefs/api.ts, whose backend already exists) -
  * this file codes to the contract exactly as specified, documenting the two
  * places the contract leaves a shape ambiguous:
  *  - **`scenario_id` is typed as a required, non-null `string`** on both the
@@ -8,11 +8,11 @@
  *    `{scenario_id, report_type, format, parameters?}` with `scenario_id`
  *    carrying no `?` (unlike `parameters`), and the task's own UI
  *    instructions ask for "a scenario picker" as the generate form's first
- *    control — both signal every report is generated against exactly one
+ *    control - both signal every report is generated against exactly one
  *    scenario, never org-wide, even for `report_type: "audit_history"`.
  *  - **`size_bytes`/`content_sha256`/`calculation_version`/`generated_at`/
  *    `error_message` are typed nullable** (`| null`), not present-always.
- *    The contract gives three `state` values — `pending`/`ready`/`failed` —
+ *    The contract gives three `state` values - `pending`/`ready`/`failed` -
  *    and the UI spec itself only makes sense if these fields populate
  *    asynchronously as a report moves through that lifecycle (size/hash/
  *    calculation-version/generated-at once `ready`; `error_message` once
@@ -20,13 +20,13 @@
  *    ../documents/api.ts's header applies to `DocumentResponse` fields that
  *    only populate once a later processing stage completes.
  *  - `parameters` is a `dict[str, Any]`-shaped JSONB parameter bag (the
- *    contract gives no fixed shape) — typed `Record<string, unknown>`, the
+ *    contract gives no fixed shape) - typed `Record<string, unknown>`, the
  *    same "genuinely untyped JSON, don't invent a shape" treatment
  *    ../comparison/api.ts's header documents for `ScenarioResponse`'s own
  *    snapshot fields. This UI's generate form sends none (no per-report-type
  *    parameter inputs are named in the task brief), so `useCreateReport`
  *    only ever omits the key.
- *  - `GET /reports/{id}/content` is a file download, not JSON — this file
+ *  - `GET /reports/{id}/content` is a file download, not JSON - this file
  *    exposes only `reportContentUrl()`, a same-origin path ReportsPage.tsx
  *    hands to a plain `<a href download>` (the task brief's own suggested
  *    mechanism: "trigger via window.location or anchor download"). The
@@ -125,7 +125,7 @@ export function useCreateReport() {
   });
 }
 
-/** Same-origin download path — see this file's header for why no fetch/blob
+/** Same-origin download path - see this file's header for why no fetch/blob
  * hand-rolling is needed. */
 export function reportContentUrl(id: string): string {
   return `/api/v1/reports/${id}/content`;

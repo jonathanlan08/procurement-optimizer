@@ -29,7 +29,7 @@ export interface DrawerProps {
   children: ReactNode;
   footer?: ReactNode;
   /** v2 hue extension (2026-08): extra class(es) appended to the panel's own
-   * className, e.g. `"hue-panel-top hue-panel-top--suppliers"` — see
+   * className, e.g. `"hue-panel-top hue-panel-top--suppliers"` - see
    * components/workspace.css's `.hue-panel-top` comment. Optional and
    * additive only, so every existing `<Drawer>` caller that doesn't pass it
    * (nested/generic drawers with no page-level hue context) renders exactly

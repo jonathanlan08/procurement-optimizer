@@ -1,4 +1,4 @@
-"""Upload security core tests — magic bytes, filename policy, agreement checks."""
+"""Upload security core tests - magic bytes, filename policy, agreement checks."""
 
 from __future__ import annotations
 

@@ -1,48 +1,48 @@
-/** Quotes data layer — TanStack Query hooks over the live API.
+/** Quotes data layer - TanStack Query hooks over the live API.
  *
  * Shapes mirror backend/src/app/schemas/quotes.py exactly (manual entry
- * only — extraction/matching routes are out of scope, per that module's
+ * only - extraction/matching routes are out of scope, per that module's
  * "Scope: manual entry only" note):
- *  - `GET /rfqs/{rfq_id}/quotes` returns `{ items }` — no `page` envelope
+ *  - `GET /rfqs/{rfq_id}/quotes` returns `{ items }` - no `page` envelope
  *    (`QuoteListResponse`, unlike `RfqListResponse`/`SupplierListResponse`),
- *    so `useRfqQuotes` doesn't take/paginate offset — the whole per-RFQ
+ *    so `useRfqQuotes` doesn't take/paginate offset - the whole per-RFQ
  *    quote set is returned in one call.
  *  - Every quote line's commercial fields (`unit_price`, MOQ, all
  *    tooling/setup/packaging/shipping/insurance/other/tariff/duty/customs/
  *    tax costs) are optional and nullable with **no server-side default of
  *    0** (`QuoteLineCreate` in quotes.py: "Missing stays missing"). Forms
- *    in QuotesSection.tsx must never prefill these with `"0"` — an absent
+ *    in QuotesSection.tsx must never prefill these with `"0"` - an absent
  *    field must round-trip as `null`, not a false "confirmed zero cost".
  *  - `quantity`/`moq`/`production_capacity`/price-break `min_quantity`/
  *    `max_quantity`/`setup_fee`/every per-line fixed-cost-and-tax field are
  *    6dp `QuantityString` wire strings; `unit_price` (both on the line and
  *    on each price break) is an 8dp `UnitPriceString` wire string. Both are
- *    plain JSON strings on the wire — never run through Number()/
+ *    plain JSON strings on the wire - never run through Number()/
  *    parseFloat, same rule as lib/money.ts's `isDecimalString`.
  *  - `unit_definition_id` is REQUIRED on a quote line (unlike RFQ/BOM
- *    lines, which default from the part) — quotes.py's module docstring:
+ *    lines, which default from the part) - quotes.py's module docstring:
  *    a quote line's `part_id` is itself optional (a supplier's raw,
  *    as-quoted line with no catalogued part at all), so there's no
  *    reliable part to default the unit *from*.
  *  - Quotes carry `ETag`/`If-Match` (api/v1/quotes.py file header), but
- *    only `PATCH /quotes/{id}` demands the header as input — `POST
+ *    only `PATCH /quotes/{id}` demands the header as input - `POST
  *    .../supersede` and `POST .../archive` mutate and return a fresh
  *    version without requiring it, the same split ../rfqs/api.ts documents
  *    for `POST /rfqs/{id}/status` vs `PATCH /rfqs/{id}`. `useUpdateQuote`
  *    therefore needs the same custom-header dance (re-supplying
  *    `Content-Type`/CSRF alongside `If-Match`) as `useUpdateRfq`/
- *    `useUpdateSupplier`/`useUpdatePart` — see any of those files' headers
+ *    `useUpdateSupplier`/`useUpdatePart` - see any of those files' headers
  *    for why the CSRF token has to be re-supplied by hand once a caller
  *    sets its own `headers`.
  *  - `QuoteUpdate` (`PATCH /quotes/{id}`) only carries whole-quote metadata
- *    (`quote_number`/`quote_date`/`expiration_date`/`currency`/`notes`) —
+ *    (`quote_number`/`quote_date`/`expiration_date`/`currency`/`notes`) -
  *    lines/price-breaks/terms are written once, atomically, at create (or
  *    supersede) time only (quotes.py module docstring "Update scope").
  *    `QuoteService.update` also only allows this while the quote is
  *    `draft`/`in_review` (`_UPDATABLE_QUOTE_STATUSES`,
- *    services/quote_service.py) — QuotesSection.tsx mirrors that gate.
+ *    services/quote_service.py) - QuotesSection.tsx mirrors that gate.
  *  - `QuoteSupersedeRequest` is `QuoteCreate` minus `supplier_id` (the new
- *    quote inherits the old quote's supplier/RFQ — quotes.py module
+ *    quote inherits the old quote's supplier/RFQ - quotes.py module
  *    docstring "Supersede reuses the old quote's rfq_id/supplier_id").
  */
 
@@ -139,7 +139,7 @@ export interface QuoteResponse {
   terms: QuoteTermsResponse | null;
 }
 
-/** `GET /rfqs/{rfq_id}/quotes` items — no `lines`/`terms` (see this file's
+/** `GET /rfqs/{rfq_id}/quotes` items - no `lines`/`terms` (see this file's
  * header: `QuoteListResponse` carries no `page` either). */
 export interface QuoteSummaryResponse {
   id: string;
@@ -174,7 +174,7 @@ export interface QuoteCreateInput {
   terms: QuoteTermsInput | null;
 }
 
-/** `POST /quotes/{id}/supersede` body — see this file's header. */
+/** `POST /quotes/{id}/supersede` body - see this file's header. */
 export type QuoteSupersedeInput = Omit<QuoteCreateInput, "supplier_id">;
 
 export interface QuoteUpdateInput {
@@ -269,7 +269,7 @@ export function useSupersedeQuote() {
       void queryClient.invalidateQueries({ queryKey: quoteKeys.rfqLists() });
       queryClient.setQueryData(quoteKeys.detail(created.id), created);
       // The superseded predecessor's own status/superseded_by_id flips
-      // server-side too (QuoteService.supersede) — invalidate every cached
+      // server-side too (QuoteService.supersede) - invalidate every cached
       // quote detail rather than track which id was the predecessor.
       void queryClient.invalidateQueries({ queryKey: quoteKeys.details() });
     },

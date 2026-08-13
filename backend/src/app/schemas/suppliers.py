@@ -69,7 +69,7 @@ class SupplierCreate(BaseModel):
 class SupplierUpdate(BaseModel):
     """Partial update (PATCH): only fields present in the payload are applied.
 
-    Concurrency is carried by the `If-Match` header (§1.7), not the body —
+    Concurrency is carried by the `If-Match` header (§1.7), not the body -
     there is deliberately no `version` field here.
     """
 

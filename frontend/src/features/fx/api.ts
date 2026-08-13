@@ -1,21 +1,21 @@
-/** FX data layer — TanStack Query hooks over the live API.
+/** FX data layer - TanStack Query hooks over the live API.
  *
  * Shapes mirror backend/src/app/schemas/fx.py exactly:
  *  - `rate` is a 12dp `RateString` wire string (`NUMERIC(24,12)`,
- *    `RATE_SCALE`) — its own scale, distinct from the 6dp/8dp money scales
+ *    `RATE_SCALE`) - its own scale, distinct from the 6dp/8dp money scales
  *    used elsewhere (lib/money.ts's `isDecimalString` still applies: never
  *    run through Number()/parseFloat).
  *  - `GET /exchange-rates` (api/v1/fx.py) serves two different shapes from
  *    one route, selected by which query params are present:
- *     1. **Effective-rate lookup** — `base` + `quote` + `as_of` ALL given:
+ *     1. **Effective-rate lookup** - `base` + `quote` + `as_of` ALL given:
  *        returns a single `EffectiveExchangeRateResponse` (rate + its
  *        provenance: `source` is `"synthetic_fixture"` or `"manual"`,
- *        never persisted for the fixture case — `exchange_rate_id` is
+ *        never persisted for the fixture case - `exchange_rate_id` is
  *        `null` then). `useEffectiveRate` is disabled until all three
  *        inputs are non-blank, exactly mirroring the backend's own
  *        all-three-or-none branch (api/v1/fx.py `list_or_get_effective_
  *        exchange_rate`) rather than guessing at a partial answer.
- *     2. **Otherwise** — a plain paginated listing of this org's own
+ *     2. **Otherwise** - a plain paginated listing of this org's own
  *        stored manual-override rows (`ExchangeRateListResponse`, `{items,
  *        page}`), optionally filtered by `base`/`quote` alone. `as_of` is
  *        NOT a list filter (the route only reads it as part of the
@@ -23,16 +23,16 @@
  *        accept it.
  *  - `POST /exchange-rates` body fields are `base_currency`/`quote_
  *    currency` (matching the stored row shape) even though the GET query
- *    params are the shorter `base`/`quote` — two different field names for
+ *    params are the shorter `base`/`quote` - two different field names for
  *    the same concept, both taken directly from fx.py's own schemas rather
  *    than invented here. `override_reason` is required non-blank
  *    (`ExchangeRateOverrideCreate`, backed by a DB CHECK constraint per
- *    that schema's docstring) — FxPanel.tsx's override form must not allow
+ *    that schema's docstring) - FxPanel.tsx's override form must not allow
  *    submitting a blank reason client-side either.
  *  - No `If-Match`/`ETag`: `ExchangeRateResponse` carries no `version`
  *    field and api/v1/fx.py's only mutating routes are plain `POST`s, so
  *    unlike quotes/rfqs/parts/suppliers this file needs no custom-header
- *    dance for CSRF — `post()` already attaches it automatically.
+ *    dance for CSRF - `post()` already attaches it automatically.
  */
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -63,7 +63,7 @@ export interface ExchangeRateListResponse {
   page: PageInfo;
 }
 
-/** `source` is `"synthetic_fixture"` (fixture provider, never persisted —
+/** `source` is `"synthetic_fixture"` (fixture provider, never persisted -
  * `exchange_rate_id` is `null`) or `"manual"` (a stored override row).
  * FxPanel.tsx's source badge switches on this exact string. */
 export interface EffectiveExchangeRateResponse {
@@ -113,7 +113,7 @@ export const fxKeys = {
     [...fxKeys.all, "effective", base, quote, asOf] as const,
 };
 
-/** Paginated override-history listing — see this file's header on why
+/** Paginated override-history listing - see this file's header on why
  * `as_of` is not a param here. */
 export function useExchangeRates(params: FxListParams) {
   return useQuery({
@@ -123,7 +123,7 @@ export function useExchangeRates(params: FxListParams) {
   });
 }
 
-/** Effective-rate lookup — disabled until `base`/`quote`/`asOf` are all
+/** Effective-rate lookup - disabled until `base`/`quote`/`asOf` are all
  * non-blank, mirroring the backend's all-three-or-none branch. */
 export function useEffectiveRate(base: string, quote: string, asOf: string) {
   const enabled = base.trim() !== "" && quote.trim() !== "" && asOf.trim() !== "";

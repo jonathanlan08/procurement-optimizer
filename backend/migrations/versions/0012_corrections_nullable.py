@@ -3,7 +3,7 @@ phase).
 
 See app/models/documents.py module docstring point 8a for the full
 reasoning: this closes a genuine conflict `services/extraction_service.py`'s
-own module docstring previously flagged — 04-document-pipeline.md's pipeline
+own module docstring previously flagged - 04-document-pipeline.md's pipeline
 places Stage 10 (Corrections) *before* Stage 11 (Materialize), so a
 correction can legitimately happen while only an `ExtractionRun`/
 `ExtractionField` exist and no `Quote` row has been built yet, but
@@ -13,15 +13,15 @@ recorded the edit).
 
 Two changes, both additive/loosening (no data loss on upgrade):
 
-1. `quote_corrections.quote_id` — `DROP NOT NULL`. Nullable, same `MATCH
+1. `quote_corrections.quote_id` - `DROP NOT NULL`. Nullable, same `MATCH
    SIMPLE` NULL-exempts-the-row pattern the existing `extraction_field_id`
    composite FK on this same table already uses (migration 0010).
-2. `quote_corrections.extraction_run_id` — new nullable composite org FK
+2. `quote_corrections.extraction_run_id` - new nullable composite org FK
    column to `extraction_runs`, since the model did not already have it
    (checked `app/models/documents.py` first, per this task's own
    instruction). Gives *every* correction, pre- or post-materialization, a
    durable, directly queryable link back to the run that produced the field
-   it corrects — previously the only place that link existed at all was the
+   it corrects - previously the only place that link existed at all was the
    `extraction.materialized` audit event's own `after_state`
    (`ExtractionRepository.find_materialized_quote_id`).
 

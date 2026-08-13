@@ -49,7 +49,7 @@ def tiny_limit_client(
     database_url: str, migrated_engine: Engine
 ) -> Generator[TestClient, None, None]:
     """A second app instance with a tiny `max_upload_bytes`, isolated to the
-    413 test below — the default 20 MiB cap would make that test either slow
+    413 test below - the default 20 MiB cap would make that test either slow
     (a real 20 MiB body) or not exercise the streamed-check code path at
     all."""
     settings = Settings(
@@ -125,7 +125,7 @@ def org_b(migrated_engine: Engine) -> dict[str, Any]:
 
 
 def _seed_each_unit(migrated_engine: Engine, organization_id: str) -> str:
-    """An org-scoped 'each' unit_definition — never a global (organization_id
+    """An org-scoped 'each' unit_definition - never a global (organization_id
     IS NULL) row, for the same reason test_parts_api.py's `_seed_unit` never
     uses one when committing directly against the shared, session-scoped
     `migrated_engine`: it would durably pollute the global catalogue for
@@ -296,7 +296,7 @@ class TestCommitRollsBackOnInvalidRow:
         assert commit_resp.json()["error"]["code"] == "conflict_state"
 
         # SPEC §3 "rollback after failure": zero new parts rows, including
-        # the row that was individually valid — all-or-nothing per batch.
+        # the row that was individually valid - all-or-nothing per batch.
         assert _parts_count(migrated_engine, org_a["org_id"]) == baseline
 
         batch_after = client.get(
@@ -404,7 +404,7 @@ class TestCrossOrgIsolation:
             f"/api/v1/part-imports/{batch_id}", headers={"Origin": ORIGIN}
         )
         # the shared client's session cookie now points at org_b after the
-        # login above (same TestClient, same cookie jar) — mirrors
+        # login above (same TestClient, same cookie jar) - mirrors
         # test_parts_api.py's cross-org pattern
         assert get_resp.status_code == 404
         assert get_resp.json()["error"]["code"] == "not_found"

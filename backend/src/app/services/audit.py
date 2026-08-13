@@ -1,4 +1,4 @@
-"""AuditRecorder — writes audit events inside the caller's transaction.
+"""AuditRecorder - writes audit events inside the caller's transaction.
 
 An audit trail that can diverge from the data it describes is worse than none:
 the recorder never opens its own transaction and never swallows failures.

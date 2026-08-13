@@ -1,10 +1,10 @@
 /* Quotes-specific chrome layered on top of components/workspace.css +
    components/badges.css (both imported by QuotesSection.tsx). Kept in its
-   own file rather than editing either shared stylesheet — same rationale
+   own file rather than editing either shared stylesheet - same rationale
    as features/rfqs/rfqs.css / features/boms/boms.css's own headers. */
 
-/* Status badges: draft/in_review/confirmed/superseded/rejected — five
-   visually distinct states (MASTER.md "never rely on color alone" — every
+/* Status badges: draft/in_review/confirmed/superseded/rejected - five
+   visually distinct states (MASTER.md "never rely on color alone" - every
    badge still carries its own text label). `superseded` additionally gets
    a muted row (`.quote-row.is-muted` below), per the task brief's "status
    badge incl. superseded muted". */
@@ -92,7 +92,7 @@
   font-weight: 600;
 }
 
-/* Line editor (quote entry / supersede form) — same shape as
+/* Line editor (quote entry / supersede form) - same shape as
    features/rfqs/rfqs.css's `.rfq-line-row`, renamed for this feature
    rather than importing a sibling feature's stylesheet. */
 .quote-line-list {
@@ -150,7 +150,7 @@
   position: relative;
 }
 
-/* Live structural hint (overlap / non-final open-ended) — a warning color,
+/* Live structural hint (overlap / non-final open-ended) - a warning color,
    distinct from `.field-error`'s hard-validation red, since this renders
    ahead of submit as the user types (mirrors QuoteService.
    _validate_price_breaks's rules client-side; the server re-validates
@@ -161,7 +161,7 @@
   color: var(--color-warning);
 }
 
-/* Price-break read-only table (quote detail view) — same tabular-nums/
+/* Price-break read-only table (quote detail view) - same tabular-nums/
    right-align convention as rfqs.css's `.rfq-lines-table`. */
 .quote-price-break-view {
   margin-top: var(--space-md);
@@ -201,7 +201,7 @@
   border-bottom: none;
 }
 
-/* Quote detail view — read-only per-line mirror of the entry form */
+/* Quote detail view - read-only per-line mirror of the entry form */
 .quote-line-view-list {
   display: flex;
   flex-direction: column;

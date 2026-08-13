@@ -334,7 +334,7 @@ class TestBomsSchema:
             )
 
     def test_first_version_check_rejects_previous_id_on_version_one(self, db, make_uuid) -> None:
-        """The paired CHECK — not the composite FK — is what this test
+        """The paired CHECK - not the composite FK - is what this test
         targets: previous_version_id references a real, same-org row (so the
         FK is satisfied), yet version_number=1 must still have
         previous_version_id NULL."""

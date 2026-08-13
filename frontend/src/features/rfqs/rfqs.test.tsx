@@ -88,7 +88,7 @@ describe("RfqsPage", () => {
   afterEach(() => {
     // vite.config.ts sets `test.globals: false`, so @testing-library/react's
     // automatic post-test cleanup (which checks for a *global* `afterEach`)
-    // never registers itself — without this, each `render()` in this file
+    // never registers itself - without this, each `render()` in this file
     // would stack on top of the previous test's still-mounted DOM.
     cleanup();
     vi.unstubAllGlobals();
@@ -198,7 +198,7 @@ describe("RfqsPage", () => {
     fireEvent.click(await screen.findByText("Q3 Connector Sourcing"));
     await screen.findByText("Status timeline");
 
-    // ALLOWED_RFQ_TRANSITIONS["draft"] = ["open", "archived"] — exactly two
+    // ALLOWED_RFQ_TRANSITIONS["draft"] = ["open", "archived"] - exactly two
     // transition buttons, no "Under Review"/"Awarded"/"Closed" buttons.
     const moveButtons = screen.getAllByRole("button", { name: /^move to/i });
     expect(moveButtons).toHaveLength(2);
@@ -239,7 +239,7 @@ describe("RfqsPage", () => {
     fireEvent.click(newRfqBtn);
 
     // Default mode is "inline" with exactly one line, which cannot be
-    // removed — the form structurally enforces "at least one line" the same
+    // removed - the form structurally enforces "at least one line" the same
     // way BomsPage.tsx's create form does.
     await screen.findByLabelText(/^Quantity/i);
     expect(screen.queryByRole("button", { name: /remove line 1/i })).not.toBeInTheDocument();
@@ -370,14 +370,14 @@ describe("RfqsPage", () => {
     fireEvent.click(screen.getByText("Q3 Connector Sourcing"));
     await screen.findByText("Status timeline");
 
-    // line-1 has no required_specifications: honest "— not stated", never a
+    // line-1 has no required_specifications: honest "not stated", never a
     // fabricated "0" (P2 audit finding).
-    expect(await screen.findByText("— not stated")).toBeInTheDocument();
+    expect(await screen.findByText("not stated")).toBeInTheDocument();
     // line-2 has two real spec keys: a plain count, since that IS supplied data.
     expect(screen.getByText("2")).toBeInTheDocument();
   });
 
-  it("renders '—' in the list 'Lines' column when line_count is absent (backward compat)", async () => {
+  it("renders '-' in the list 'Lines' column when line_count is absent (backward compat)", async () => {
     installFetchMock([
       {
         test: (url, method) => url.startsWith("/api/v1/auth/me") && method === "GET",
@@ -395,7 +395,7 @@ describe("RfqsPage", () => {
     const table = await screen.findByRole("table", { name: /requests for quotation/i });
     const row = within(table).getByText("Q3 Connector Sourcing").closest("tr");
     expect(row).not.toBeNull();
-    expect(within(row as HTMLElement).getByText("—")).toBeInTheDocument();
+    expect(within(row as HTMLElement).getByText("-")).toBeInTheDocument();
   });
 
   it("switches to 'From BOM' mode and requires a BOM to be selected instead of lines", async () => {

@@ -3,18 +3,18 @@
 `unit_definitions.organization_id` is nullable by explicit ERD annotation ("null
 = global catalog"): NULL rows are the shared standard catalogue (each, pack,
 box, tray, reel, kilogram, gram, pound, ounce, meter, centimeter, millimeter,
-foot, inch — seeded once by `app.seed.units_catalog.seed_unit_catalog`,
+foot, inch - seeded once by `app.seed.units_catalog.seed_unit_catalog`,
 docs/planning/09-task-decomposition.md task 2.5 "global unit catalogue seed");
 a non-null organization_id is a unit an organization defined for itself. This
 is a deliberate, narrow deviation from the OrgOwnedBase convention (every
-other business table in this codebase carries organization_id NOT NULL —
-backend/src/app/models/base.py) — it is the one point in the schema where
+other business table in this codebase carries organization_id NOT NULL -
+backend/src/app/models/base.py) - it is the one point in the schema where
 SPEC §10's "global standard catalogue PLUS user-defined units per
 organization" requires a shared row that no single organization owns.
 
 Because the parent's organization_id can be NULL, `UnitConversion.from_unit_id`
 /`to_unit_id` are plain (non-composite) foreign keys to `unit_definitions.id`
-— the composite org-guard FK used everywhere else
+- the composite org-guard FK used everywhere else
 (``FOREIGN KEY (organization_id, x_id) REFERENCES parent (organization_id, id)``,
 02-erd.md §1) can never match a NULL parent column, so it is structurally
 impossible for this one parent/child pair. See `UnitConversion`'s docstring
@@ -52,12 +52,12 @@ class UnitDefinition(PkMixin, Base):
     """A unit of measure: a global standard-catalogue entry, or an org's own.
 
     No timestamps/version/archived_at: 02-erd.md §4 lists none for this table
-    — treated as near-immutable reference data, the same judgement call
+    - treated as near-immutable reference data, the same judgement call
     already made for `SupplierPerformanceRecord`
     (backend/src/app/models/suppliers.py).
 
     `to_canonical_factor` is nullable: `count`-dimension containers (pack,
-    box, tray, reel) have no universal ratio to `each` — that ratio is a
+    box, tray, reel) have no universal ratio to `each` - that ratio is a
     property of the part, not the word "reel"
     (docs/planning/05-calculation-methodology.md §5), and is recorded
     per-part (or as an org default) in `UnitConversion` instead. `each`, and
@@ -84,7 +84,7 @@ class UnitConversion(OrgOwnedBase):
     it references the global catalogue: 02-erd.md does not mark this table's
     organization_id nullable, and the "global" mass/length factors (kg<->lb,
     m<->ft) live on `UnitDefinition.to_canonical_factor` itself, not as rows
-    here (docs/planning/05-calculation-methodology.md §5) — every row in this
+    here (docs/planning/05-calculation-methodology.md §5) - every row in this
     table is a real assumption someone recorded (an org default or a
     part-specific pack size), so it always has an owning organization and a
     creator. `assumption_note` is required and non-blank (enforced by a CHECK
@@ -97,7 +97,7 @@ class UnitConversion(OrgOwnedBase):
     organization's *private* user-defined unit rather than only the shared
     global catalogue. No code path creates such a row today and the shipped
     catalogue/fixtures never do either; closing this gap needs a trigger or a
-    same-org-or-null check at the service layer — a follow-up in the same
+    same-org-or-null check at the service layer - a follow-up in the same
     spirit as the accepted gaps already tracked in docs/planning/02-erd.md §12.
 
     `part_id` has no foreign key yet: `parts` is created by a later migration

@@ -14,15 +14,15 @@ likewise a genuine addition beyond the box: `report_state_enum` includes
 `failed` (ERD-literal), and a `failed` row needs somewhere to record why
 (see `app/services/report_service.py` module docstring: a renderer
 exception is persisted as a `failed` row with `error_message` set, still
-`201`, rather than a `500` — this column is where that message lives).
+`201`, rather than a `500` - this column is where that message lives).
 
-**`content_sha256` is `bytea`, not text hex** — the ERD box's own literal
+**`content_sha256` is `bytea`, not text hex** - the ERD box's own literal
 type. The delegating task's own prose additionally asked this to match
 "how document sha256 is stored elsewhere", pointing at
 `app/models/documents.py`; that file's `QuoteDocument.content_sha256` is
 itself `LargeBinary()` (bytea) with the hex string only ever produced at
 the wire boundary (`.hex()` in `app/schemas/documents.py`), matching what
-the ERD box says for `GENERATED_REPORTS` too — so both instructions agree
+the ERD box says for `GENERATED_REPORTS` too - so both instructions agree
 once the actual file is read, and this migration follows both: bytea,
 storing the raw digest bytes, never a hex string, in the database.
 
@@ -31,12 +31,12 @@ never produced bytes), not nullable, since the ERD box's own inline
 comment has no "nullable" annotation for it (contrast `storage_key`'s
 explicit nullability need above). `content_sha256` IS nullable for the
 same `pending`/`failed` reason despite carrying no such annotation either
-— a hash of bytes that were never produced cannot be stored, and the ERD
+- a hash of bytes that were never produced cannot be stored, and the ERD
 box predates this build's synchronous-generation-with-a-failed-state
 shape (`report_service.py` module docstring "Deviation 1").
 
 `expires_at` is always populated at generation time by this build (a flat
-`REPORT_RETENTION_DAYS = 90` constant in `report_service.py` — the ERD/SPEC
+`REPORT_RETENTION_DAYS = 90` constant in `report_service.py` - the ERD/SPEC
 name the concept but never state a duration, so this is a documented
 assumption, not a literal requirement) and is therefore `NOT NULL`.
 
@@ -142,7 +142,7 @@ def upgrade() -> None:
         sa.CheckConstraint("size_bytes >= 0", name="ck_generated_reports_size_bytes_nonneg"),
         # storage_key and content_sha256 are set together (on ready) and
         # nulled together (on purge, or when generation never produced
-        # bytes at all) — never one without the other.
+        # bytes at all) - never one without the other.
         sa.CheckConstraint(
             "(storage_key IS NULL) = (content_sha256 IS NULL)",
             name="ck_generated_reports_storage_key_sha256_paired",

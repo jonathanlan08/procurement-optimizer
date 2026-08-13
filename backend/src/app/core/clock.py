@@ -1,4 +1,4 @@
-"""Injectable time — PRINCIPAL-OWNED.
+"""Injectable time - PRINCIPAL-OWNED.
 
 All timestamps are UTC. Domain and service code must take a Clock, never call
 ``datetime.now`` directly: reproducible scenario snapshots and golden report tests

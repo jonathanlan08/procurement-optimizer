@@ -6,7 +6,7 @@ ordering/determinism/dedup across strategies, then the fuzzy threshold
 boundary and explanation-string content. See matcher.py's own module
 docstring for why the implemented confidence table/priority order/fuzzy
 formula follow §10's literal text rather than this task's own paraphrase of
-it — these tests assert the §10 numbers.
+it - these tests assert the §10 numbers.
 """
 
 from __future__ import annotations
@@ -179,7 +179,7 @@ class TestAlternativeStrategy:
 
 
 class TestFuzzyStrategy:
-    """Threshold boundary fixed at MatchConfig's default (0.82) — see
+    """Threshold boundary fixed at MatchConfig's default (0.82) - see
     matcher.py's own module docstring for why 0.82, not §10's stated 0.80.
     Query/corpus pairs below were found empirically to score just under and
     just over that boundary (~0.81 / ~0.83, per this task's own required
@@ -187,7 +187,7 @@ class TestFuzzyStrategy:
 
     def test_below_threshold_excluded(self) -> None:
         # token_set_ratio("housin spring aluminum", "spring steel aluminum
-        # housing X-73") == 81.08 (< 82 threshold) — verified empirically.
+        # housing X-73") == 81.08 (< 82 threshold) - verified empirically.
         part = _part(internal_part_number="X-73", name="spring steel aluminum housing")
         candidates = generate_candidates(
             LineTexts(part_number_text=None, description_text="housin spring aluminum"),
@@ -198,7 +198,7 @@ class TestFuzzyStrategy:
 
     def test_at_or_above_threshold_included(self) -> None:
         # token_set_ratio("valve clamp housi", "clamp valve housing X-99")
-        # == 82.93 (>= 82 threshold) — verified empirically.
+        # == 82.93 (>= 82 threshold) - verified empirically.
         part = _part(internal_part_number="X-99", name="clamp valve housing")
         candidates = generate_candidates(
             LineTexts(part_number_text=None, description_text="valve clamp housi"),

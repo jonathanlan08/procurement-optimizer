@@ -1,4 +1,4 @@
-/** Session-probe resilience — QA-sweep regression: the mount-time
+/** Session-probe resilience - QA-sweep regression: the mount-time
  * `/api/v1/auth/me` probe used to treat ANY failure as "signed out", so a
  * 429 from the shared-IP rate limiter (or a 5xx/network blip) bounced a
  * valid session to the login page on refresh. Only a 401 proves

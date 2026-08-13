@@ -1,4 +1,4 @@
-"""Quote repository — org-scoped data access (docs/planning/02-erd.md §6,
+"""Quote repository - org-scoped data access (docs/planning/02-erd.md §6,
 app/models/quotes.py).
 
 Extends OrgScopedRepository, so every query is filtered by organization_id
@@ -7,7 +7,7 @@ before any other predicate (isolation control #2).
 Mirrors RfqRepository's split between "the aggregate itself" (`Quote`, bound
 as `ModelT`) and its child rows (`QuoteLine`, `QuotePriceBreak`,
 `QuoteTerms`), fetched with their own explicit org-scoped queries via the
-same `_select`/`_guard_org` internals — none of the four models here carry a
+same `_select`/`_guard_org` internals - none of the four models here carry a
 `back_populates`/backref collection on their parent (see app/models/quotes.py:
 every relationship defined there is one-directional, forward-only), so there
 is nothing to eager-load through.
@@ -105,7 +105,7 @@ class QuoteRepository(OrgScopedRepository[Quote]):
     def _select(self, model: type[OrgOwnedBase]) -> Select[Any]:
         """Org-scoped `select(model)` for the child tables above: none of
         them are `ModelT` (the repository is generic over `Quote`), so
-        `_base_query()` cannot be reused directly — same pattern as
+        `_base_query()` cannot be reused directly - same pattern as
         RfqRepository._select."""
         return select(model).where(model.organization_id == self.organization_id)
 

@@ -3,30 +3,30 @@ Sync `def` by policy, mirroring every other router in this codebase.
 
 **Contract's literal paths kept for generate/get/review; `POST
 .../negotiation-briefs` runs synchronously and returns `201` with the full
-`NegotiationBriefResponse`, not `202` + a job envelope** — see
+`NegotiationBriefResponse`, not `202` + a job envelope** - see
 `app/services/brief_service.py` module docstring "Deviation 1" (same
 `JOB_RUNNER=inline` precedent `api/v1/extractions.py`/`api/v1/matching.py`/
 `api/v1/scenarios.py` already establish).
 
 **No `PATCH /negotiation-briefs/{id}` and no `GET .../email-draft` route are
-mounted here** — see `brief_service.py` module docstring "Deviation 2"/
+mounted here** - see `brief_service.py` module docstring "Deviation 2"/
 "Deviation 3" for why: this task's own OBJECTIVE scopes the route set to
 generate/get/review/archive/list and explicitly requires "NO send/email
 endpoint (assert in tests that no such route exists)"; the draft email text
 is already part of the full `GET /negotiation-briefs/{id}` response
 (`draft_email_subject`/`draft_email_body`, plus the `draft_supplier_email`
-entry under `sections`). There is no route anywhere in this module — or
-this codebase — that sends an email; `never auto-send` (SPEC §Negotiation
+entry under `sections`). There is no route anywhere in this module - or
+this codebase - that sends an email; `never auto-send` (SPEC §Negotiation
 brief) holds structurally, not just by convention.
 
 **`POST .../{id}/archive` is this task's own explicit addition**, not in
-§4.17's literal table at all — added per 02-erd.md §1/§11's global
+§4.17's literal table at all - added per 02-erd.md §1/§11's global
 "archived_at + archived_by_id + archive_reason ... never hard-delete ...
 briefs" convention, gated administrator+ exactly like every other
 archivable resource's archive route (suppliers/parts/BOMs/quotes/
 comparison_scenarios) in this codebase.
 
-**Three routers, one module** — the same "one module, several prefix-scoped
+**Three routers, one module** - the same "one module, several prefix-scoped
 routers" shape `api/v1/scenarios.py`/`api/v1/documents.py` already
 establish: `scenario_briefs_router` (prefix `/comparison-scenarios`) owns
 generate + list-by-scenario; `rfq_briefs_router` (prefix `/rfqs`) owns
@@ -78,7 +78,7 @@ def _brief_response(
     A reviewed brief used to render its reviewer as a raw UUID (2026-08
     external-review P3). Resolution is org-scoped by `resolve_user_names`, so
     an id belonging to another organization stays unresolved and the client
-    falls back to the id — never a cross-org name leak.
+    falls back to the id - never a cross-org name leak.
     """
     names = resolve_user_names(db, principal.organization_id, [brief.reviewed_by_id])
     return NegotiationBriefResponse.from_model(

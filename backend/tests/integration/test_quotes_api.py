@@ -262,7 +262,7 @@ def _quote_payload(supplier_id: str, unit_id: str, **overrides: Any) -> dict[str
 
 def _quote_supersede_payload(unit_id: str, **overrides: Any) -> dict[str, Any]:
     """`POST /quotes/{id}/supersede` body: same shape as `_quote_payload`
-    minus `supplier_id` — `QuoteSupersedeRequest` forbids it (the replacement
+    minus `supplier_id` - `QuoteSupersedeRequest` forbids it (the replacement
     inherits the old quote's supplier, see app/schemas/quotes.py)."""
     payload: dict[str, Any] = {
         "quote_date": "2026-08-01",
@@ -342,9 +342,9 @@ class TestQuoteCreate:
                         {"min_quantity": "500", "max_quantity": None, "unit_price": "9.20000000"},
                     ],
                 ),
-                _quote_line_payload(unit_id, description="Line 2 — no breaks"),
+                _quote_line_payload(unit_id, description="Line 2 - no breaks"),
                 _quote_line_payload(
-                    unit_id, description="Line 3 — unit price missing", unit_price=None
+                    unit_id, description="Line 3 - unit price missing", unit_price=None
                 ),
             ],
             terms={
@@ -499,7 +499,7 @@ class TestQuoteCreate:
         # TestClient shares one cookie jar: logging in as org_b above replaced
         # the session cookie, so the earlier `headers_a`'s CSRF token no
         # longer matches the active session. Re-authenticate as org_a to get
-        # a fresh, valid session before making the actual assertion request —
+        # a fresh, valid session before making the actual assertion request -
         # same reasoning as test_rfqs_api.py's cross-org tests always issuing
         # the final request from whichever org logged in *last*.
         headers_a = _headers(_login_as(client, org_a, Role.ANALYST))
@@ -693,7 +693,7 @@ class TestQuotePriceBreakValidation:
     def test_price_increasing_across_tiers_is_accepted(
         self, client: TestClient, org_a: dict[str, Any], migrated_engine: Engine
     ) -> None:
-        """Task brief: 'do not enforce price direction' — a tier's unit price
+        """Task brief: 'do not enforce price direction' - a tier's unit price
         rising at a higher volume (e.g. a tooling-amortization break) is
         structurally valid."""
         headers = _headers(_login_as(client, org_a, Role.ANALYST))
@@ -723,7 +723,7 @@ class TestQuotePriceBreakValidation:
     ) -> None:
         """Only overlap is forbidden; a gap is legal structurally (the
         contract's own PUT .../price-breaks row treats a gap as a warning,
-        not a block — the same non-blocking posture applies here)."""
+        not a block - the same non-blocking posture applies here)."""
         headers = _headers(_login_as(client, org_a, Role.ANALYST))
         ctx = _setup_open_rfq_with_invited_supplier(client, headers, migrated_engine, org_a)
         rfq, supplier, unit_id = ctx["rfq"], ctx["supplier"], ctx["unit_id"]
@@ -967,7 +967,7 @@ class TestQuoteOrgIsolation:
         quote = _create_quote(client, headers_a, rfq["id"], supplier["id"], unit_id)
 
         # Only one org_b login here (not a second one for the admin-gated
-        # archive check until the very end) — TestClient shares one cookie
+        # archive check until the very end) - TestClient shares one cookie
         # jar, so a second login mid-test would replace the session and
         # invalidate `headers_b`'s already-issued CSRF token before it's
         # used, exactly the bug already worked around in TestQuoteCreate's
@@ -1096,7 +1096,7 @@ class TestQuoteAuditTrail:
             return [row[0] for row in rows]
 
         assert _event_types(quote["id"]) == ["quote.created", "quote.updated", "quote.superseded"]
-        # The replacement quote gets no `quote.created` event of its own —
+        # The replacement quote gets no `quote.created` event of its own -
         # `supersede()` writes exactly one audit event (`quote.superseded`,
         # keyed to the OLD quote per this task's brief), with the new
         # quote's full graph nested inside that event's after_state instead

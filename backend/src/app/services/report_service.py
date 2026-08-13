@@ -12,47 +12,47 @@ generation" is one of the named audited actions).
 report type's builder below either (a) reuses an existing, already-tested
 response builder verbatim (`app.schemas.scenarios.ScoringResultResponse`/
 `AllocationResultResponse`/`ScenarioResponse`, `app.schemas.briefs.
-NegotiationBriefResponse`) — the exact same shape `GET /comparison-
-scenarios/{id}` or `GET /negotiation-briefs/{id}` would return — or (b)
+NegotiationBriefResponse`) - the exact same shape `GET /comparison-
+scenarios/{id}` or `GET /negotiation-briefs/{id}` would return - or (b)
 sums already-persisted `LandedCostResult` rows the same way
 `app/services/brief_service.py`'s own `_aggregate_offers` does (per-supplier
 landed-cost totals across a scenario's `quote_snapshot_refs`), never a
 fresh optimizer/scorer/landed-cost run. Nothing here calls the solver, the
 scorer, or the landed-cost calculator.
 
-## Deviation 1 — `POST /reports` runs synchronously, `201` not `202`
+## Deviation 1 - `POST /reports` runs synchronously, `201` not `202`
 
 03-api-contract.md §4.18's literal table says `-> 202`. Same
 `JOB_RUNNER=inline` precedent `services/extraction_service.py` establishes
 and `services/scenario_service.py`/`services/brief_service.py` already
 apply to their own routes: this codebase has no job queue anywhere.
 `generate` runs to completion (build content, render, hash, store) in one
-call, returning the finished row — `state` is `ready` or `failed`, always
+call, returning the finished row - `state` is `ready` or `failed`, always
 visible on the `201` body, never a `job` envelope to poll.
 
-## Deviation 2 — a renderer exception is persisted as a `failed` row, not a `500`
+## Deviation 2 - a renderer exception is persisted as a `failed` row, not a `500`
 
 The delegating task's own instruction: "On renderer exception: persist the
 row state=failed with error_message, still 201". `generate` therefore
-resolves the scenario/RFQ/(for `negotiation_brief`) the target brief FIRST —
+resolves the scenario/RFQ/(for `negotiation_brief`) the target brief FIRST -
 those lookups can raise a genuine `404`/`409`/`422` and are NOT covered by
-this — then wraps only the content-build + render + storage-write step in a
+this - then wraps only the content-build + render + storage-write step in a
 `try/except Exception`. A failure there (a `KeyError` from unexpected data
 shape, a reportlab layout error, a storage I/O error) becomes a `failed`
 row with `error_message` set and no stored bytes, still returned as `201`:
 the report is now an auditable, listable fact ("generation was attempted
 and failed"), not a swallowed `500` the caller has no record of. This is a
-deliberately broad `except Exception` — every other service in this
-codebase lets exceptions propagate — scoped narrowly to this one step for
+deliberately broad `except Exception` - every other service in this
+codebase lets exceptions propagate - scoped narrowly to this one step for
 this one documented reason.
 
-## Deviation 3 — `410` on a purged report has no `ErrorCode` member to reuse literally
+## Deviation 3 - `410` on a purged report has no `ErrorCode` member to reuse literally
 
 `app/core/errors.py` is PRINCIPAL-OWNED and off this task's edit list;
 its `AppError.status` is a fixed `ErrorCode -> int` table with no `410`
 entry, and adding one is exactly the "add none" the delegating task's own
 instruction forbids. `get_content` therefore raises `ReportPurgedError`
-(below), a plain `Exception`, NOT an `AppError` subclass — `api/v1/
+(below), a plain `Exception`, NOT an `AppError` subclass - `api/v1/
 reports.py`'s `download_report_content` catches it directly and hand-builds
 a `410` envelope reusing `ErrorCode.NOT_FOUND`'s wire `code` string
 (`"not_found"`) as the closest existing vocabulary ("the thing you asked
@@ -61,14 +61,14 @@ validation code), rather than inventing a new code string this task was
 told not to add.
 
 A report whose `state` is `pending`/`failed` (never produced bytes, and was
-never purged) is a plain `NotFoundError` (`404`) instead — genuinely
+never purged) is a plain `NotFoundError` (`404`) instead - genuinely
 distinct from "was ready, now gone".
 
-## Deviation 4 — `expires_at` retention duration is an undocumented assumption
+## Deviation 4 - `expires_at` retention duration is an undocumented assumption
 
 Neither `docs/SPEC.md` nor `docs/planning/02-erd.md` states how long a
 report should live before it becomes eligible for the §11 purge job (out of
-this task's scope — no purge route is implemented; §11's "row kept, blob
+this task's scope - no purge route is implemented; §11's "row kept, blob
 purged, storage_key nulled with purged_at set" shape is exercised only by
 tests writing `purged_at` directly, mirroring how DB-level test setup is
 already done elsewhere in this codebase, e.g. `test_briefs_api.py`'s direct
@@ -80,7 +80,7 @@ documented guess, not a literal requirement.
 `parameters.brief_id` (optional): a specific `NegotiationBrief` to render;
 `404 not_found` if it does not exist, is another organization's, or does
 not belong to the given `scenario_id`. Omitted: the latest non-archived
-brief for the scenario; `404 not_found` if none exists — resolved BEFORE
+brief for the scenario; `404 not_found` if none exists - resolved BEFORE
 the try/except in Deviation 2 above, since "no brief exists to render" is a
 precondition failure, not a rendering failure, and must not be silently
 turned into a stored `failed` report row.
@@ -139,7 +139,7 @@ REPORT_RETENTION_DAYS: Final[int] = 90
 _METHODOLOGY: Final[str] = (
     "Figures in this report are read directly from previously stored "
     "calculation results (landed-cost calculations, scoring runs, "
-    "optimizer allocations, or negotiation-brief sections) — nothing is "
+    "optimizer allocations, or negotiation-brief sections) - nothing is "
     "recomputed for this export. See 'Calculation version' above for the "
     "landed-cost/scoring calculation version that produced these figures."
 )
@@ -153,7 +153,7 @@ _DISCLAIMER: Final[str] = (
 
 
 class ReportPurgedError(Exception):
-    """Raised by `get_content` when `report.purged_at` is set — see module
+    """Raised by `get_content` when `report.purged_at` is set - see module
     docstring "Deviation 3" for why this is not an `app.core.errors.AppError`
     subclass and how the API layer turns it into a `410`."""
 
@@ -164,7 +164,7 @@ class ReportPurgedError(Exception):
 
 @dataclass(frozen=True, slots=True)
 class _SupplierTotals:
-    """Per-supplier landed-cost aggregation over one scenario's offers — the
+    """Per-supplier landed-cost aggregation over one scenario's offers - the
     same sum-then-divide `LandedCostResult` aggregation
     `app/services/brief_service.py`'s `_aggregate_offers` performs, trimmed
     to only what `supplier_comparison` needs (module docstring)."""
@@ -281,7 +281,7 @@ class ReportService:
             raise
         except Exception as exc:
             # The wire-visible message must not carry SQL fragments, paths,
-            # or stack detail (SECURITY.md §10) — the full exception goes to
+            # or stack detail (SECURITY.md §10) - the full exception goes to
             # the server log only, keyed by the report id.
             logger.exception("report generation failed (report_id=%s)", report_id)
             report = GeneratedReport(
@@ -504,7 +504,7 @@ class ReportService:
             rows=tuple(rows),
         )
         return ReportDocument(
-            title=f"Supplier Comparison — {rfq_name} / {scenario.name}",
+            title=f"Supplier Comparison - {rfq_name} / {scenario.name}",
             generated_at=generated_at.isoformat(),
             calculation_version=scenario.calculation_version,
             methodology=_METHODOLOGY,
@@ -603,7 +603,7 @@ class ReportService:
         )
 
         return ReportDocument(
-            title=f"CFO Recommendation — {rfq_name} / {scenario.name}",
+            title=f"CFO Recommendation - {rfq_name} / {scenario.name}",
             generated_at=generated_at.isoformat(),
             calculation_version=scenario.calculation_version,
             methodology=_METHODOLOGY,
@@ -645,7 +645,7 @@ class ReportService:
             paragraphs: tuple[str, ...]
             if key == "draft_supplier_email":
                 paragraphs = (
-                    "DRAFT — not sent.",
+                    "DRAFT - not sent.",
                     f"Subject: {resp.draft_email_subject}",
                     resp.draft_email_body,
                 )
@@ -660,7 +660,7 @@ class ReportService:
         )
 
         return ReportDocument(
-            title=f"Negotiation Brief — {scenario.name}",
+            title=f"Negotiation Brief - {scenario.name}",
             generated_at=generated_at.isoformat(),
             calculation_version=scenario.calculation_version,
             methodology=_METHODOLOGY,
@@ -733,7 +733,7 @@ class ReportService:
         )
 
         return ReportDocument(
-            title=f"Scenario Summary — {rfq_name} / {resp.name}",
+            title=f"Scenario Summary - {rfq_name} / {resp.name}",
             generated_at=generated_at.isoformat(),
             calculation_version=resp.calculation_version,
             methodology=_METHODOLOGY,
@@ -776,7 +776,7 @@ class ReportService:
         )
         missing = () if events else ("No audit events recorded for this scenario.",)
         return ReportDocument(
-            title=f"Audit History — {scenario.name}",
+            title=f"Audit History - {scenario.name}",
             generated_at=generated_at.isoformat(),
             calculation_version=scenario.calculation_version,
             methodology=_METHODOLOGY,
@@ -845,7 +845,7 @@ def _assumptions_block(scenario: ComparisonScenario) -> KeyValueBlock:
 
 
 def _safe_filename(report: GeneratedReport) -> str:
-    """`{report_type}-{id-prefix}.{format}` — never the raw storage key."""
+    """`{report_type}-{id-prefix}.{format}` - never the raw storage key."""
     id_prefix = str(report.id).split("-")[0]
     return f"{report.report_type.value}-{id_prefix}.{report.format.value}"
 

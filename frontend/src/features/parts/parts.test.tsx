@@ -88,7 +88,7 @@ describe("PartsPage", () => {
   afterEach(() => {
     // vite.config.ts sets `test.globals: false`, so @testing-library/react's
     // automatic post-test cleanup (which checks for a *global* `afterEach`)
-    // never registers itself — without this, each `render()` in this file
+    // never registers itself - without this, each `render()` in this file
     // would stack on top of the previous test's still-mounted DOM.
     cleanup();
     vi.unstubAllGlobals();
@@ -187,7 +187,7 @@ describe("PartsPage", () => {
     // "Name" + the error message concatenated, not "Name" alone.
     fireEvent.change(screen.getByLabelText(/Internal part number/i), { target: { value: "PN-200" } });
     fireEvent.change(screen.getByLabelText(/^Name/i), { target: { value: "Test Part" } });
-    // Unit is now a <select> populated from GET /api/v1/units — not a raw
+    // Unit is now a <select> populated from GET /api/v1/units - not a raw
     // UUID text input (P1 audit finding). Anchored to the *start* only, same
     // reason as "Internal part number"/"Name" above: this field also has a
     // validation error at this point, so its accessible name is "Unit" plus

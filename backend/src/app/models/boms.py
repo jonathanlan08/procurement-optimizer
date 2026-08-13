@@ -3,7 +3,7 @@
 
 **Copy-on-write versioning (ERD §5 / §10).** A BOM is never edited in place
 once lines exist. `root_bom_id` is stable across every version of one BOM
-(the first version's row sets `root_bom_id` to its own `id` — a standard
+(the first version's row sets `root_bom_id` to its own `id` - a standard
 self-referential-FK-to-self pattern; Postgres checks the FK after the row
 exists, at end of statement, so this is not a chicken-and-egg problem).
 Every subsequent edit creates a brand-new `bills_of_materials` row with
@@ -12,7 +12,7 @@ supersedes; the prior row's `status` moves to `superseded` by the service
 layer (§8: state machines are enforced there, not by a DB trigger).
 `UNIQUE (organization_id, root_bom_id, version_number)` (ERD §10) is both a
 data-integrity rule and the concurrency guard for "two analysts create the
-next version at once" — the loser's INSERT simply fails the unique
+next version at once" - the loser's INSERT simply fails the unique
 constraint. `root_bom_id` and `previous_version_id` are composite org FKs
 back onto this same table, the same `(organization_id, x_id) REFERENCES
 parent (organization_id, id)` guard used everywhere else
@@ -32,21 +32,21 @@ and `ArchivableMixin` are still applied despite the ERD diagram showing only
 `Part`/`Supplier` (backend/src/app/models/parts.py, suppliers.py): §1's
 blanket "created_at/updated_at on every mutable table" and "archived_at +
 archived_by_id + archive_reason" soft-delete convention apply regardless of
-how compact an individual ERD entity box is — `PARTS`' own box does not list
+how compact an individual ERD entity box is - `PARTS`' own box does not list
 `created_at` at all, yet migration 0004 creates it.
 
 **`BillOfMaterialLine` carries no timestamp/version/archive mixins at all**,
 the same judgement call already made for `PartAlternative`
 (backend/src/app/models/parts.py): 02-erd.md §5 lists no such columns for
 `BILL_OF_MATERIAL_LINES`, and copy-on-write makes lines immutable snapshots
-of one BOM version — there is nothing to update in place or archive
+of one BOM version - there is nothing to update in place or archive
 individually; a changed line means a whole new BOM version with a whole new
 set of lines.
 
 `BillOfMaterialLine.bom_id` and `.part_id` reference their parents with the
 composite org-guard FK (`(organization_id, bom_id) -> bills_of_materials
 (organization_id, id)`, `(organization_id, part_id) -> parts
-(organization_id, id)`) — a cross-org reference is refused by Postgres
+(organization_id, id)`) - a cross-org reference is refused by Postgres
 itself, not merely by application code. Both use `ondelete="RESTRICT"`:
 02-erd.md §11's cascade whitelist (quote_lines→quote_price_breaks,
 extraction_runs→extraction_fields, landed_cost_results→
@@ -59,7 +59,7 @@ else.
 composite org FK to `parts`, exempted from the constraint entirely when NULL
 (Postgres default `MATCH SIMPLE`). A `CHECK (substitute_part_id IS NULL OR
 substitute_part_id <> part_id)` is added by the same reasoning as
-`part_alternatives`' `ck_part_alternatives_no_self_reference` — not spelled
+`part_alternatives`' `ck_part_alternatives_no_self_reference` - not spelled
 out in 02-erd.md §8's "selected, non-exhaustive" catalogue, but the same
 shape of bug it exists to prevent there.
 
@@ -123,7 +123,7 @@ class BillOfMaterials(TimestampedMixin, ArchivableMixin, OrgOwnedBase):
     __table_args__ = (
         org_identity_constraint("bills_of_materials"),
         # composite org FK #1: stable id shared by every version of one BOM.
-        # Self-referential — the first version's row points at itself.
+        # Self-referential - the first version's row points at itself.
         ForeignKeyConstraint(
             ["organization_id", "root_bom_id"],
             ["bills_of_materials.organization_id", "bills_of_materials.id"],
@@ -169,7 +169,7 @@ class BillOfMaterials(TimestampedMixin, ArchivableMixin, OrgOwnedBase):
 
 class BillOfMaterialLine(OrgOwnedBase):
     """One required (or optional, substitutable) component line of one BOM
-    version. No timestamp/version/archive columns — see module docstring:
+    version. No timestamp/version/archive columns - see module docstring:
     lines are immutable snapshots under copy-on-write."""
 
     __tablename__ = "bill_of_material_lines"
@@ -220,7 +220,7 @@ class BillOfMaterialLine(OrgOwnedBase):
     # part of composite FK #2 above, not a single-column ForeignKey
     part_id: Mapped[uuid.UUID] = mapped_column()
     quantity_per_assembly: Mapped[Decimal] = mapped_column(Numeric(18, 6))
-    # plain FK, not composite — see module docstring (global catalogue units
+    # plain FK, not composite - see module docstring (global catalogue units
     # have organization_id IS NULL, same reasoning as Part.unit_definition_id).
     unit_definition_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("unit_definitions.id", ondelete="RESTRICT")
@@ -235,7 +235,7 @@ class BillOfMaterialLine(OrgOwnedBase):
 # participates in several FKs on both mappers here (the plain org FK plus two
 # or three composite FKs each), so `foreign_keys` disambiguates which
 # constraint each relationship follows, and `overlaps` silences SQLAlchemy's
-# warning about the shared organization_id column between them — the same
+# warning about the shared organization_id column between them - the same
 # pattern as PartAlternative (parts.py).
 BillOfMaterials.organization = relationship(
     "Organization", foreign_keys=[BillOfMaterials.organization_id], lazy="select"

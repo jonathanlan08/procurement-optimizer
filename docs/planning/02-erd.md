@@ -1,4 +1,4 @@
-# 02 — Data Model / ERD
+# 02 - Data Model / ERD
 
 Status: **DRAFT FOR PRINCIPAL REVIEW**
 Covers every entity in `docs/SPEC.md` §Database requirements, plus additions marked **[+]**.
@@ -14,7 +14,7 @@ Covers every entity in `docs/SPEC.md` §Database requirements, plus additions ma
 | Money | `NUMERIC(18,6)` for extended/total amounts; **`NUMERIC(18,8)` for unit-price-class columns**; every amount column is accompanied by a `currency` column or an unambiguous currency on the owning row. |
 | FX rates | **`NUMERIC(24,12)`** (see `01-architecture.md` §10 D2). |
 | Ratios / percentages | `NUMERIC(9,6)` stored as a fraction (0.35 = 35%), never as an integer percent. |
-| Quantities | `NUMERIC(18,6)` — quantities are not always integral (kg, m). Integer-only contexts enforce `CHECK (qty = trunc(qty))`. |
+| Quantities | `NUMERIC(18,6)` - quantities are not always integral (kg, m). Integer-only contexts enforce `CHECK (qty = trunc(qty))`. |
 | Currency codes | `CHAR(3)` + `CHECK (code ~ '^[A-Z]{3}$')`; validated against an ISO-4217 allowlist in the app. |
 | Org ownership | Every business table carries `organization_id uuid NOT NULL` **and** `UNIQUE (organization_id, id)` so children can use composite FKs. |
 | Enums | Postgres native `ENUM` types for closed, stable sets (statuses); `text` + `CHECK` for sets likely to grow. Prefer `ENUM`; adding a value is a one-line migration, changing a `CHECK` is not cheaper. |
@@ -55,7 +55,7 @@ audit_events.
 
 ---
 
-## 3. ERD — Identity, tenancy, audit
+## 3. ERD - Identity, tenancy, audit
 
 ```mermaid
 erDiagram
@@ -148,7 +148,7 @@ noted as roadmap, not v0.1.0.
 
 ---
 
-## 4. ERD — Suppliers and parts
+## 4. ERD - Suppliers and parts
 
 ```mermaid
 erDiagram
@@ -282,13 +282,13 @@ erDiagram
 Notes:
 - `parts.normalized_key` is a generated column (lowercase, strip non-alphanumerics) used by the
   normalized-text matching strategy; indexed with `pg_trgm` for fuzzy candidate retrieval.
-- `unit_conversions` with a non-null `part_id` expresses "1 reel of THIS part = 5000 each" — the
+- `unit_conversions` with a non-null `part_id` expresses "1 reel of THIS part = 5000 each" - the
   common real case. Global rows cover kg↔lb, m↔ft. `assumption_note` satisfies SPEC §10's
   "show conversion assumptions explicitly".
 
 ---
 
-## 5. ERD — BOMs and RFQs
+## 5. ERD - BOMs and RFQs
 
 ```mermaid
 erDiagram
@@ -391,7 +391,7 @@ user's feet. `UNIQUE (organization_id, root_bom_id, version_number)`.
 
 ---
 
-## 6. ERD — Quotes, documents, extraction, matching
+## 6. ERD - Quotes, documents, extraction, matching
 
 ```mermaid
 erDiagram
@@ -596,14 +596,14 @@ Key points:
 - `extraction_runs.run_number` gives extraction versioning; re-running never mutates a prior run, it
   supersedes it (`superseded_at`).
 - `quotes.revision` + `supersedes_quote_id` gives quote versioning; scenarios pin a specific quote id.
-- All monetary columns on `quote_lines` are **nullable** — `NULL` means *the supplier did not state
+- All monetary columns on `quote_lines` are **nullable** - `NULL` means *the supplier did not state
   it*, and is carried through as `MISSING`, never coerced to zero (SPEC §7).
 - `injection_flagged` on `extraction_fields` records that the detector saw instruction-like content;
   it is a review signal, not a filter.
 
 ---
 
-## 7. ERD — Analysis, results, outputs
+## 7. ERD - Analysis, results, outputs
 
 ```mermaid
 erDiagram
@@ -765,7 +765,7 @@ later: FX rates (id + value), quote ids + revisions, weights, constraints, assum
 version, solver version. `scenario_results` / `allocation_results` rows are **immutable**; recomputing
 creates a new scenario. This is exactly how SPEC §Scenario comparison's "historical results
 reproducible after assumptions change" is satisfied, and it is why those columns are JSONB rather than
-FKs alone — a FK would follow the mutation.
+FKs alone - a FK would follow the mutation.
 
 ---
 
@@ -784,7 +784,7 @@ FKs alone — a FK would follow the mutation.
 **Price breaks**
 - `ck_price_break_range`: `min_quantity > 0 AND (max_quantity IS NULL OR max_quantity >= min_quantity)`.
 - `uq_price_break_min`: `UNIQUE (quote_line_id, min_quantity)`.
-- **No-overlap:** `EXCLUDE USING gist (quote_line_id WITH =, numrange(min_quantity, COALESCE(max_quantity,'infinity'), '[]') WITH &&)` (requires `btree_gist`). If the principal prefers not to enable the extension, fall back to an application-level validator plus a nightly integrity test — but the DB-level exclusion is strictly better and cheap.
+- **No-overlap:** `EXCLUDE USING gist (quote_line_id WITH =, numrange(min_quantity, COALESCE(max_quantity,'infinity'), '[]') WITH &&)` (requires `btree_gist`). If the principal prefers not to enable the extension, fall back to an application-level validator plus a nightly integrity test - but the DB-level exclusion is strictly better and cheap.
 - Gap detection (tiers must be contiguous) stays in the application: a gap is a warning, an overlap is an error.
 
 **Scoring**
@@ -795,17 +795,17 @@ FKs alone — a FK would follow the mutation.
 - `uq_<table>_org_id`: `UNIQUE (organization_id, id)` on every org-owned parent.
 - Composite FKs on every child (§1).
 
-**Uniqueness with soft delete** — partial indexes so archived rows do not block reuse:
+**Uniqueness with soft delete** - partial indexes so archived rows do not block reuse:
 - `uq_suppliers_org_code_active`: `UNIQUE (organization_id, code) WHERE archived_at IS NULL`
 - `uq_parts_org_ipn_active`: `UNIQUE (organization_id, internal_part_number) WHERE archived_at IS NULL`
 - `uq_rfqs_org_ref_active`: `UNIQUE (organization_id, internal_reference) WHERE archived_at IS NULL`
 - `uq_membership_active`: `UNIQUE (organization_id, user_id) WHERE revoked_at IS NULL`
-- `uq_quote_documents_org_sha`: `UNIQUE (organization_id, content_sha256)` — duplicate upload detection.
+- `uq_quote_documents_org_sha`: `UNIQUE (organization_id, content_sha256)` - duplicate upload detection.
 - `uq_extraction_run_number`: `UNIQUE (document_id, run_number)`
 - `uq_quote_revision`: `UNIQUE (rfq_id, supplier_id, revision)`
 - `uq_exchange_rate_natural`: `UNIQUE (organization_id, base_currency, quote_currency, effective_date, source)`
 
-**State machines** — enforced in the service layer with an explicit transition table; a DB `CHECK`
+**State machines** - enforced in the service layer with an explicit transition table; a DB `CHECK`
 cannot express "from → to". A trigger is possible but is the wrong place for business rules.
 
 ---
@@ -865,7 +865,7 @@ prevention on the review screens, where two analysts editing one quote is realis
 - `archived_at` + `archived_by_id` + `archive_reason`. Repositories exclude archived rows by default;
   an explicit `include_archived=True` is required, and list endpoints expose `?include_archived=`.
 - Archiving is **blocked** when a non-archived dependent exists that would be rendered meaningless
-  (e.g. archiving a supplier referenced by an open RFQ) — returns `409 conflict` with the blockers
+  (e.g. archiving a supplier referenced by an open RFQ) - returns `409 conflict` with the blockers
   listed. Archiving a supplier with only historical scenarios is allowed; historical scenarios keep
   working because they hold snapshots.
 - Un-archive is permitted for `owner`/`administrator` and is itself audited.
@@ -884,9 +884,9 @@ prevention on the review screens, where two analysts editing one quote is realis
 
 1. **Multi-currency within one quote.** SPEC puts `currency` on the quote. Real quotes sometimes price
    freight in a different currency. Modelled as quote-level currency for v0.1.0; per-line currency
-   override is a schema change if the principal wants it — cheaper to decide now than later.
+   override is a schema change if the principal wants it - cheaper to decide now than later.
 2. **Tax vs tariff vs duty** are separate columns but the SPEC never says whether tax is recoverable
-   (VAT) — recoverable tax should not be in landed cost. Proposed: `tax_is_recoverable boolean` on
+   (VAT) - recoverable tax should not be in landed cost. Proposed: `tax_is_recoverable boolean` on
    `quote_terms`, defaulting to `false`, surfaced as an assumption. **Needs a decision.**
 3. **Quantity granularity.** `NUMERIC(18,6)` allows fractional units; the optimizer works in integers.
    Proposed: `unit_definitions.is_integral` drives whether the optimizer may split, and non-integral

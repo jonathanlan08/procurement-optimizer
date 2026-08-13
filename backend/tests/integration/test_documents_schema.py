@@ -658,7 +658,7 @@ class TestDocumentsSchema:
 
     def test_extraction_fields_cascade_on_run_delete(self, fx) -> None:
         """02-erd.md §11's explicit whitelist: extraction_runs ->
-        extraction_fields is a CASCADE pair — a field cannot exist without
+        extraction_fields is a CASCADE pair - a field cannot exist without
         the run that produced it."""
         doc_id = fx.mk_document()
         run_id = fx.mk_run(doc_id)
@@ -679,7 +679,7 @@ class TestDocumentsSchema:
 
     def test_missing_field_represented_as_null_raw_and_normalized_value(self, fx) -> None:
         """04-document-pipeline.md: 'Missing keys become MISSING, never 0 or
-        \"\"' — modeled here as NULL raw_value/normalized_value with a low
+        \"\"' - modeled here as NULL raw_value/normalized_value with a low
         band and zero confidence, not a coerced default."""
         doc_id = fx.mk_document()
         run_id = fx.mk_run(doc_id)

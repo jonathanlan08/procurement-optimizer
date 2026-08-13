@@ -1,13 +1,13 @@
 """PDF renderer: `ReportDocument` -> bytes, via `reportlab` platypus
 (docs/SPEC.md §Reports and exports: "professional PDF").
 
-Built-in Helvetica/Helvetica-Bold only — no custom font files, no network
+Built-in Helvetica/Helvetica-Bold only - no custom font files, no network
 fetch, nothing reportlab must load beyond its own bundled AFM metrics.
 Helvetica is Latin-1 (`cp1252`-adjacent); this codebase's demo dataset and
 every string this renderer prints (supplier names, RFQ/scenario names,
 generated prose) is ASCII/Latin-1 in practice, matching the delegating
 task's own "Helvetica covers the demo dataset" framing. A character outside
-Latin-1 raises inside reportlab rather than silently mangling — treated as a
+Latin-1 raises inside reportlab rather than silently mangling - treated as a
 renderer exception per `app/services/report_service.py`'s "persist as a
 failed row" policy, not specially handled here.
 
@@ -15,7 +15,7 @@ No formula-injection concern: PDF has no live-formula surface, so unlike
 `csv_renderer.py`/`xlsx_renderer.py` this module does NOT call
 `app.reports.escape.escape_formula_cell`. Free text IS escaped for
 reportlab's own mini-XML `Paragraph` markup (`&`, `<`, `>` -> entities) via
-`xml.sax.saxutils.escape` — an unrelated, presentation-layer concern (a
+`xml.sax.saxutils.escape` - an unrelated, presentation-layer concern (a
 literal `<` in a supplier name must not be parsed as a tag), not a security
 control. `_p` escapes plain text with no markup of its own; `_p_labelled`
 escapes `label`/`value` INDIVIDUALLY before splicing in this module's own
@@ -29,7 +29,7 @@ import io
 from xml.sax.saxutils import escape as _xml_escape
 
 # no bundled type stubs, and pyproject.toml's mypy overrides are off-limits
-# for this task — same accepted precedent app/importing/part_import_parser.py
+# for this task - same accepted precedent app/importing/part_import_parser.py
 # already documents for its own openpyxl import.
 from reportlab.lib import colors  # type: ignore[import-untyped]
 from reportlab.lib.pagesizes import letter  # type: ignore[import-untyped]
@@ -54,7 +54,7 @@ def _p(text: str, style_name: str = "BodyText") -> Paragraph:
 
 
 def _p_labelled(label: str, value: str, style_name: str = "BodyText") -> Paragraph:
-    """`<b>label:</b> value` — `label`/`value` escaped individually before
+    """`<b>label:</b> value` - `label`/`value` escaped individually before
     this module's own literal bold markup is added around them."""
     return Paragraph(f"<b>{_xml_escape(label)}:</b> {_xml_escape(value)}", _STYLES[style_name])
 

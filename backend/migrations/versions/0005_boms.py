@@ -36,7 +36,7 @@ def upgrade() -> None:
             nullable=False,
         ),
         # stable across every version of one BOM; self-referential (the first
-        # version's row points at its own id — see app/models/boms.py).
+        # version's row points at its own id - see app/models/boms.py).
         sa.Column("root_bom_id", pg.UUID(as_uuid=True), nullable=False),
         sa.Column("version_number", sa.Integer(), nullable=False, server_default="1"),
         # NULL only for the first version of a BOM.
@@ -78,7 +78,7 @@ def upgrade() -> None:
             ondelete="RESTRICT",
             name="fk_bills_of_materials_organization_id_previous_version_id",
         ),
-        # 02-erd.md §10: copy-on-write concurrency guard — a second writer
+        # 02-erd.md §10: copy-on-write concurrency guard - a second writer
         # racing to create the same next version fails this constraint.
         sa.UniqueConstraint(
             "organization_id",
@@ -121,7 +121,7 @@ def upgrade() -> None:
         sa.Column("part_id", pg.UUID(as_uuid=True), nullable=False),
         sa.Column("quantity_per_assembly", sa.Numeric(18, 6), nullable=False),
         sa.Column(
-            # plain FK — unit_definitions.organization_id is nullable (global
+            # plain FK - unit_definitions.organization_id is nullable (global
             # catalogue), so the composite org-guard FK cannot apply here
             # (see Part.unit_definition_id, migration 0004).
             "unit_definition_id",
@@ -131,7 +131,7 @@ def upgrade() -> None:
         ),
         sa.Column("is_optional", sa.Boolean(), nullable=False, server_default=sa.false()),
         # nullable: an approved substitute for this line's part (SPEC §4
-        # "optional substitutes") — see app/models/boms.py module docstring.
+        # "optional substitutes") - see app/models/boms.py module docstring.
         sa.Column("substitute_part_id", pg.UUID(as_uuid=True), nullable=True),
         sa.Column("notes", sa.Text(), nullable=True),
         sa.UniqueConstraint(

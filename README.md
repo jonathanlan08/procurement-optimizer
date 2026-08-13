@@ -5,7 +5,7 @@
 
 A full-stack vendor-negotiation and procurement-optimization platform that turns
 inconsistent supplier quotes into transparent landed-cost comparisons, configurable vendor
-scores, optimized order allocations, and grounded negotiation briefs — with a complete audit
+scores, optimized order allocations, and grounded negotiation briefs - with a complete audit
 trail behind every number.
 
 **Synthetic demonstration data only.** No real supplier, price, or BOM data appears
@@ -16,7 +16,7 @@ anywhere in this repository.
 ## The problem this solves
 
 The cheapest unit price is routinely not the cheapest purchase. An offshore supplier quoting
-CNY 105.00 per bearing housing — the lowest normalized unit price of every bidder — can still
+CNY 105.00 per bearing housing - the lowest normalized unit price of every bidder - can still
 cost the most per delivered unit once you add ocean freight, insurance, tariffs, a tooling
 charge, quality-risk exposure, and the cash-flow difference between Net 30 and Net 60.
 Procurement teams routinely make six-figure decisions in a spreadsheet that models none of
@@ -26,7 +26,7 @@ This platform makes that comparison explicit and reproducible: it computes an **
 decimal** landed cost per quote line with every component, formula, assumption, and missing
 input shown; scores suppliers against weights you control; and hands the result to a CP-SAT
 solver that reports honestly whether the allocation it found is *proven optimal*, merely
-*feasible*, or *infeasible* — and, when infeasible, which constraints conflict and what
+*feasible*, or *infeasible* - and, when infeasible, which constraints conflict and what
 minimal relaxation would fix it. The bundled demo dataset **engineers the price inversion on
 purpose**: Shenzhen Precision has the lowest raw unit price on the bearing-housing line and
 the highest landed effective unit cost of the four bidders, and a test asserts it.
@@ -60,18 +60,18 @@ transactional, audited); bills of materials with a copy-on-write version chain.
 suppliers, exclude them with a reason, reinstate them. Status transitions are validated and
 preserved as history.
 
-**3 · Quotes — manual or extracted from documents.** Upload a PDF, scanned image, CSV, or
+**3 · Quotes - manual or extracted from documents.** Upload a PDF, scanned image, CSV, or
 XLSX. Every upload is treated as hostile: type decided by **magic bytes**, filenames
 sanitized to display-only metadata, storage keys server-generated and org-namespaced, and
 size, row/column, and decompression-bomb bounds enforced. Document text is scanned by an
 injection canary that *flags without blocking* (zero-width-evasion-normalized), and the
 **per-request nonce fence** is the mandatory envelope any future AI provider must receive
-document text through — the shipped mock answers from committed fixtures and never sees a
+document text through - the shipped mock answers from committed fixtures and never sees a
 prompt at all. Extracted fields carry per-field confidence bands (≥ 0.95 high, ≥ 0.60 medium,
 below 0.60 low), and **materialization is blocked while any low-confidence field is
 unconfirmed**. Mock-provider results are labelled "Simulated" wherever they surface.
 
-**4 · Landed cost — exact decimal, fully explained.** Seven components (extended material,
+**4 · Landed cost - exact decimal, fully explained.** Seven components (extended material,
 allocated fixed, logistics, import, quality risk, delay risk, and the one **signed**
 component, financing). Every value is a `Decimal` at 34-digit precision with banker's
 rounding, quantized once per component so the displayed parts sum **exactly** to the
@@ -79,7 +79,7 @@ displayed total. A missing input never silently becomes zero: it becomes a recor
 `MissingInput` with a consequence sentence, and the result's completeness degrades. Money
 crosses the wire as a string and is never parsed into a JavaScript `number`.
 
-**5 · Configurable scoring.** Min–max normalization across the cohort, explicit
+**5 · Configurable scoring.** Min-max normalization across the cohort, explicit
 higher/lower-is-better direction per criterion, ties scoring 1.0 for everyone, per-supplier
 weight **renormalization** when a criterion is missing (never imputation), zero-weight
 criteria still displayed, outliers deliberately **not** clipped, and a human-readable reason
@@ -90,21 +90,21 @@ weights are labelled as sample assumptions in both the code and the database.
 tiers, maximum supplier count, cost-basis concentration cap, budget limit, locked
 allocations, and exclusions. Determinism is engineered: single search worker, fixed seed,
 deterministic time budget, canonically sorted inputs, and a stored `model_hash`. The
-reported cost is an **exact `Decimal` recomputation** of the chosen allocation — never the
-solver's scaled objective — guarded by a `ConsistencyError` if the solver's tier choice and
+reported cost is an **exact `Decimal` recomputation** of the chosen allocation - never the
+solver's scaled objective - guarded by a `ConsistencyError` if the solver's tier choice and
 the exact price-break re-selection ever disagree.
 
 **7 · Negotiation briefs, grounded in stored facts.** Every figure comes from a persisted
 landed-cost result, scoring output, quote line, or performance record. Price target, stretch
 target, and walk-away threshold are computed with their formulas disclosed. Each section
-carries a provenance badge — supplier-provided, user assumption, calculated, AI narrative, or
-missing — and a numeric cross-check re-parses every number in the generated prose and refuses
+carries a provenance badge - supplier-provided, user assumption, calculated, AI narrative, or
+missing - and a numeric cross-check re-parses every number in the generated prose and refuses
 any figure that is not already a stored fact. **The system never sends email**, and a test
 asserts no route containing "send" or "email" exists.
 
 **8 · Reports.** Supplier comparison, CFO recommendation, negotiation brief, scenario
 summary, and audit history, rendered to CSV, XLSX, or PDF from a single renderer-agnostic
-document model. Every figure is read from stored rows — nothing is recomputed differently
+document model. Every figure is read from stored rows - nothing is recomputed differently
 from what the API already returned. CSV and XLSX cells pass through a shared
 formula-injection escape.
 
@@ -117,7 +117,7 @@ with before/after state diffs.
 
 Two supported paths. Both end with a seeded demo organization you can sign into.
 
-### Path A — Docker Compose (standard)
+### Path A - Docker Compose (standard)
 
 `docker-compose.yml` provides PostgreSQL 16 and MinIO; the application processes run on the
 host.
@@ -146,7 +146,7 @@ npm run dev                          # http://localhost:5173
 MinIO is only needed if you set `PO_STORAGE_PROVIDER=s3`; the default filesystem provider
 needs nothing.
 
-### Path B — no Docker (the path this project was built on)
+### Path B - no Docker (the path this project was built on)
 
 The development machine had neither Docker nor Homebrew, so this path is fully supported:
 `pgserver` boots a real user-space PostgreSQL, and Node lives under `~/.local/node22`.
@@ -174,7 +174,7 @@ BACKEND_PORT=8001 npm run dev          # Vite proxies /api → localhost:8001
 ```
 
 `backend/scripts/dev_db.py` keeps its data directory at
-`~/.local/share/procurement-optimizer/pgdata`, deliberately outside the repository —
+`~/.local/share/procurement-optimizer/pgdata`, deliberately outside the repository -
 `pgserver` passes the socket path unquoted to `pg_ctl`, so a repository path containing
 spaces would break it.
 
@@ -194,7 +194,7 @@ workflow, the viewer to see the read-only role enforced server-side.
 
 ### The demo dataset
 
-6 suppliers across 5 currencies (USD, EUR, CNY, MXN, SEK) with lead times spanning 7–45
+6 suppliers across 5 currencies (USD, EUR, CNY, MXN, SEK) with lead times spanning 7-45
 days · 19 parts in 6 categories · 2 BOMs including a two-version chain · 3 RFQs · 4 manual
 quotes · 4 synthetic quote documents (PDF, scanned PNG, CSV, XLSX) with committed golden
 extractions · 3 scenarios: a feasible baseline, a deliberately infeasible budget ceiling, and
@@ -214,7 +214,7 @@ export PATH="$HOME/.local/node22/bin:$PATH"
 cd frontend && npm test                     # 90 passed in 17 files
 ```
 
-**972 backend tests, all passing** — 472 unit (pure domain: money, landed cost, price
+**972 backend tests, all passing** - 472 unit (pure domain: money, landed cost, price
 breaks, scoring, solver, matching, normalization, file validation, storage), 495 integration
 against a **real PostgreSQL** (no SQLite anywhere), and 5 contract tests that fail if any
 route's declared permissions drift from what its dependencies actually enforce. **90 frontend
@@ -252,10 +252,10 @@ the organization (it comes from the session row); every repository is genericall
 one organization so mypy verifies the filter statically; composite `(organization_id, id)`
 foreign keys make a cross-org reference refusable by PostgreSQL itself; and a contract test
 fails CI if any route lacks a permission declaration. Cross-organization access returns
-**404, never 403** — existence must not leak. Authentication uses argon2id, stores only
+**404, never 403** - existence must not leak. Authentication uses argon2id, stores only
 `sha256(session_token)`, verifies a dummy hash on absent or locked accounts to close the
 timing oracle, and writes lockout counters in their own transaction so a rolled-back request
-cannot erase them. Every mutation — including login — is checked against an Origin allowlist
+cannot erase them. Every mutation - including login - is checked against an Origin allowlist
 *and* a per-session CSRF token. Uploaded documents are sniffed by magic bytes, stored under
 server-generated keys, and never exposed by URL. Document text reaches an AI provider only
 inside a nonce fence, with an injection canary that flags and audits without dropping the
@@ -272,7 +272,7 @@ Stated plainly, because a portfolio project that hides its edges is not worth re
   **inline inside the HTTP request**. A long CP-SAT solve holds a request open.
 - **The narrative provider is a deterministic template.** `AiNarrativeProvider` is a real
   seam and `PO_NARRATIVE_PROVIDER=anthropic` is a valid setting, but **no Anthropic adapter
-  ships** — selecting it raises `ProviderUnavailableError` rather than silently substituting
+  ships** - selecting it raises `ProviderUnavailableError` rather than silently substituting
   the template. The same is true of the extraction provider: the mock returns committed
   golden fixtures and is always labelled `simulated`.
 - **No `PATCH` on negotiation briefs.** A brief can be generated, read, reviewed, and
@@ -284,11 +284,11 @@ Stated plainly, because a portfolio project that hides its edges is not worth re
   surface.
 - **`COMPLETE` completeness is reachable, but rarely reached in practice.** `documentation_cost`
   and `handling_cost` (migration 0016, 2026-08 product-audit remediation) are now real,
-  optional columns on `quote_lines`, so a landed-cost result **can** be `COMPLETE` — but only
+  optional columns on `quote_lines`, so a landed-cost result **can** be `COMPLETE` - but only
   when every commercial field on the line is populated and every risk/financing assumption is
   supplied, which most real quotes and scenarios won't have. Most persisted results are still
   `INCOMPLETE` or `ASSUMPTION_DEPENDENT` in practice. Full history in
-  [docs/METHODOLOGY.md](docs/METHODOLOGY.md) §7 — including why the solver's eligibility gate
+  [docs/METHODOLOGY.md](docs/METHODOLOGY.md) §7 - including why the solver's eligibility gate
   is `INCOMPLETE` rather than "not `COMPLETE`".
 - **Audit actor UUIDs are unresolved in the UI.** `actor_user_id` is shown as a truncated
   id (full value on hover); nothing joins it to `users.full_name` yet.
@@ -304,7 +304,7 @@ Everything above, with what exists today and what remains, is tracked in
 | Document | Contents |
 |---|---|
 | [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Layers, isolation stack, middleware, providers, the inline-jobs decision, SPA structure |
-| [DATABASE.md](docs/DATABASE.md) | Schema conventions, composite org FKs, numeric scales, migration inventory `0001`–`0016` |
+| [DATABASE.md](docs/DATABASE.md) | Schema conventions, composite org FKs, numeric scales, migration inventory `0001`-`0016` |
 | [DATA_DICTIONARY.md](docs/DATA_DICTIONARY.md) | All 40 tables, column by column, plus every enum |
 | [METHODOLOGY.md](docs/METHODOLOGY.md) | Decimal policy, landed-cost formulas, the hand-verified worked example, FX/units, scoring |
 | [DOCUMENT_PIPELINE.md](docs/DOCUMENT_PIPELINE.md) | Upload security, acquisition, the injection trust boundary, validation ladder, matching |
@@ -327,4 +327,4 @@ without the solver's own proof.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT - see [LICENSE](LICENSE).

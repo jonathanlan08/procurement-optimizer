@@ -3,14 +3,14 @@
 api/v1/suppliers.py.
 
 Roles per the contract's route table: `GET/POST /suppliers/{id}/contacts` is
-`O A N (V read)` — list is viewer+, create is analyst+. `PATCH/DELETE
-/suppliers/{id}/contacts/{cid}` is `O A N` — no viewer access, and "delete =
+`O A N (V read)` - list is viewer+, create is analyst+. `PATCH/DELETE
+/suppliers/{id}/contacts/{cid}` is `O A N` - no viewer access, and "delete =
 archive" (soft delete, never a hard delete).
 
 Deviation from this task's prose (contract wins, per instructions): contacts
 have no `version` column (see app.models.suppliers.SupplierContact and
 app.schemas.supplier_contacts module docstring), so unlike
-`PATCH /suppliers/{id}` there is no `If-Match`/`ETag` handling here — §1.7
+`PATCH /suppliers/{id}` there is no `If-Match`/`ETag` handling here - §1.7
 does not list contacts among the resources that carry optimistic concurrency.
 
 Deviation: the contract does not specify a request/response shape for

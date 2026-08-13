@@ -1,4 +1,4 @@
-"""Negotiation-brief service — assembles a grounded `NegotiationBrief` from
+"""Negotiation-brief service - assembles a grounded `NegotiationBrief` from
 an already-complete `ComparisonScenario` (docs/SPEC.md §Negotiation brief,
 docs/planning/02-erd.md §7, docs/planning/03-api-contract.md §4.17,
 app/models/briefs.py, app/providers/narrative/{base,template}.py).
@@ -8,10 +8,10 @@ Services never commit: the request-scoped `get_db` dependency
 exception. `generate` writes exactly one audit event (`brief.generated`) in
 the same transaction as the row it describes.
 
-## Deviation 1 — `POST .../negotiation-briefs` runs synchronously, `201` not `202`
+## Deviation 1 - `POST .../negotiation-briefs` runs synchronously, `201` not `202`
 
 03-api-contract.md §4.17's literal table says `-> 202`. This codebase has no
-job queue anywhere — `services/extraction_service.py`'s own module docstring
+job queue anywhere - `services/extraction_service.py`'s own module docstring
 establishes `JOB_RUNNER=inline` as the only shape this v0.1 build
 implements, and `api/v1/extractions.py`/`api/v1/matching.py`/
 `api/v1/scenarios.py` already apply that precedent to collapse their own
@@ -20,22 +20,22 @@ own module docstring documents the same reasoning). This module and
 `api/v1/briefs.py` do the same: `generate` runs to completion in one call,
 returning the finished brief, `201`.
 
-## Deviation 2 — no `PATCH /negotiation-briefs/{id}` in this build
+## Deviation 2 - no `PATCH /negotiation-briefs/{id}` in this build
 
 §4.17 also lists `PATCH .../{id}` for "human edits to any section, audited".
 This task's own OBJECTIVE text, which enumerates every route/schema/service
 method this file and `api/v1/briefs.py` must implement, does not mention an
-edit endpoint at all (only generate/get/review/archive/list) — deliberately
+edit endpoint at all (only generate/get/review/archive/list) - deliberately
 narrower than the contract table, the same "task's own explicit scope wins
 over an unlisted contract route" precedent this codebase already applies
 elsewhere (e.g. `api/v1/scenarios.py` implementing no edit route for
 `ComparisonScenario` either). `sections` has no per-field edit-history
 column in the ERD box (`02-erd.md §7`) to hang an audited diff off of, so
-building this properly is a materially larger addition than "add a route" —
+building this properly is a materially larger addition than "add a route" -
 left as a documented gap for a future phase, not silently implemented with a
 half shape.
 
-## Deviation 3 — no `/email-draft` route in this build
+## Deviation 3 - no `/email-draft` route in this build
 
 §4.17 lists `GET .../{id}/email-draft` ("returns text only... no send
 endpoint and there will not be one"). This task's own OBJECTIVE is
@@ -43,7 +43,7 @@ explicit in the other direction: "NO send/email endpoint (assert in tests
 that no such route exists)". The two are reconciled, not contradicted: the
 contract's own route is a read of already-generated draft text, never a
 send action, so it does not conflict with "never auto-send" on its own
-terms — but adding a route whose path literally contains "email" when the
+terms - but adding a route whose path literally contains "email" when the
 task's own test requirement is "assert no such route exists" is a needless
 risk for zero behavioral gain, since `GET /negotiation-briefs/{id}` already
 returns `draft_email_subject`/`draft_email_body` (top-level columns, per the
@@ -55,14 +55,14 @@ ERD box) as part of the full brief. No separate route is mounted;
 Every figure in `sections`/`price_target`/`stretch_target`/
 `walk_away_threshold` is read from a stored `LandedCostResult`,
 `ScenarioResult.scoring_output`, `QuoteLine`/`QuoteTerms`, or
-`SupplierPerformanceRecord` row already persisted by an earlier phase — this
+`SupplierPerformanceRecord` row already persisted by an earlier phase - this
 module computes aggregates (sums, averages, a `* 0.97` stretch multiplier)
 over those numbers but never fabricates a market benchmark, a competitor
 quote, a historical price, or a delivery promise. `AiNarrativeProvider.
 render_sections` (`providers/narrative/base.py`) receives only a flat
 `brief_facts` dict built from those same numbers; `_numeric_cross_check`
 below re-parses every decimal-looking token the provider's rendered text
-contains and asserts each one already appears somewhere in `brief_facts` —
+contains and asserts each one already appears somewhere in `brief_facts` -
 the mechanical guard against an invented figure slipping into prose a human
 reviewer might not hand-verify.
 
@@ -70,15 +70,15 @@ reviewer might not hand-verify.
 
 Eleven sections (`app.providers.narrative.base.NARRATIVE_SECTION_KEYS`) are
 synthesized prose, rendered by `AiNarrativeProvider.render_sections` and
-labelled `AI_NARRATIVE` — except `procurement_objective`, whose provenance
+labelled `AI_NARRATIVE` - except `procurement_objective`, whose provenance
 is `USER_ASSUMPTION` when the caller supplied `objective_override` text (a
-human-authored override, exempt from the numeric cross-check by design —
+human-authored override, exempt from the numeric cross-check by design -
 see `generate`) or `CALCULATED` otherwise. The remaining seven SPEC sections
 (`quoted_unit_price`, `effective_unit_cost`, `landed_cost_comparison`,
 `price_target`, `stretch_target`, `walk_away_threshold`,
 `volume_leverage`, `payment_terms_opportunity`) are bare figures with a
 disclosed formula, written directly by this module as
-`SUPPLIER_PROVIDED`/`CALCULATED`/`MISSING` — never passed through a
+`SUPPLIER_PROVIDED`/`CALCULATED`/`MISSING` - never passed through a
 narrative provider, so there is nothing for the cross-check to police there
 (the number IS the fact, not prose built on top of it).
 
@@ -90,24 +90,24 @@ exceed a supplier's own quoted price, and the draft email then invited a
 price INCREASE). The subject's PRIMARY line is the allocated line with the
 largest landed spend (ties: lowest line number).
 
-`target = best same-line alternative's landed unit cost` — the lowest
+`target = best same-line alternative's landed unit cost` - the lowest
 landed unit cost for the PRIMARY line's `rfq_line_id` among this scenario's
 OTHER scored, non-excluded suppliers, computed per line as that line's
 `total_landed_cost / accepted_quantity` from `quote_snapshot_refs` +
 `LandedCostResult` rows (re-derived rather than read off
 `ScenarioResult.scoring_output`, because that JSONB's `criterion_scores`
 only ever contains the criteria the scenario's OWN `strategy` happened to
-weight, per `domain/scoring/scorer.py`'s `for spec in weights` loop — a
+weight, per `domain/scoring/scorer.py`'s `for spec in weights` loop - a
 `lowest_unit_price` scenario's scoring output carries no
 `EFFECTIVE_UNIT_COST`/`TOTAL_LANDED_COST` entries at all).
 
 GUARDRAILS: (1) if no other supplier quotes the SAME RFQ line, the target is
-`None` (MISSING) — a different part's price is not a benchmark; (2) if the
+`None` (MISSING) - a different part's price is not a benchmark; (2) if the
 best same-line alternative is NOT cheaper than the subject's own landed unit
-cost on that line, the target is `None` with a CALCULATED explanation — a
+cost on that line, the target is `None` with a CALCULATED explanation - a
 target above the supplier's current cost would invite a price increase;
 (3) the draft email's price ask renders only when the target is also below
-the supplier's bare QUOTED price (`email_price_target` fact) — a
+the supplier's bare QUOTED price (`email_price_target` fact) - a
 landed-basis target above the quoted price reads as an invitation to raise
 it, so those gaps are pursued via the concessions list instead.
 
@@ -163,7 +163,7 @@ STRETCH_FACTOR: Decimal = Decimal("0.97")
 
 # Any number-looking token: integers included (MOQ, lead-time days, unit
 # counts, whole-dollar savings and percentages are all integers in this
-# domain — the original decimals-only pattern let every one of them through;
+# domain - the original decimals-only pattern let every one of them through;
 # 2026-08 calculation audit F6), with thousands separators/underscores
 # tolerated and stripped before comparison.
 _NUMBER_TOKEN_RE = re.compile(r"-?\d[\d,_]*(?:\.\d+)?")
@@ -210,7 +210,7 @@ def build_narrative_provider(settings: Settings) -> AiNarrativeProvider:
     if settings.narrative_provider is NarrativeProviderKind.TEMPLATE:
         return TemplateNarrativeProvider()
     # No Anthropic adapter module exists under app.providers.narrative in
-    # this build (only base.py/template.py) — base.py's own docstring calls
+    # this build (only base.py/template.py) - base.py's own docstring calls
     # it "roadmap", future/optional, not implemented here.
     raise ProviderUnavailableError(
         "The 'anthropic' narrative provider has no adapter implementation in "
@@ -242,13 +242,13 @@ def _collect_number_tokens(value: Any) -> set[Decimal]:
 
 
 def numeric_cross_check(rendered: dict[str, str], brief_facts: dict[str, Any]) -> None:
-    """After narrative rendering: every number-looking token — integers
-    included, separators stripped — in the provider's rendered text must
+    """After narrative rendering: every number-looking token - integers
+    included, separators stripped - in the provider's rendered text must
     equal (as an exact `Decimal`, so `500` matches a stored `500.000000` but
-    `14.48` does NOT match `14.48109664` — rounding a fact is a provider bug
+    `14.48` does NOT match `14.48109664` - rounding a fact is a provider bug
     that fails closed) some number already present in `brief_facts`'s own
-    values. Raises `ValidationAppError` — a clear, generation-halting error,
-    never a silently-shipped brief — on the first token that fails. This is
+    values. Raises `ValidationAppError` - a clear, generation-halting error,
+    never a silently-shipped brief - on the first token that fails. This is
     the guard `docs/SPEC.md` §Negotiation brief's "AI must not invent...
     savings, concessions..." names; widened from decimals-only after the
     2026-08 calculation audit (F6) showed fabricated integers (MOQ, days,
@@ -285,7 +285,7 @@ def _find_supplier_score(
 
 @dataclass(frozen=True, slots=True)
 class _LineAggregate:
-    """One allocated quote line's landed economics — the unit this brief
+    """One allocated quote line's landed economics - the unit this brief
     negotiates in. Mixing lines for DIFFERENT parts into one per-unit figure
     produced actively misleading targets (2026-08 external review P1: a
     blended cross-part average exceeded a supplier's own quoted price and the
@@ -310,7 +310,7 @@ class _OfferAggregate:
     supplier_id: uuid.UUID
     total_landed_cost: Decimal
     total_accepted_quantity: Decimal
-    effective_unit_cost: Decimal  # blended across lines — offer TOTALS only, never a target
+    effective_unit_cost: Decimal  # blended across lines - offer TOTALS only, never a target
     currency: str
     quote_lines: tuple[QuoteLine, ...]
     quote_currency: str | None
@@ -324,7 +324,7 @@ class _OfferAggregate:
 
     @property
     def primary_line(self) -> _LineAggregate | None:
-        """The line carrying the largest landed spend — the headline
+        """The line carrying the largest landed spend - the headline
         negotiation subject (ties broken by line number for determinism)."""
         if not self.line_aggregates:
             return None
@@ -425,7 +425,7 @@ class BriefService:
                     payment_terms_days = terms.payment_terms_days
                     payment_terms_text = terms.payment_terms
 
-        # "Quoted unit price" is the PRIMARY line's stated figure — the line
+        # "Quoted unit price" is the PRIMARY line's stated figure - the line
         # carrying the largest landed spend, not whichever ref happened to come
         # first (2026-08 review P1: the headline price must belong to the same
         # line every target below is computed on).
@@ -559,7 +559,7 @@ class BriefService:
         # -- price target / stretch / walk-away (module docstring) --------
         # Per-line benchmark (2026-08 review P1). Targets are computed on the
         # subject's PRIMARY line against alternatives' landed unit cost for the
-        # SAME RFQ line — same part, same landed basis. A blended cross-part
+        # SAME RFQ line - same part, same landed basis. A blended cross-part
         # average is never used as a per-unit figure, and a benchmark that is
         # not cheaper than the subject's own cost yields NO target rather than
         # an invitation to raise prices.
@@ -599,7 +599,7 @@ class BriefService:
                 f"alternative on the same RFQ line ({best_line_alt[0]['supplier_name']}, "
                 f"{to_wire(best_line_alt[1].landed_unit_cost)} {subject_offer.currency} "
                 f"landed per unit) is not cheaper than {supplier.name}'s own "
-                f"{to_wire(primary_line.landed_unit_cost)} {subject_offer.currency} — a "
+                f"{to_wire(primary_line.landed_unit_cost)} {subject_offer.currency} - a "
                 "target above the supplier's current cost would invite a price increase, "
                 "so none is set."
             )
@@ -608,7 +608,7 @@ class BriefService:
             price_target_provenance = SectionProvenance.CALCULATED
             price_target_text = (
                 f"Price target for {primary_line.label}: {to_wire(price_target)} "
-                f"{subject_offer.currency} per unit (landed) — CALCULATED as the best "
+                f"{subject_offer.currency} per unit (landed) - CALCULATED as the best "
                 f"alternative scored supplier's ({best_line_alt[0]['supplier_name']}) "
                 "landed unit cost for the SAME RFQ line."
             )
@@ -628,7 +628,7 @@ class BriefService:
             stretch_target_provenance = SectionProvenance.CALCULATED
             stretch_target_text = (
                 f"Stretch target: {to_wire(stretch_target)} {subject_offer.currency} per unit "
-                f"— CALCULATED as price target ({to_wire(price_target)}) x "
+                f"- CALCULATED as price target ({to_wire(price_target)}) x "
                 f"{to_wire(STRETCH_FACTOR)} (a modest, achievable ask above the target)."
             )
         else:
@@ -650,7 +650,7 @@ class BriefService:
             walk_away_provenance = SectionProvenance.CALCULATED
             walk_away_text = (
                 f"Walk-away threshold for {primary_line.label}: "
-                f"{to_wire(walk_away_threshold)} {subject_offer.currency} per unit — "
+                f"{to_wire(walk_away_threshold)} {subject_offer.currency} per unit - "
                 f"CALCULATED as {supplier.name}'s OWN current landed unit cost on that "
                 "line: continuing to buy from them above this price provides no "
                 "advantage over their current pricing."
@@ -660,7 +660,7 @@ class BriefService:
             walk_away_provenance = SectionProvenance.CALCULATED
             walk_away_text = (
                 f"Walk-away threshold: {to_wire(walk_away_threshold)} {subject_offer.currency} "
-                f"per unit — CALCULATED as {supplier.name}'s OWN current effective (landed) "
+                f"per unit - CALCULATED as {supplier.name}'s OWN current effective (landed) "
                 "unit cost: continuing to buy from them above this price provides no "
                 "advantage over their current pricing."
             )
@@ -797,12 +797,12 @@ class BriefService:
             "text": (
                 f"Effective unit cost (landed, all cost components included): "
                 f"{to_wire(subject_offer.effective_unit_cost)} {subject_offer.currency} per "
-                f"unit — CALCULATED as total landed cost / accepted quantity "
+                f"unit - CALCULATED as total landed cost / accepted quantity "
                 f"({to_wire(subject_offer.total_landed_cost)} / "
                 f"{to_wire(subject_offer.total_accepted_quantity)})."
                 + (
                     " NOTE: blended across "
-                    f"{len(subject_offer.line_aggregates)} lines for different parts — an "
+                    f"{len(subject_offer.line_aggregates)} lines for different parts - an "
                     "offer-total figure, not a negotiable per-part price; see the per-line "
                     "comparison."
                     if multi_line
@@ -812,7 +812,7 @@ class BriefService:
             "data": {"amount": to_wire(subject_offer.effective_unit_cost)},
         }
 
-        # Per-line comparison — the honest unit for every per-part number above.
+        # Per-line comparison - the honest unit for every per-part number above.
         per_line_rows: list[dict[str, str | None]] = []
         per_line_texts: list[str] = []
         for la in subject_offer.line_aggregates:
@@ -835,7 +835,7 @@ class BriefService:
             per_line_texts.append(
                 f"{la.label}: {to_wire(la.accepted_quantity)} units at "
                 f"{to_wire(la.landed_unit_cost)} {subject_offer.currency} landed per unit "
-                f"— {alt_text}."
+                f"- {alt_text}."
             )
             per_line_rows.append(
                 {
@@ -917,7 +917,7 @@ class BriefService:
             "provenance": SectionProvenance.CALCULATED.value,
             "text": (
                 f"This RFQ requests {to_wire(rfq_total_quantity)} total units across "
-                f"{len(rfq_lines)} line(s) — CALCULATED as the sum of each RFQ line's "
+                f"{len(rfq_lines)} line(s) - CALCULATED as the sum of each RFQ line's "
                 "required quantity."
             ),
             "data": {"total_quantity": to_wire(rfq_total_quantity)},
@@ -1232,7 +1232,7 @@ def _build_facts(
         if subject_offer.primary_line is not None
         else None,
         # The draft email asks for a price move ONLY when the target is an
-        # actual reduction of the number the supplier wrote on the quote —
+        # actual reduction of the number the supplier wrote on the quote -
         # a landed-basis target above the bare quoted price reads as an
         # invitation to raise the price (2026-08 review P1). When the gap is
         # in landed components rather than the quoted price, the email leans

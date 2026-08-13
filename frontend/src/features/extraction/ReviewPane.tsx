@@ -3,18 +3,18 @@
  * / "Extract" actions via a callback that bubbles up to RfqsPage.tsx (the
  * ALLOWED "Review extraction wiring line" edit there) and renders this
  * component as a page-level sibling of the RFQ drawer, not nested inside
- * it — a review surface this dense needs the full viewport, not a
+ * it - a review surface this dense needs the full viewport, not a
  * fixed-width side panel.
  *
  * Design decisions:
  *  - **Not built on components/Drawer.tsx** (FORBIDDEN to edit, and it is a
- *    fixed-width *side* panel — there is no "full screen" variant to opt
+ *    fixed-width *side* panel - there is no "full screen" variant to opt
  *    into without editing it). This file implements its own overlay/panel
  *    markup (extraction.css) plus a small self-contained focus-trap +
  *    Escape-to-close effect, deliberately simpler than Drawer.tsx's own
  *    (no restore-focus-to-trigger, since this panel can be opened from
  *    several different trigger buttons across DocumentsSection's list, and
- *    no participation in Drawer.tsx's private `drawerStack` module — that
+ *    no participation in Drawer.tsx's private `drawerStack` module - that
  *    symbol isn't exported). **Known quirk, same class already documented
  *    in features/quotes/QuotesSection.tsx's own file header for stacking
  *    two real `Drawer` instances**: because this panel's Escape handling is
@@ -30,28 +30,28 @@
  *  - **Field "status" is a 4-way UI simplification of two independent API
  *    booleans** (`is_confirmed`, `requires_confirmation`) plus a validity
  *    signal (`normalized_value === null` while `raw_value !== null` means
- *    the extracted text failed type/business validation —
+ *    the extracted text failed type/business validation -
  *    `services/extraction_service.py`'s `_validate_value`/`mark_invalid`):
  *    `invalid` (validation failed) > `confirmed` (`is_confirmed`) >
  *    `needs_review` (`requires_confirmation` and not yet confirmed) >
- *    `accepted` (a HIGH-band field nobody has touched — auto-accepted per
+ *    `accepted` (a HIGH-band field nobody has touched - auto-accepted per
  *    `ConfidenceBand`'s own docstring, "accepted automatically, still
  *    correctable", not one of the three states the brief names but a
  *    useful fourth label rather than mislabeling it "needs review").
  *  - **Match-candidate confidence has no pre-computed `band`** (unlike
- *    `ExtractionFieldResponse.band` — `MatchCandidateResponse` only carries
+ *    `ExtractionFieldResponse.band` - `MatchCandidateResponse` only carries
  *    the raw `confidence` decimal string), so this file derives one with
  *    `lib/decimalSort.ts`'s existing `compareDecimalStrings` against the
- *    same 0.95/0.60 thresholds MASTER.md documents — a client-side mirror
+ *    same 0.95/0.60 thresholds MASTER.md documents - a client-side mirror
  *    of `app.domain.confidence.band()`, the same kind of "advisory,
  *    non-authoritative" duplication features/quotes/QuotesSection.tsx's own
  *    header already documents for its price-break structural hints.
  *  - **Per-candidate "Confirm"/"Reject" is a judgment call over the real
- *    line-addressed API** — see ./api.ts's file header for the full
+ *    line-addressed API** - see ./api.ts's file header for the full
  *    rationale; "Confirm" calls `useConfirmQuoteLineMatch` with that
  *    candidate's own `rfq_line_id`, "Reject" (rendered only on the line's
  *    currently-confirmed candidate) calls `useUnmatchQuoteLineMatch`.
- *  - **Materialize renders a quote reference, not a live link** — this app
+ *  - **Materialize renders a quote reference, not a live link** - this app
  *    has no standalone quote detail route (quotes only render inside the
  *    RFQ drawer's own QuotesSection); on success this pane shows the new
  *    quote's number/id and points the reviewer at "this RFQ's Quotes
@@ -176,7 +176,7 @@ function RunStateBadge({ state }: { state: ExtractionRunState }) {
   return <span className={`badge badge--run-${state}`}>{statusLabel(state)}</span>;
 }
 
-/** "lines[0].country_of_origin" -> "Line 1 · Country of origin" — raw
+/** "lines[0].country_of_origin" -> "Line 1 · Country of origin" - raw
  * machine paths overwhelmed reviewers (2026-08 external review P1/P2). The
  * machine path stays available on the element's title attribute. */
 function humanizeFieldPath(path: string): string {
@@ -241,7 +241,7 @@ function RunHeader({ run }: { run: ExtractionRunResponse }) {
           <strong>Possible prompt injection detected</strong>
           <span>
             This document contained instruction-like text embedded in its content. It was ignored
-            during extraction and flagged — review every value on this run carefully before
+            during extraction and flagged - review every value on this run carefully before
             confirming fields or creating a quote from it.
           </span>
         </div>
@@ -337,7 +337,7 @@ function FieldRow({
       </td>
       <td>
         <span className={`field-value${field.normalized_value === null ? " is-missing" : ""}`}>
-          {field.normalized_value ?? field.raw_value ?? "— not extracted"}
+          {field.normalized_value ?? field.raw_value ?? "not extracted"}
         </span>
       </td>
       <td>
@@ -439,12 +439,12 @@ function FieldsSection({
 }
 
 /** Bulk counterpart to each `FieldRow`'s own per-field Confirm button
- * (2026-08 audit remediation, wave B — "46 field-level actions create a
+ * (2026-08 audit remediation, wave B - "46 field-level actions create a
  * slow exception-review workflow"). Rendered below the field tables so
  * "the values above" in its caution line literally means the table rows a
  * reviewer just scrolled past. Gated on the same `canAct` the per-field
  * actions use (viewer role + non-terminal run state) and on there being
- * anything left to confirm — `./api.ts`'s `useConfirmAllExtractionFields`
+ * anything left to confirm - `./api.ts`'s `useConfirmAllExtractionFields`
  * both seeds the run cache with the returned (now `ready`, or unchanged)
  * run and invalidates the fields list, so this bar disappears on its own
  * once the count drops to zero. */
@@ -478,7 +478,7 @@ function ConfirmAllBar({ runId, remainingCount }: { runId: string; remainingCoun
       ) : (
         <>
           <p className="detail-label confirm-all-caution">
-            This marks all {remainingCount} remaining flagged fields as human-confirmed —
+            This marks all {remainingCount} remaining flagged fields as human-confirmed -
             including values the document never stated. Only proceed if you have reviewed
             them above.
           </p>
@@ -504,7 +504,7 @@ function ConfirmAllBar({ runId, remainingCount }: { runId: string; remainingCoun
       )}
       {!armed && (
         <p className="detail-label confirm-all-caution">
-          Confirms every remaining flagged field at once — review the values above first.
+          Confirms every remaining flagged field at once - review the values above first.
         </p>
       )}
       <ApiErrorBanner error={confirmAllMutation.error} />
@@ -517,7 +517,7 @@ function ConfirmAllBar({ runId, remainingCount }: { runId: string; remainingCoun
 function SupplierOption({ supplierId }: { supplierId: string }) {
   const q = useSupplier(supplierId);
   return (
-    <option value={supplierId}>{q.data ? `${q.data.code} — ${q.data.name}` : supplierId}</option>
+    <option value={supplierId}>{q.data ? `${q.data.code} - ${q.data.name}` : supplierId}</option>
   );
 }
 
@@ -551,7 +551,7 @@ function MaterializeSection({
       });
       onMaterialized(quote);
     } catch {
-      // surfaced via ApiErrorBanner below — this is where a 409
+      // surfaced via ApiErrorBanner below - this is where a 409
       // "unconfirmed low-confidence fields" callout renders, one list item
       // per blocking field_path (see ./api.ts's file header).
     }
@@ -589,7 +589,7 @@ function MatchCandidatePartLabel({ partId }: { partId: string }) {
   const q = usePart(partId);
   return (
     <span className="mono">
-      {q.data ? `${q.data.internal_part_number} — ${q.data.name}` : partId}
+      {q.data ? `${q.data.internal_part_number} - ${q.data.name}` : partId}
     </span>
   );
 }
@@ -700,7 +700,7 @@ function MatchSection({ quote, canWrite }: { quote: QuoteResponse; canWrite: boo
         )}
       </div>
       <p className="detail-label">
-        Quote {quote.quote_number ?? quote.id} created — open it from this RFQ&apos;s Quotes
+        Quote {quote.quote_number ?? quote.id} created - open it from this RFQ&apos;s Quotes
         section.
       </p>
       <ApiErrorBanner error={generateMutation.error ?? matchesQuery.error} />
@@ -709,7 +709,7 @@ function MatchSection({ quote, canWrite }: { quote: QuoteResponse; canWrite: boo
       ) : items.length === 0 ? (
         <p className="detail-label">No lines to match.</p>
       ) : !hasAnyCandidates ? (
-        <p className="detail-label">No match candidates yet — click &quot;Generate matches.&quot;</p>
+        <p className="detail-label">No match candidates yet - click &quot;Generate matches.&quot;</p>
       ) : (
         items.map((line) => (
           <div className="match-line" key={line.quote_line_id}>
@@ -818,7 +818,7 @@ export function ReviewPane({ runId, onClose }: { runId: string; onClose: () => v
 
               {!materializedQuote && run.state === "materialized" && (
                 <p className="detail-label">
-                  This run has already been materialized into a quote — open it from this RFQ&apos;s
+                  This run has already been materialized into a quote - open it from this RFQ&apos;s
                   Quotes section (the extraction API does not expose which quote a past run
                   produced).
                 </p>

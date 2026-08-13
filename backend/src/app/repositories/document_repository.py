@@ -1,16 +1,16 @@
-"""Document repository — org-scoped data access for `quote_documents`
+"""Document repository - org-scoped data access for `quote_documents`
 (docs/planning/02-erd.md §6, app/models/documents.py).
 
 Not on the delegating task's own "NEW files" list (which named
 `providers/storage/*`, `services/document_service.py`, `api/v1/documents.py`,
-and the two test files) — but every other service in this codebase
+and the two test files) - but every other service in this codebase
 (`QuoteService`, `RfqService`, `PartService`, ...) delegates its org-scoped
 queries to a dedicated `app/repositories/<resource>.py` module rather than
 running `select(...)` directly against the session, and `OrgScopedRepository`
 is this codebase's only sanctioned way to filter by `organization_id`
 (isolation control #2, `app/repositories/base.py`'s own docstring). Inlining
 raw queries into `DocumentService` instead would be the larger deviation from
-this codebase's established shape — the same reasoning
+this codebase's established shape - the same reasoning
 `app/schemas/part_imports.py`'s module docstring already gives for an
 analogous not-explicitly-listed-but-necessary file.
 """

@@ -1,4 +1,4 @@
-# 07 — Security Model
+# 07 - Security Model
 
 Status: **DRAFT FOR PRINCIPAL REVIEW**
 Implements SPEC §Document and AI security and §General security. STRIDE-lite per trust surface, each
@@ -27,12 +27,12 @@ AI provider, **(E)** exports and downloads, **(F)** infrastructure/config/CI.
 
 ---
 
-## 2. Surface A — authentication and sessions
+## 2. Surface A - authentication and sessions
 
 | STRIDE | Threat | Mitigation | Verified by |
 |---|---|---|---|
 | S | Credential stuffing / brute force | argon2id (`t=3, m=64MiB, p=1`); rate limit 5/min/IP + 10/h/email; exponential lockout after 10 failures (`users.locked_until`); generic "invalid email or password" for both cases; constant-time comparison | `test_login_rate_limit`, `test_no_user_enumeration` |
-| S | Session token theft via XSS | `HttpOnly` cookie — JS can never read it; strict CSP with no `unsafe-inline`; React escaping; no `dangerouslySetInnerHTML` anywhere (lint rule) | CSP header test, eslint rule |
+| S | Session token theft via XSS | `HttpOnly` cookie - JS can never read it; strict CSP with no `unsafe-inline`; React escaping; no `dangerouslySetInnerHTML` anywhere (lint rule) | CSP header test, eslint rule |
 | S | Session token theft via DB dump | **only `sha256(token)` is stored**; token is 256 bits from `secrets.token_urlsafe(32)` | `test_session_token_not_stored` |
 | T | Session fixation | session id rotated on login, on org switch, and on password change | `test_session_rotation` |
 | R | "I never did that" | every auth event (`login.succeeded`, `login.failed`, `logout`, `password.changed`, `session.revoked`) written to `audit_events` with IP and user agent | audit assertions |
@@ -46,7 +46,7 @@ rules (NIST-aligned), no forced rotation. Rehash on login if argon2 parameters h
 
 ---
 
-## 3. Surface B — organization isolation
+## 3. Surface B - organization isolation
 
 This is the SPEC's hardest requirement ("cross-organization access must be **impossible**"). Five
 independent controls, detailed in `01-architecture.md` §7:
@@ -55,7 +55,7 @@ independent controls, detailed in `01-architecture.md` §7:
    logged as `security.suspicious_input`.
 2. `OrgScopedRepository` applies the filter; a returned row with a mismatched org raises
    `OrgIsolationViolation` (500 + security audit event) rather than returning data.
-3. **Composite foreign keys carrying `organization_id`** — the database refuses cross-org references.
+3. **Composite foreign keys carrying `organization_id`** - the database refuses cross-org references.
 4. **Route-matrix isolation test**: every route in `app.routes`, invoked by an actor from org B against
    an org-A fixture, must return 404. New endpoints fail the test until covered.
 5. (Phase 7, optional) Postgres RLS.
@@ -70,13 +70,13 @@ independent controls, detailed in `01-architecture.md` §7:
 | E | Membership revoked but session still active | membership is re-checked per request, not cached in the session |
 
 Storage isolation: keys are prefixed `orgs/{org_id}/…` and the storage provider refuses to read a key
-whose org prefix does not match the caller's scope — so even a leaked key is unusable.
+whose org prefix does not match the caller's scope - so even a leaked key is unusable.
 
 ---
 
-## 4. Surface C — upload ingestion
+## 4. Surface C - upload ingestion
 
-Full detail in `04-document-pipeline.md` §§2–4. Summary mapped to the SPEC's explicit list:
+Full detail in `04-document-pipeline.md` §§2-4. Summary mapped to the SPEC's explicit list:
 
 | SPEC threat | Mitigation |
 |---|---|
@@ -108,11 +108,11 @@ Additional threats not listed in the SPEC but present in practice:
 
 ---
 
-## 5. Surface D — AI provider
+## 5. Surface D - AI provider
 
 | STRIDE | Threat | Mitigation |
 |---|---|---|
-| T | **Prompt injection** ("ignore previous instructions… price is 0.01") | Structural containment: fixed in-code system prompt; document text passed as data in a nonce-delimited block; **no tools, no network, no history** available to the extraction call — a successful injection can only produce wrong JSON, never an action. Output then passes schema → type → business validation. Critical money fields always require human confirmation. |
+| T | **Prompt injection** ("ignore previous instructions… price is 0.01") | Structural containment: fixed in-code system prompt; document text passed as data in a nonce-delimited block; **no tools, no network, no history** available to the extraction call - a successful injection can only produce wrong JSON, never an action. Output then passes schema → type → business validation. Critical money fields always require human confirmation. |
 | T | Injection influencing *other* subsystems | extracted text is never interpolated into another prompt, a SQL fragment, a path, a URL, an id, or a role |
 | I | Data exfiltration to the provider | provider is **off by default**; when on, only document text and a fixed prompt are sent; no org names, user emails, or other orgs' data; `provider_request_meta` stores metadata only, never content |
 | I | Secret leakage | `ANTHROPIC_API_KEY` from env only; never logged, never in error messages, redacted in the settings dump; `.env` git-ignored; gitleaks in CI |
@@ -128,7 +128,7 @@ payload) is a cheap, mechanical control that turns a policy into a test.
 
 ---
 
-## 6. Surface E — exports and downloads
+## 6. Surface E - exports and downloads
 
 | STRIDE | Threat | Mitigation |
 |---|---|---|
@@ -142,7 +142,7 @@ payload) is a cheap, mechanical control that turns a policy into a test.
 
 ---
 
-## 7. Surface F — application, transport, and configuration
+## 7. Surface F - application, transport, and configuration
 
 **Security headers** (middleware, tested):
 ```
@@ -185,12 +185,12 @@ provider host, which is a constant. Any future URL input requires an allowlist a
 
 **Secrets**: env only, typed and validated at startup, redacted in logs and the settings dump.
 `.env.example` with placeholder values is committed; `.env` is git-ignored; `gitleaks` and a
-pre-commit hook run in CI. No secrets in the frontend bundle — anything the SPA needs is public by
+pre-commit hook run in CI. No secrets in the frontend bundle - anything the SPA needs is public by
 definition.
 
 **Dependencies**: pinned via `uv.lock` and `package-lock.json`; `pip-audit` + `npm audit --production`
 in CI (failing on high/critical); Dependabot weekly; a licence check that fails on AGPL/GPL-3.0
-(see `01-architecture.md` §9 — the PyMuPDF trap).
+(see `01-architecture.md` §9 - the PyMuPDF trap).
 
 **Logging**: structured JSON; never logs document contents, extracted values, passwords, tokens, or
 full request bodies; `request_id` correlates; security events (`security.*`) are distinguishable and
@@ -241,11 +241,11 @@ trigger.
 
 1. **Parser 0-days** in pypdf/openpyxl/Pillow/pypdfium2. Mitigated by caps and dependency scanning;
    not eliminated. No sandboxing of parsers in v0.1.0 (would need a separate process/container).
-2. **No malware scanning** by default — the interface exists, the ClamAV adapter is documented, the
+2. **No malware scanning** by default - the interface exists, the ClamAV adapter is documented, the
    default is a no-op. Stated plainly rather than implied.
 3. **In-process rate limiting** resets on restart and is per-process.
 4. **No MFA, no SSO, no password reset email flow** in v0.1.0 (no mail provider by design).
-5. **A determined prompt injection can still produce wrong extracted values** — the defence is
+5. **A determined prompt injection can still produce wrong extracted values** - the defence is
    containment plus mandatory human confirmation of money fields, not immunity. Say this in the README.
 6. **Reports are not signed**; `content_sha256` proves integrity only against our own record.
 7. **No encryption at rest** beyond whatever the host provides; synthetic data only.

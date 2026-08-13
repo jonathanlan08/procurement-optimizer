@@ -1,4 +1,4 @@
-"""ScorerV1 — implementation of the principal-owned `VendorScorer` contract.
+"""ScorerV1 - implementation of the principal-owned `VendorScorer` contract.
 
 Implements `VendorScorer` (`contracts.py`, FROZEN). Pure domain code: no
 database, no clock, no network, no randomness. See
@@ -6,12 +6,12 @@ database, no clock, no network, no randomness. See
 this module reproduces.
 
 Design notes (interpretations of the contract's prose, spelled out because
-the contract's docstring is normative but not exhaustive pseudocode — the
+the contract's docstring is normative but not exhaustive pseudocode - the
 same convention `landed_cost/calculator.py` uses):
 
 - **Missing-value policy.** 05 §7 describes three `missing_policy` options
   (`renormalize` / `worst` / `exclude_supplier`), but the FROZEN
-  `CriterionSpec` in `contracts.py` has no `missing_policy` field at all — a
+  `CriterionSpec` in `contracts.py` has no `missing_policy` field at all - a
   per-supplier's-view of a criterion is either present or missing, full
   stop. This implementation therefore always applies the default
   (`renormalize`): a missing criterion is dropped for that supplier, that
@@ -22,21 +22,21 @@ same convention `landed_cost/calculator.py` uses):
   `excluded`/`exclusion_reason` fields already on that dataclass).
 - **Global defensive renormalization.** `weights` are "fractions summing to
   ~1" (contracts.py docstring); if the raw sum isn't exactly 1 (Decimal
-  equality — the caller is expected to pass fractions that already sum to
+  equality - the caller is expected to pass fractions that already sum to
   1, so any deviation is treated as needing correction, not tolerated as
   noise), every weight is divided by the raw sum and a note is appended to
   `ScoringResult.notes`. This happens once, globally, before any
   per-supplier renormalization, and is unrelated to the per-supplier
   mechanism above. If the raw sum is exactly zero (including the
   zero-criteria case, `weights == ()`), there is no weight signal to
-  renormalize against and `ZeroTotalWeightError` is raised — mirroring
+  renormalize against and `ZeroTotalWeightError` is raised - mirroring
   `landed_cost.calculator.ZeroQuantityError`'s "fail loud, never divide
   into nonsense" policy for a violated arithmetic precondition (05 §7:
   "Weight sum must be > 0").
 - **`total_score` is the ONLY quantized value in this module.** Per-criterion
   `normalized_score` / `effective_weight` / `weighted_contribution` on
   `CriterionScore` are kept at full `CALC_CONTEXT` precision (the objective
-  brief only mandates "total_score quantized RATIO_SCALE" — it does not
+  brief only mandates "total_score quantized RATIO_SCALE" - it does not
   require the per-criterion display fields to be independently rounded).
   This is a deliberate choice, not an oversight: per-supplier normalized
   scores are mathematically bounded to exactly `[0, 1]` and per-supplier
@@ -45,7 +45,7 @@ same convention `landed_cost/calculator.py` uses):
   rounding. Independently quantizing each criterion's contribution first
   and *then* summing the rounded pieces can, across enough criteria,
   accumulate enough rounding to push a near-1.0 total fractionally over 1
-  after the final quantize — which would violate the contract's `[0, 1]`
+  after the final quantize - which would violate the contract's `[0, 1]`
   guarantee. Quantizing once, at the end, from the full-precision sum
   avoids that failure mode entirely while keeping
   `sum(c.weighted_contribution for c in criterion_scores) ==` the
@@ -56,15 +56,15 @@ same convention `landed_cost/calculator.py` uses):
   `missing_criteria=()`, `weights_renormalized=False`), `total_score` is
   `Decimal("0")` (a value that means nothing here, since the field is not
   optional on the frozen `SupplierScore`), and `rank` is the sentinel `0`
-  — distinguishing "not ranked" from the 1-based ranks used by the scored
+  - distinguishing "not ranked" from the 1-based ranks used by the scored
   cohort, since 05 §7 removes excluded suppliers before scoring entirely
   (they are listed, not ranked).
 - **Ranking** is standard competition ranking ("1224"): a group of suppliers
   tied on `total_score` all get the smallest rank in that group, and the
   next distinct score's rank skips over the tied group's size (e.g. two
   suppliers tied for 1st are both rank 1; the next supplier is rank 3, not
-  2). Deterministic ordering — required so ties resolve identically on
-  every run — is `(-total_score, supplier_name, supplier_id)`, per the
+  2). Deterministic ordering - required so ties resolve identically on
+  every run - is `(-total_score, supplier_name, supplier_id)`, per the
   objective brief; `uuid.UUID` is natively orderable so `supplier_id` sorts
   by its underlying integer value.
 """
@@ -95,7 +95,7 @@ _ONE = Decimal("1")
 class ZeroTotalWeightError(ValueError):
     """The supplied criterion weights sum to zero (including the
     zero-criteria case): there is no weight signal to renormalize against
-    or to score with. Mirrors `landed_cost.calculator.ZeroQuantityError` —
+    or to score with. Mirrors `landed_cost.calculator.ZeroQuantityError` -
     fail loud rather than silently dividing into nonsense."""
 
     def __init__(self) -> None:
@@ -139,7 +139,7 @@ def _cohort_stats(
 ) -> tuple[Decimal, Decimal, int] | None:
     """(min, max, present_count) across the INCLUDED cohort's present values
     for `criterion`. `None` means no supplier in the cohort has a present
-    value at all — the criterion is globally missing, not just for one
+    value at all - the criterion is globally missing, not just for one
     supplier. The count exists so the degenerate-cohort reason can say
     "only candidate with a value" instead of the untrue "all candidates
     equal" (2026-08 calculation audit F7)."""
@@ -307,7 +307,7 @@ class ScorerV1:
         # A supplier with NO present value on ANY positive-weight criterion is
         # NOT scoreable. Scoring it 0.000000 would be exactly the
         # worst-in-cohort imputation the methodology forbids (00-decisions.md
-        # §2 ruling 5; 2026-08 calculation audit F3) — it is reported like an
+        # §2 ruling 5; 2026-08 calculation audit F3) - it is reported like an
         # exclusion instead: rank=0 sentinel, reason attached, never ranked.
         # It still contributes any present zero-weight values to cohort stats
         # above, so other suppliers' displayed normalizations are unaffected.

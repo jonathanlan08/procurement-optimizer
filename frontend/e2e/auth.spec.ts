@@ -2,7 +2,7 @@
  * the shared error-envelope surfaced on a bad password.
  *
  * Deliberately does NOT use the pre-authenticated storage state
- * (helpers/roles.ts) — this file's whole job is to prove the interactive
+ * (helpers/roles.ts) - this file's whole job is to prove the interactive
  * login/logout UI itself works, so every test here starts unauthenticated.
  */
 
@@ -24,15 +24,15 @@ test.describe("authentication", () => {
 
     await expect(page).toHaveURL(/\/$/);
     await expect(page.getByRole("navigation", { name: "Primary" })).toBeVisible();
-    // demo_mode banner (Settings.demo_mode, true by default per seed) —
+    // demo_mode banner (Settings.demo_mode, true by default per seed) -
     // confirms the app knows it's running against synthetic data only.
     // `exact: true`: OverviewPage.tsx's own workspace-summary paragraph
-    // separately echoes "Demo — synthetic data throughout." — a DIFFERENT
+    // separately echoes "Demo - synthetic data throughout." - a DIFFERENT
     // exact string that a substring match would ambiguously also catch
     // (OverviewPage.tsx's own file header documents this as deliberate,
     // non-duplicated phrasing, not a bug), so this asserts on the header
     // badge's own exact text specifically.
-    await expect(page.getByText("Demo — synthetic data", { exact: true })).toBeVisible();
+    await expect(page.getByText("Demo - synthetic data", { exact: true })).toBeVisible();
     await expect(page.locator(".shell-user")).toContainText("Ada Chen");
     await expect(page.locator(".shell-user")).toContainText("analyst");
 
@@ -50,7 +50,7 @@ test.describe("authentication", () => {
     const alert = page.getByRole("alert");
     await expect(alert).toBeVisible();
     await expect(alert).toHaveText("Invalid email or password.");
-    // never navigated away — the SPA renders the error inline, no reload
+    // never navigated away - the SPA renders the error inline, no reload
     await expect(page).toHaveURL(/\/login$/);
     await expect(page.getByRole("button", { name: "Sign in", exact: true })).toBeEnabled();
   });
@@ -64,7 +64,7 @@ test.describe("authentication", () => {
 
     // Scoped to the primary nav landmark: the Overview page (still current
     // at this point) also has a KPI card "View RFQs →" and a link card
-    // whose accessible name contains "RFQs" — an unscoped substring match
+    // whose accessible name contains "RFQs" - an unscoped substring match
     // on "RFQs" is ambiguous across all three.
     await page
       .getByRole("navigation", { name: "Primary" })
@@ -76,7 +76,7 @@ test.describe("authentication", () => {
     await expect(page.getByRole("row", { name: /RFQ-2026-ENC-PILOT/ })).toBeVisible();
     // ...but the write affordance the analyst role gets is gone entirely
     // (RfqsPage.tsx: `{canWrite && <button>New RFQ</button>}`), not merely
-    // disabled — isAnalystOrAbove(role) is false for "viewer".
+    // disabled - isAnalystOrAbove(role) is false for "viewer".
     await expect(page.getByRole("button", { name: "New RFQ" })).toHaveCount(0);
 
     // the server enforces this independently of the UI: a direct mutating

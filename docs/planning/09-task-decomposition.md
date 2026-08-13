@@ -1,4 +1,4 @@
-# 09 — Task Decomposition, Dependencies, and File Ownership
+# 09 - Task Decomposition, Dependencies, and File Ownership
 
 Status: **DRAFT FOR PRINCIPAL REVIEW**
 
@@ -7,7 +7,7 @@ Status: **DRAFT FOR PRINCIPAL REVIEW**
 > structure. If the principal has a different phase model, the task list survives; only the grouping
 > changes.
 
-Task sizing: **S** ≤ half a day, **M** ≈ 1 day, **L** ≈ 2–3 days for a competent junior with the
+Task sizing: **S** ≤ half a day, **M** ≈ 1 day, **L** ≈ 2-3 days for a competent junior with the
 contracts already in place. Every task states its acceptance criteria in testable terms because
 "done" must not be a matter of opinion.
 
@@ -27,16 +27,16 @@ contracts already in place. Every task states its acceptance criteria in testabl
 
 Phase 3 before Phase 4 is deliberate: building the *manual* quote path first means Phases 5 and 6 can
 start against real data while the document pipeline is still being built, and it guarantees the
-product is usable even when extraction fails — which the SPEC implicitly requires by listing manual
+product is usable even when extraction fails - which the SPEC implicitly requires by listing manual
 entry as a supported format.
 
 ---
 
-## 2. Phase 1 — Foundation
+## 2. Phase 1 - Foundation
 
 | ID | Task | Size | Depends on | Owner | Acceptance |
 |---|---|---|---|---|---|
-| 1.1 | Repo skeleton, monorepo dirs, MIT licence, `.gitignore`, `.env.example`, issue/PR templates | S | — | **P** | clean clone has no secrets; gitleaks passes |
+| 1.1 | Repo skeleton, monorepo dirs, MIT licence, `.gitignore`, `.env.example`, issue/PR templates | S | - | **P** | clean clone has no secrets; gitleaks passes |
 | 1.2 | `backend/pyproject.toml` (uv), pinned deps, ruff/mypy config, `uv.lock` | S | 1.1 | **P** | `uv sync` works on macOS arm64 with Python 3.12 |
 | 1.3 | `app/core/config.py` typed settings + fail-fast validation | S | 1.2 | **P** | app refuses to start with `EXTRACTION_PROVIDER=anthropic` and no key |
 | 1.4 | `app/core/money.py`, `clock.py`, `ids.py`, decimal context + traps | M | 1.2 | **P** | unit tests for quantization, `float` banned by lint |
@@ -54,7 +54,7 @@ entry as a supported format.
 | 1.16 | `jobs` table + inline/thread runner + `/jobs/{id}` | M | 1.8 | **P** | `JOB_RUNNER=inline` runs synchronously |
 | 1.17 | Providers registry + `StorageProvider` (filesystem + S3) + `Clock`/`IdGenerator` wiring | M | 1.3 | **P** | key regex enforced; both providers pass one shared test suite |
 | 1.18 | `pytest` conftest: DB resolution (env → pgserver → compose), transaction rollback, fakes | M | 1.8 | **P** | suite runs on the principal's machine with no Docker |
-| 1.19 | Frontend scaffold: Vite, TS strict, TanStack Query/Router, layout shell, auth pages | L | — | **P** (shell) / D (pages) | login works against the real API |
+| 1.19 | Frontend scaffold: Vite, TS strict, TanStack Query/Router, layout shell, auth pages | L | - | **P** (shell) / D (pages) | login works against the real API |
 | 1.20 | `openapi-typescript` generation + typed fetch client + error mapping | M | 1.5, 1.19 | **P** | CI fails on schema/type drift |
 | 1.21 | Design tokens, base component set, money/date formatting utils | M | 1.19 | **P** (tokens) / D (components) | money rendered from strings, never `Number()` |
 | 1.22 | CI workflow with the eight jobs of `08-…` §8 | M | 1.18, 1.19 | **P** | green on a clean clone |
@@ -65,7 +65,7 @@ tasks; a wrong `OrgScope` or error envelope is a repo-wide refactor in week four
 
 ---
 
-## 3. Phase 2 — Master data
+## 3. Phase 2 - Master data
 
 | ID | Task | Size | Depends on | Owner |
 |---|---|---|---|---|
@@ -79,7 +79,7 @@ tasks; a wrong `OrgScope` or error envelope is a repo-wide refactor in week four
 | 2.8 | CSV/XLSX import: parser, header validation, row validation, duplicate detection | L | 2.7 | D |
 | 2.9 | Import preview batch → commit → rollback, transactional, audited | L | 2.8, 1.16 | D |
 | 2.10 | Migration + CRUD: `bills_of_materials`, `bill_of_material_lines`, copy-on-write versioning | L | 2.7 | D |
-| 2.11 | Frontend: suppliers list/detail (TanStack Table), parts list/detail, import wizard, BOM editor | L×3 | 2.2–2.10, 1.20 | D |
+| 2.11 | Frontend: suppliers list/detail (TanStack Table), parts list/detail, import wizard, BOM editor | L×3 | 2.2-2.10, 1.20 | D |
 
 Acceptance for the phase: import 200 rows with 3 duplicates and 2 invalid rows → preview shows exact
 counts and per-row errors; commit is all-or-nothing; an induced failure leaves zero new `parts` rows;
@@ -87,7 +87,7 @@ one audit event per import.
 
 ---
 
-## 4. Phase 3 — RFQ and manual quotes
+## 4. Phase 3 - RFQ and manual quotes
 
 | ID | Task | Size | Depends on | Owner |
 |---|---|---|---|---|
@@ -99,14 +99,14 @@ one audit event per import.
 | 3.6 | Manual quote entry API + revision/supersede logic | L | 3.5 | D |
 | 3.7 | Price-break CRUD with overlap/gap validation | M | 3.5 | D |
 | 3.8 | Migration + CRUD: `exchange_rates`, fixture FX provider, manual override with reason | M | 1.17 | D |
-| 3.9 | Frontend: RFQ workspace, line editor, invitations, manual quote form, price-break grid, FX admin | L×3 | 3.2–3.8 | D |
+| 3.9 | Frontend: RFQ workspace, line editor, invitations, manual quote form, price-break grid, FX admin | L×3 | 3.2-3.8 | D |
 
 Acceptance: a user can go from empty org to two comparable quotes on one RFQ without touching a
 document, and every status change is in `rfq_status_history`.
 
 ---
 
-## 5. Phase 4 — Document pipeline
+## 5. Phase 4 - Document pipeline
 
 | ID | Task | Size | Depends on | Owner |
 |---|---|---|---|---|
@@ -126,7 +126,7 @@ document, and every status change is in `rfq_status_history`.
 | 4.14 | Materialization: run → quote/lines/breaks/terms in one transaction | L | 4.13, 3.6 | D |
 | 4.15 | Part matching: five strategies, deterministic ordering, explanations | L | 4.14, 2.7 | **P** (interface) / D (strategies) |
 | 4.16 | Match confirmation API + stickiness | M | 4.15 | D |
-| 4.17 | Frontend: upload UI, document viewer with page previews + bbox highlight, review/correction screen, match confirmation screen | L×4 | 4.2–4.16 | D |
+| 4.17 | Frontend: upload UI, document viewer with page previews + bbox highlight, review/correction screen, match confirmation screen | L×4 | 4.2-4.16 | D |
 | 4.18 | Document content/preview streaming endpoints with security headers | M | 4.2 | **P** |
 
 Acceptance: all four fixture formats plus the injection fixture reach a confirmed quote; the injection
@@ -134,29 +134,29 @@ fixture yields the correct price, a flag, a banner, and a security audit event.
 
 ---
 
-## 6. Phase 5 — Calculation and scoring
+## 6. Phase 5 - Calculation and scoring
 
 | ID | Task | Size | Depends on | Owner |
 |---|---|---|---|---|
-| 5.1 | `app/domain/landed_cost/contracts.py` — `Quantified`, `Provenance`, inputs/results, `CALCULATION_VERSION` | M | 1.4 | **P** |
+| 5.1 | `app/domain/landed_cost/contracts.py` - `Quantified`, `Provenance`, inputs/results, `CALCULATION_VERSION` | M | 1.4 | **P** |
 | 5.2 | Unit normalization domain module | M | 5.1, 2.5 | D |
 | 5.3 | FX normalization domain module (as-of, inverse, triangulation flag) | M | 5.1, 3.8 | D |
 | 5.4 | Price-break selection module + boundary tests | M | 5.1, 3.7 | D |
-| 5.5 | `LandedCostCalculatorV1` — seven components, quantization policy, completeness | L | 5.1–5.4 | **P** (component skeleton) / D (components) |
+| 5.5 | `LandedCostCalculatorV1` - seven components, quantization policy, completeness | L | 5.1-5.4 | **P** (component skeleton) / D (components) |
 | 5.6 | Hand-verified test suite incl. the §9 worked example + hypothesis properties | L | 5.5 | D |
 | 5.7 | Migration + persistence: `landed_cost_results`, `landed_cost_components` | M | 5.5 | D |
 | 5.8 | `POST /landed-costs:preview` + persisted calculation endpoints | M | 5.7 | D |
 | 5.9 | Scoring contracts + `ScorerV1` (normalization, missing policies, zero weights, outliers, exclusions) | L | 5.1 | **P** (contracts) / D |
 | 5.10 | Migration + CRUD `scoring_configurations` + seeded sample weights labelled `is_sample` | M | 5.9 | D |
 | 5.11 | Calculation-version registry + historical golden tests | M | 5.5, 5.9 | **P** |
-| 5.12 | Frontend: landed-cost breakdown panel (formula, inputs, provenance, missing), weight editor, comparison table | L×3 | 5.8–5.10 | D |
+| 5.12 | Frontend: landed-cost breakdown panel (formula, inputs, provenance, missing), weight editor, comparison table | L×3 | 5.8-5.10 | D |
 
 Acceptance: the worked example reproduces exactly; a missing freight cost produces `incomplete` plus a
 not-like-for-like warning rather than a silently cheaper supplier.
 
 ---
 
-## 7. Phase 6 — Optimization and scenarios
+## 7. Phase 6 - Optimization and scenarios
 
 | ID | Task | Size | Depends on | Owner |
 |---|---|---|---|---|
@@ -171,15 +171,15 @@ not-like-for-like warning rather than a silently cheaper supplier.
 | 6.9 | Rejected alternatives: per-supplier solves + next-best split + binding constraints | M | 6.4 | D |
 | 6.10 | Scenario strategies (6 variants) | M | 6.4 | D |
 | 6.11 | Scenario clone + reproducibility test across an assumption change | M | 6.2 | D |
-| 6.12 | 20-case optimization test matrix | L | 6.4–6.9 | D |
-| 6.13 | Frontend: scenario builder (constraints, locks, exclusions), allocation view, infeasibility explainer, scenario history | L×3 | 6.2–6.11 | D |
+| 6.12 | 20-case optimization test matrix | L | 6.4-6.9 | D |
+| 6.13 | Frontend: scenario builder (constraints, locks, exclusions), allocation view, infeasibility explainer, scenario history | L×3 | 6.2-6.11 | D |
 
 Acceptance: every one of the 20 matrix cases passes; an infeasible scenario names the conflicting
 groups and a numeric relaxation threshold.
 
 ---
 
-## 8. Phase 7 — Briefs, reports, demo data, docs, release
+## 8. Phase 7 - Briefs, reports, demo data, docs, release
 
 | ID | Task | Size | Depends on | Owner |
 |---|---|---|---|---|
@@ -245,8 +245,8 @@ conflicts and is the best fit for the least-experienced implementer once the con
 
 | Path | Why |
 |---|---|
-| `backend/src/app/core/**` | money/Decimal policy, security primitives, error envelope, clock/ids — every other file depends on these semantics |
-| `backend/src/app/api/deps.py` | authentication, `OrgScope`, role guard, CSRF — the whole authorization model |
+| `backend/src/app/core/**` | money/Decimal policy, security primitives, error envelope, clock/ids - every other file depends on these semantics |
+| `backend/src/app/api/deps.py` | authentication, `OrgScope`, role guard, CSRF - the whole authorization model |
 | `backend/src/app/api/permissions.py` | the permission matrix that drives tests and docs |
 | `backend/src/app/repositories/base.py` | org isolation control #2 |
 | `backend/src/app/models/base.py`, `mixins.py` | org ownership, soft delete, versioning conventions |
@@ -274,15 +274,15 @@ conflicts and is the best fit for the least-experienced implementer once the con
 | Path | Notes |
 |---|---|
 | `backend/src/app/api/v1/<resource>.py` | thin routes against principal-owned deps |
-| `backend/src/app/schemas/<resource>.py` | **R** — reviewed for decimal-as-string and missing-field conventions |
+| `backend/src/app/schemas/<resource>.py` | **R** - reviewed for decimal-as-string and missing-field conventions |
 | `backend/src/app/services/<resource>_service.py` | must call `AuditRecorder` |
 | `backend/src/app/repositories/<resource>_repository.py` | must extend `OrgScopedRepository` |
-| `backend/src/app/models/<table>.py` | **R** — reviewed for org FK, constraints, indexes |
+| `backend/src/app/models/<table>.py` | **R** - reviewed for org FK, constraints, indexes |
 | `backend/src/app/domain/**/` implementations behind contracts | the best delegable work: pure, testable, high-value |
 | `backend/src/app/providers/*/mock_*.py`, `filesystem.py`, `s3.py` | against principal-owned interfaces |
 | `backend/src/app/exports/**` | **R** for the formula-escaping helper |
-| `backend/src/app/seed/**` | **R** — must satisfy the SPEC dataset checklist |
-| `backend/migrations/versions/**` (non-tenancy) | **R** — every migration reviewed, autogenerate never merged unread |
+| `backend/src/app/seed/**` | **R** - must satisfy the SPEC dataset checklist |
+| `backend/migrations/versions/**` (non-tenancy) | **R** - every migration reviewed, autogenerate never merged unread |
 | `backend/tests/unit/**`, `tests/integration/<feature>/**` | |
 | `frontend/src/routes/**` (feature pages), `features/**`, `components/<feature>/**` | |
 | `frontend/src/hooks/**` (TanStack Query hooks) | |
@@ -304,33 +304,33 @@ conflicts and is the best fit for the least-experienced implementer once the con
 Consolidated from all nine documents. Each needs a ruling or an explicit "accepted limitation".
 
 **Commercial / domain**
-1. **All-units vs incremental price breaks** — assumed all-units; changes the MILP if wrong.
-2. **Scrap / yield loss** (buy 1 050 to receive 1 000 good) — a real landed-cost driver, entirely absent.
-3. **Minimum order value / small-order surcharges** — common on real quotes, no field for them.
-4. **Volume-stepped freight** (a second container at 1 200 units) — modelled as linear; not true.
-5. **Recoverable tax (VAT)** — including it distorts comparison; SPEC does not distinguish.
-6. **Duty basis (FOB vs CIF)** — changes import cost materially; SPEC is silent.
-7. **Payment terms as a financing *benefit*** — SPEC lists financing as a cost only; Net-60 would rank worse than Net-30 under a strict reading.
-8. **Quote expiry** — SPEC captures `expiration_date` but never says what happens when a scenario uses an expired quote. Proposed: allowed with a prominent warning, blocked from "recommended" status.
+1. **All-units vs incremental price breaks** - assumed all-units; changes the MILP if wrong.
+2. **Scrap / yield loss** (buy 1 050 to receive 1 000 good) - a real landed-cost driver, entirely absent.
+3. **Minimum order value / small-order surcharges** - common on real quotes, no field for them.
+4. **Volume-stepped freight** (a second container at 1 200 units) - modelled as linear; not true.
+5. **Recoverable tax (VAT)** - including it distorts comparison; SPEC does not distinguish.
+6. **Duty basis (FOB vs CIF)** - changes import cost materially; SPEC is silent.
+7. **Payment terms as a financing *benefit*** - SPEC lists financing as a cost only; Net-60 would rank worse than Net-30 under a strict reading.
+8. **Quote expiry** - SPEC captures `expiration_date` but never says what happens when a scenario uses an expired quote. Proposed: allowed with a prominent warning, blocked from "recommended" status.
 9. **Currency of fixed costs** differing from line pricing.
 10. **Multi-currency or multi-RFQ documents**.
 11. **Supplier capacity shared across parts** vs per-line.
-12. **Lead time vs required-by date** — no rule for partial-lateness tolerance.
-13. **Tie-breaking between equal-cost allocations** — SPEC demands determinism but gives no preference rule; I proposed fewest-suppliers-then-lexicographic.
+12. **Lead time vs required-by date** - no rule for partial-lateness tolerance.
+13. **Tie-breaking between equal-cost allocations** - SPEC demands determinism but gives no preference rule; I proposed fewest-suppliers-then-lexicographic.
 
 **Process / data**
-14. **Who may confirm a low-confidence value** — should a `viewer` ever confirm? (No, per my matrix.) Should confirmation require a different role than upload? (Segregation of duties is arguably right for money fields; not specified.)
-15. **Re-extraction after corrections** — carry-forward behaviour undefined; I proposed suggest-not-apply.
-16. **Quote revisions** — no auto-detection rule.
-17. **Concurrent editing** of one quote by two analysts — SPEC silent; I proposed optimistic locking.
+14. **Who may confirm a low-confidence value** - should a `viewer` ever confirm? (No, per my matrix.) Should confirmation require a different role than upload? (Segregation of duties is arguably right for money fields; not specified.)
+15. **Re-extraction after corrections** - carry-forward behaviour undefined; I proposed suggest-not-apply.
+16. **Quote revisions** - no auto-detection rule.
+17. **Concurrent editing** of one quote by two analysts - SPEC silent; I proposed optimistic locking.
 18. **Data retention / deletion requests** vs "preserve originals forever".
 19. **Demo-org reset semantics** and who may trigger them.
-20. **Password reset** — no mail provider is specified, so there is no recovery flow.
-21. **Membership invitation flow** — SPEC lists memberships but no invite/accept mechanism.
-22. **Audit-event retention and volume** — append-only forever with no partitioning strategy.
+20. **Password reset** - no mail provider is specified, so there is no recovery flow.
+21. **Membership invitation flow** - SPEC lists memberships but no invite/accept mechanism.
+22. **Audit-event retention and volume** - append-only forever with no partitioning strategy.
 23. **Report expiry/purge** vs the audit requirement to preserve generated reports.
 24. **Non-ASCII/RTL part numbers and supplier names** through PDF export (font coverage in ReportLab is a real constraint).
-25. **Time zones for `due_date` / `required_by_date`** — dates are stored naive; "due 2026-09-01" in which zone matters for a global supplier base.
+25. **Time zones for `due_date` / `required_by_date`** - dates are stored naive; "due 2026-09-01" in which zone matters for a global supplier base.
 26. **Approved design direction uses a Google Fonts CDN**, which conflicts with the strict CSP and the no-network-egress demo/E2E requirement. Self-host via `@fontsource`. See `01-architecture.md` §9.1.
 27. **Confidence bands differ** between the design system (`0.9/0.6`) and `04-document-pipeline.md` (`0.95/0.60`). One constant, one source of truth.
 
@@ -341,7 +341,7 @@ Consolidated from all nine documents. Each needs a ruling or an explicit "accept
 | # | Risk | Impact | Likelihood | Mitigation |
 |---|---|---|---|---|
 | 1 | **Scope.** ~30 entities, ~120 endpoints, 4 document formats, a solver, 5 report types, 9 docs. This is a multi-month build presented as one spec. | Unfinished repo, worse than a smaller finished one | High | Phase gates with hard exit criteria; the P3-before-P4 ordering so the product is demonstrable early; be willing to ship P4 with 2 formats and label the rest roadmap |
-| 2 | **Solver nondeterminism** silently breaking the reproducibility claim | Core promise falsified | Medium | single worker + seed + deterministic time + `model_hash` assertions (task 6.6) — and these must land with the first solve, not later |
+| 2 | **Solver nondeterminism** silently breaking the reproducibility claim | Core promise falsified | Medium | single worker + seed + deterministic time + `model_hash` assertions (task 6.6) - and these must land with the first solve, not later |
 | 3 | **Environment divergence** between the principal's no-Docker machine and CI/other devs | "Works on my machine", late surprises | Medium-High | one DB-resolution code path; CI is authoritative; MinIO job so the S3 path is real; verify Playwright arm64 in Phase 1 |
 | 4 | **Org-isolation regression** as endpoint count grows | Spec-breaking security failure | Medium | five-layer defence, composite org FKs, route-matrix test that fails on undeclared routes |
 | 5 | **Decimal leakage to float** at a boundary (JSON, chart library, CSV, ORM) | Wrong money, silently | Medium | strings over the wire, lint ban, ORM `asdecimal`, explicit tests at each boundary |
@@ -357,7 +357,7 @@ Consolidated from all nine documents. Each needs a ruling or an explicit "accept
 
 ## 13. Complete list of assumptions I made
 
-1. Phases 1–7 are my construction; the SPEC has none.
+1. Phases 1-7 are my construction; the SPEC has none.
 2. Price breaks are all-units discounts.
 3. One currency per quote; RFQ base currency is the comparison currency.
 4. Fixed costs are charged fully to the awarded quantity (no amortization over forecast volume).

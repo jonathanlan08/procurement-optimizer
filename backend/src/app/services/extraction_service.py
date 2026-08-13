@@ -1,4 +1,4 @@
-"""Extraction service — the document-extraction workflow end to end
+"""Extraction service - the document-extraction workflow end to end
 (docs/planning/04-document-pipeline.md §§5-11, docs/planning/03-api-contract.md
 §4.10, app/models/documents.py's `ExtractionRunState`/
 `ALLOWED_EXTRACTION_RUN_TRANSITIONS`, app/providers/extraction/{base,envelope,
@@ -10,14 +10,14 @@ Services never commit: the request-scoped `get_db` dependency
 ## Synchronous execution (v0.1 "JOB_RUNNER=inline" precedent)
 
 `03-api-contract.md` §1.5 documents two response shapes for long-running
-operations: `202 Accepted` + a pollable job envelope in general, and — in
-`JOB_RUNNER=inline` (its own words: "tests") — a `201` with the *completed*
+operations: `202 Accepted` + a pollable job envelope in general, and - in
+`JOB_RUNNER=inline` (its own words: "tests") - a `201` with the *completed*
 resource, "documented, so contract tests assert both shapes." This codebase
 has no `Job`-row-producing worker anywhere (`app.models.audit.Job` exists as
 a table shape but nothing in `src/app` ever writes to it, and
-`Settings.job_runner` — `inline | thread` — is likewise read by nothing).
+`Settings.job_runner` - `inline | thread` - is likewise read by nothing).
 Per this task's own explicit instruction, `start_run` always executes
-**synchronously, inline, in every environment** (not merely under test) —
+**synchronously, inline, in every environment** (not merely under test) -
 the `JOB_RUNNER=inline` shape is the *only* shape this v0.1 build implements,
 not a test-only special case layered over a real queue. `api/v1/extractions.py`
 returns `201` with the completed `ExtractionRunResponse`, matching that
@@ -35,7 +35,7 @@ price-break boundary, `quantity`, `unit_of_measure`, `moq`, `tooling_cost`,
 `requires_confirmation` regardless of confidence. This task's own OBJECTIVE
 text gives a complete, narrower, self-contained formula instead:
 `requires_review = band != HIGH or validation-failed`. That literal formula
-is what is implemented here — the provider's own reported per-field
+is what is implemented here - the provider's own reported per-field
 `confidence` is used as-is (no OCR/coercion composition), and no field is
 force-flagged purely for belonging to a "critical" set. This is a deliberate
 scope narrowing, not an oversight: building the fuller composition/critical-
@@ -48,7 +48,7 @@ richer behavior.
 ## Reuse vs. re-derivation of `QuoteService` logic (all FROZEN)
 
 `QuoteService` is FROZEN for this task. Three pieces of its logic are
-conceptually needed here too — this task's own instruction explicitly
+conceptually needed here too - this task's own instruction explicitly
 permits, per piece, either reusing it "if importable without modification"
 or re-deriving it minimally:
 
@@ -60,7 +60,7 @@ or re-deriving it minimally:
    objects; this ladder step needs to flag *every* offending tier
    independently (04-document-pipeline.md §7: "one bad date must not discard
    40 good line items") against extraction candidates that may themselves be
-   partially invalid/missing — a different enough shape that re-deriving the
+   partially invalid/missing - a different enough shape that re-deriving the
    same three rules cleanly is simpler and safer than adapting the raise-on-
    first-error method to a multi-violation caller.
 2. **RFQ/supplier eligibility gates** (`materialize`'s "through QuoteService.
@@ -68,9 +68,9 @@ or re-deriving it minimally:
    `_check_supplier_eligible`), identical logic to `QuoteService`'s own
    private methods of the same name. Not reused via an internal `QuoteService`
    instance: nowhere else in this codebase does one service reach into
-   another's private (underscore-prefixed) methods — every existing
+   another's private (underscore-prefixed) methods - every existing
    cross-service reuse in this codebase (e.g. `LandedCostService` using
-   `FxService.get_effective_rate`) is through a service's *public* surface —
+   `FxService.get_effective_rate`) is through a service's *public* surface -
    and `QuoteService.create()` itself cannot be called directly at all here
    because it hardcodes `source=QuoteSource.MANUAL` with no parameter to
    override it, which `materialize` (source=`extracted`) structurally needs.
@@ -83,25 +83,25 @@ or re-deriving it minimally:
 
 This task's OBJECTIVE instructs `correct_field` to "write a `QuoteCorrection`
 with before/after." 04-document-pipeline.md's own pipeline diagram places
-Stage 10 (Corrections) *before* Stage 11 (Materialize) — i.e. corrections are
+Stage 10 (Corrections) *before* Stage 11 (Materialize) - i.e. corrections are
 meant to happen on `extraction_fields` before any `Quote` row exists at all.
 Previously, `app/models/documents.py`'s `QuoteCorrection.quote_id` was a
 **required** composite FK to `quotes`, so a pre-materialization correction
-could not produce a `QuoteCorrection` row at all — only the audit event
+could not produce a `QuoteCorrection` row at all - only the audit event
 recorded it (see git history for the full original account of that
 conflict).
 
 A later, narrowly-scoped part-matching phase revisited this: migration 0012
 drops `quote_id`'s `NOT NULL` (module docstring point 8a,
 `app/models/documents.py`) and adds a new `extraction_run_id` composite org
-FK to `extraction_runs`, giving every correction — pre- or
-post-materialization — a durable, directly queryable link back to the run
+FK to `extraction_runs`, giving every correction - pre- or
+post-materialization - a durable, directly queryable link back to the run
 that produced the field it corrects. `correct_field` below now **always**
 writes a `QuoteCorrection` row: `quote_id` is `ExtractionRepository.
 find_materialized_quote_id(run_id)` (still recovered from the
 `extraction.materialized` audit event's `after_state`, since `Quote` itself
-still carries no `source_extraction_run_id` — app/models/quotes.py module
-docstring point 1 — that gap is unaffected) and is `None` when no quote has
+still carries no `source_extraction_run_id` - app/models/quotes.py module
+docstring point 1 - that gap is unaffected) and is `None` when no quote has
 been materialized yet; `extraction_run_id` is always `run_id`. The
 `extraction.field_corrected` audit event is unchanged (still the complete
 record of every edit regardless).
@@ -116,7 +116,7 @@ record of every edit regardless).
   precondition is that `start_run` requires `state == 'stored'` (this task's
   own literal instruction), checked but never advanced.
 - **No cross-run supersession.** `ALLOWED_EXTRACTION_RUN_TRANSITIONS` only
-  permits `SUPERSEDED` from `needs_review`/`failed`/`materialized` — notably
+  permits `SUPERSEDED` from `needs_review`/`failed`/`materialized` - notably
   *not* from `ready`, so a blanket "supersede the prior run when a new one
   starts" policy would sometimes violate the frozen transition table itself.
   This task's own OBJECTIVE recipe for `start_run` never mentions
@@ -126,7 +126,7 @@ record of every edit regardless).
   out of scope.
 - **No part matching (Stage 12-13).** Materialized lines carry
   `part_id=None`, `matched_rfq_line_id=None`, `match_status` stays the
-  model's own default (`UNMATCHED`) — a separate, later phase.
+  model's own default (`UNMATCHED`) - a separate, later phase.
 - **`QuoteLine.country_of_origin` is `CHAR(2)`; extracted text is a full
   country name** (the golden fixtures literally say "China"/"Mexico").
   There is no country-name -> ISO-3166 alpha-2 lookup table anywhere in this
@@ -137,10 +137,10 @@ record of every edit regardless).
 - **`unit_definition_id` is `NOT NULL` on `QuoteLine`, but the PDF/PNG golden
   fixtures never state a unit of measure at all.** `_resolve_unit_definition_id`
   resolves the extracted text (or, if genuinely missing, the fallback
-  candidate `"each"` — the global catalogue's canonical `count`-dimension
+  candidate `"each"` - the global catalogue's canonical `count`-dimension
   unit, `app.seed.units_catalog.STANDARD_UNIT_CATALOG`) against
   `unit_definitions.code` (case-insensitive, global-or-this-org), and raises
-  a `422` naming the problem if neither resolves — never silently inventing
+  a `422` naming the problem if neither resolves - never silently inventing
   or crashing on the model's own `NOT NULL`/FK constraint.
 """
 
@@ -214,7 +214,7 @@ from app.repositories.supplier_repository import SupplierRepository
 from app.services.audit import AuditRecorder
 
 # System prompt version (envelope.SYSTEM_INSTRUCTIONS is the constant this
-# versions — 04-document-pipeline.md §6 point 1: "the system prompt is a
+# versions - 04-document-pipeline.md §6 point 1: "the system prompt is a
 # constant in source control, versioned as prompt_version"). Bump whenever
 # that constant's wording changes.
 PROMPT_VERSION: Final[str] = "v1"
@@ -249,7 +249,7 @@ _EXTRACTION_SOURCE_OF_KIND: Final[dict[DocumentKind, str]] = {
     DocumentKind.JPEG: "ocr",
 }
 
-# Mirrors QuoteService._ELIGIBLE_RFQ_STATUSES — see module docstring point 2.
+# Mirrors QuoteService._ELIGIBLE_RFQ_STATUSES - see module docstring point 2.
 _ELIGIBLE_RFQ_STATUSES: Final[frozenset[RfqStatus]] = frozenset(
     {RfqStatus.OPEN, RfqStatus.UNDER_REVIEW}
 )
@@ -273,7 +273,7 @@ def build_extraction_provider(settings: Settings) -> ExtractionProvider:
     if settings.extraction_provider is ExtractionProviderKind.MOCK:
         return MockExtractionProvider()
     # No Anthropic adapter module exists under app.providers.extraction in
-    # this build (only base.py/envelope.py/mock.py) — base.py's own
+    # this build (only base.py/envelope.py/mock.py) - base.py's own
     # docstring calls it "the optional Anthropic adapter (env-gated)",
     # future/roadmap, not implemented here. Fails loudly rather than
     # silently falling back to the mock provider.
@@ -288,7 +288,7 @@ def build_extraction_provider(settings: Settings) -> ExtractionProvider:
 
 def _validate_value(value_type: str, raw: str | None) -> tuple[str | None, bool]:
     """Ladder step (b), type validation. `raw is None` (MISSING) is always
-    valid — nothing to type-check — per the payload's own "never invent"
+    valid - nothing to type-check - per the payload's own "never invent"
     contract; only a *stated* value that fails to parse is a validation
     failure. Returns `(normalized_value_or_None, is_valid)`."""
     if raw is None:
@@ -309,7 +309,7 @@ def _validate_value(value_type: str, raw: str | None) -> tuple[str | None, bool]
         if len(raw) != 3 or not raw.isalpha() or raw != raw.upper():
             return None, False
         return raw, True
-    # text / enum: no structural check at this ladder step — resolving an
+    # text / enum: no structural check at this ladder step - resolving an
     # "enum" field like unit_of_measure against the unit catalogue is a
     # materialize-time concern (_resolve_unit_definition_id), not a
     # per-field type-validation concern.
@@ -321,10 +321,10 @@ def _price_break_structure_flags(
 ) -> dict[int, str]:
     """Mirrors `QuoteService._validate_price_breaks`'s three structural rules
     (duplicate `min_quantity` / a non-highest open-ended tier / overlap),
-    re-derived rather than reused — see module docstring point 1. `tiers`:
+    re-derived rather than reused - see module docstring point 1. `tiers`:
     `(original_index, min_quantity, max_quantity)` for tiers whose own
     `min_quantity` already business-validated (> 0). Returns
-    `{original_index: 'min'|'max'}` — which of that tier's two boundary
+    `{original_index: 'min'|'max'}` - which of that tier's two boundary
     fields to flag invalid, matching `QuoteService`'s own field attribution
     (duplicate -> `min_quantity`; open-ended-not-highest / overlap ->
     `max_quantity`)."""
@@ -346,7 +346,7 @@ def _price_break_structure_flags(
 
 
 def _country_code(raw: str | None) -> str | None:
-    """Only accept text that already looks like an ISO-3166 alpha-2 code —
+    """Only accept text that already looks like an ISO-3166 alpha-2 code -
     see module docstring."""
     if raw is None:
         return None
@@ -454,7 +454,7 @@ class ExtractionService:
         """Idempotent: `document_pages` carries `UNIQUE (organization_id,
         document_id, page_number)` (app/models/documents.py), so a second
         extraction run against the same document must reuse the pages a
-        prior run already persisted rather than re-inserting them — page
+        prior run already persisted rather than re-inserting them - page
         acquisition is a property of the *document* (Stage 4), not of any
         one run."""
         existing = self._page_repo.list_pages(document.id)
@@ -761,7 +761,7 @@ class ExtractionService:
             )
         if document.detected_mime is None or document.content_sha256 is None:
             # Unreachable in practice: DocumentService.upload always sets both
-            # before a row ever reaches 'stored' — defensive only.
+            # before a row ever reaches 'stored' - defensive only.
             raise ConflictStateError(
                 "Document has no detected content type or content hash; content "
                 "validation may not have completed."
@@ -840,7 +840,7 @@ class ExtractionService:
             return run
 
         # "mark run": the canary verdict is persisted on the run itself (no
-        # dedicated column exists — see module docstring), not only on the
+        # dedicated column exists - see module docstring), not only on the
         # fields it produces.
         run.raw_response = {
             "payload": payload.model_dump(mode="json"),
@@ -920,7 +920,7 @@ class ExtractionService:
         per this task's objective: "run recomputes needs_review->ready when
         no unconfirmed sub-HIGH fields remain." A no-op for any other run
         state (e.g. a post-materialization correction, see module docstring)
-        — `materialized -> needs_review`/`-> ready` are not legal
+        - `materialized -> needs_review`/`-> ready` are not legal
         transitions anyway."""
         run = self._repo.get_or_raise(run_id)
         if run.state != ExtractionRunState.NEEDS_REVIEW:
@@ -962,14 +962,14 @@ class ExtractionService:
         exception-review workflow. Bulk confirmation... [is] missing").
 
         Every field still `requires_confirmation` and not yet `is_confirmed`
-        on this run is confirmed exactly as `confirm_field` confirms one —
+        on this run is confirmed exactly as `confirm_field` confirms one -
         same three fields set (`is_confirmed`/`confirmed_by_id`/
         `confirmed_at`), same `_recompute_run_state` call afterwards, so the
         run lands in the identical `ready`/`needs_review` state the
         one-at-a-time path would have produced. The one deliberate
         difference is the audit trail: **one** `extraction.
         fields_confirmed_bulk` event carrying the confirmed count, not N
-        per-field `extraction.field_confirmed` events — mirrors
+        per-field `extraction.field_confirmed` events - mirrors
         `PartImportService.commit`'s single summarizing event over many
         created parts (`services/part_import_service.py`) rather than
         `RfqService.invite_suppliers`'s one-event-per-row loop; a bulk
@@ -978,7 +978,7 @@ class ExtractionService:
 
         Idempotent, not a 409: a run with nothing left requiring
         confirmation (already fully reviewed, or already `ready`) is a
-        clean no-op — the unchanged run is returned as-is, and no audit
+        clean no-op - the unchanged run is returned as-is, and no audit
         event is recorded (an event that says "confirmed 0 fields" is noise,
         not signal, and would misrepresent this call as having done
         something). This is the documented choice between the two this
@@ -1077,7 +1077,7 @@ class ExtractionService:
     # -- materialize -----------------------------------------------------
 
     def _check_rfq_eligible(self, rfq: Rfq) -> None:
-        """Mirrors QuoteService._check_rfq_eligible — see module docstring
+        """Mirrors QuoteService._check_rfq_eligible - see module docstring
         point 2 for why this is re-derived rather than reused."""
         if rfq.status not in _ELIGIBLE_RFQ_STATUSES:
             raise ConflictStateError(
@@ -1260,7 +1260,7 @@ class ExtractionService:
                 price_raw = val(f"lines[{i}].price_breaks[{j}].unit_price")
                 max_raw = val(f"lines[{i}].price_breaks[{j}].max_quantity")
                 # A tier missing either boundary required by the DB schema
-                # (min_quantity, unit_price — both NOT NULL on
+                # (min_quantity, unit_price - both NOT NULL on
                 # quote_price_breaks) is dropped rather than materialized
                 # half-built; it is still fully visible on its own
                 # ExtractionField rows for review.

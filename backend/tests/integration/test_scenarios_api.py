@@ -7,28 +7,28 @@ database, driven entirely through the HTTP API from there.
 
 **The signature case** (`_setup_signature_case`): two suppliers quoting the
 same RFQ line, deliberately built so the two comparison strategies disagree
-— this IS the product's thesis (SPEC: a lower quoted unit price can still be
+- this IS the product's thesis (SPEC: a lower quoted unit price can still be
 a worse deal after landed-cost extras):
 
 - "Acme Low-Price": unit_price 8.00 (LOWEST raw price), but a huge shipping
-  cost (3000.00) — with a 30% tariff on (material+logistics) piled on top,
+  cost (3000.00) - with a 30% tariff on (material+logistics) piled on top,
   its landed cost ends up far above its raw price would suggest.
 - "Beta Premium": unit_price 11.00 (higher raw price), but minimal shipping
-  (100.00) — its landed cost stays close to its raw price.
+  (100.00) - its landed cost stays close to its raw price.
 
 At 500 units: Acme's landed total is ~9180.00 (effective unit cost ~18.36);
 Beta's is ~7390.00 (effective unit cost ~14.78). Acme wins on raw quoted
 price; Beta wins on landed cost. Exact figures are not hand-verified to the
 last decimal here (that discipline belongs to `tests/unit/test_landed_cost.py`
-and `test_landed_cost_api.py`'s own worked example) — these tests assert the
+and `test_landed_cost_api.py`'s own worked example) - these tests assert the
 *ordering*, which is what the product's strategy-comparison feature is for.
 
-Note: the allocation solver ALWAYS minimizes landed cost — `strategy` only
+Note: the allocation solver ALWAYS minimizes landed cost - `strategy` only
 changes which criterion the SCORING half ranks suppliers by (scenario_service
 module docstring, "Multi-line-per-supplier scoring aggregation" section);
 allocation is never strategy-dependent. So under `lowest_unit_price`, the
 *scoring* ranks Acme first, but the *recommended allocation* still goes to
-Beta — asserted explicitly below.
+Beta - asserted explicitly below.
 """
 
 from __future__ import annotations

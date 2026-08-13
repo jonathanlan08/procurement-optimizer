@@ -1,20 +1,20 @@
 #!/usr/bin/env bash
-# Procurement Optimizer — local Playwright E2E runner.
+# Procurement Optimizer - local Playwright E2E runner.
 #
 # One command boots an EPHEMERAL PostgreSQL (deliberately separate from the
 # shared ~/.local/share/procurement-optimizer/pgdata the README's Path B
-# quickstart uses for everyday dev — see backend/scripts/dev_db.py), runs
+# quickstart uses for everyday dev - see backend/scripts/dev_db.py), runs
 # migrations, seeds the synthetic Meridian demo dataset
 # (backend/scripts/seed_demo.py), starts the real backend on :8010 and the
 # real Vite dev server on :5173, points Playwright (frontend/playwright.config.ts)
-# at both, and tears everything down on exit — success or failure — so the
+# at both, and tears everything down on exit - success or failure - so the
 # suite is safe to run twice in a row against an identical, pristine seed
 # (proving no order-dependence) instead of accumulating state (materialized
 # quotes, reviewed briefs, generated reports) across runs.
 #
 # No paid providers anywhere: PO_EXTRACTION_PROVIDER/PO_NARRATIVE_PROVIDER
 # default to mock/template (backend/src/app/core/config.py) and are never
-# overridden here — every "AI" surface this suite exercises is the mock
+# overridden here - every "AI" surface this suite exercises is the mock
 # extraction provider and the deterministic template narrative, exactly as
 # the seeded demo dataset already labels them ("Simulated").
 #
@@ -62,7 +62,7 @@ cleanup() {
   if [[ -n "$PGDATA_DIR" && -d "$PGDATA_DIR" ]]; then
     (cd "$BACKEND_DIR" && uv run python - "$PGDATA_DIR" <<'PY'
 # Stops the ephemeral postgres instance this run booted and deletes its data
-# directory (pgserver's own documented pattern for a temporary server — see
+# directory (pgserver's own documented pattern for a temporary server - see
 # its get_server() docstring: "use mkdtemp() ... and set cleanup_mode to
 # 'delete'"). Best-effort: a failure here must not mask the suite's own
 # pass/fail result, which has already been decided by this point.
@@ -88,7 +88,7 @@ trap cleanup EXIT INT TERM
 for port in "$BACKEND_PORT" "$FRONTEND_PORT"; do
   stale_pid="$(lsof -tiTCP:"$port" -sTCP:LISTEN 2>/dev/null || true)"
   if [[ -n "$stale_pid" ]]; then
-    log "port $port is busy (pid $stale_pid) — killing the leftover process"
+    log "port $port is busy (pid $stale_pid) - killing the leftover process"
     kill -9 $stale_pid 2>/dev/null || true
     sleep 1
   fi
@@ -129,7 +129,7 @@ export PO_ALLOWED_ORIGINS="[\"$FRONTEND_URL\"]"
 # The general in-memory rate limiter (120/min/IP by default) and the login-
 # specific one (10/min/IP) are tuned for a single interactive dev session,
 # not a scripted browser driving dozens of TanStack Query fetches per page
-# in a tight loop — raised here (config only, no code change) so this
+# in a tight loop - raised here (config only, no code change) so this
 # suite exercises the app's real behavior instead of its own rate limiter.
 export PO_RATE_LIMIT_PER_MINUTE=6000
 export PO_RATE_LIMIT_AUTH_PER_MINUTE=300
@@ -150,7 +150,7 @@ for _ in $(seq 1 60); do
   sleep 1
 done
 if [[ -z "$backend_ready" ]]; then
-  err "backend did not become healthy in time — last log lines:"
+  err "backend did not become healthy in time - last log lines:"
   tail -n 60 "$BACKEND_LOG" >&2 || true
   exit 1
 fi
@@ -160,9 +160,9 @@ if [[ ! -x "$FRONTEND_DIR/node_modules/.bin/playwright" ]]; then
   log "installing frontend dependencies (npm install)..."
   (cd "$FRONTEND_DIR" && npm install)
 fi
-log "ensuring Playwright's browsers are installed (chromium, firefox, webkit — no-op if already cached)..."
+log "ensuring Playwright's browsers are installed (chromium, firefox, webkit - no-op if already cached)..."
 # 2026-08 audit remediation, item 5: playwright.config.ts now defines
-# firefox/webkit projects (a chromium-full + firefox/webkit-smoke matrix —
+# firefox/webkit projects (a chromium-full + firefox/webkit-smoke matrix -
 # see that file's own header) alongside chromium, so a local run of "every
 # project" needs all three engines present, not just chromium.
 (cd "$FRONTEND_DIR" && npx playwright install chromium firefox webkit)
@@ -185,7 +185,7 @@ for _ in $(seq 1 60); do
   sleep 1
 done
 if [[ -z "$frontend_ready" ]]; then
-  err "frontend did not become ready in time — last log lines:"
+  err "frontend did not become ready in time - last log lines:"
   tail -n 60 "$FRONTEND_LOG" >&2 || true
   exit 1
 fi

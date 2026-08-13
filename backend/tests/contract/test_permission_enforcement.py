@@ -3,7 +3,7 @@ independent security audit, finding LOW-10).
 
 `tests/contract/test_permission_matrix.py` proves the key-SETS match (every
 route declared, no stale declarations). It never proved that the Role a route
-DECLARES equals the Role its dependency tree actually ENFORCES — which made
+DECLARES equals the Role its dependency tree actually ENFORCES - which made
 `PERMISSIONS` documentation, not enforcement. This test walks the real
 FastAPI dependant graph of every route and fails on any divergence, making
 the matrix load-bearing.
@@ -92,7 +92,7 @@ class TestPermissionEnforcement:
     def test_route_discovery_is_not_vacuous(self) -> None:
         app = _build_app()
         found = {(m, p) for m, p, _ in _api_routes(app)}
-        assert len(found) > 50, "route discovery broke — refusing a vacuous pass"
+        assert len(found) > 50, "route discovery broke - refusing a vacuous pass"
         assert found == set(PERMISSIONS.keys()), {
             "undeclared": sorted(found - set(PERMISSIONS)),
             "stale": sorted(set(PERMISSIONS) - found),

@@ -1,11 +1,11 @@
-"""Order-allocation CP-SAT solver — implementation of the frozen
+"""Order-allocation CP-SAT solver - implementation of the frozen
 `AllocationSolver` shape described in `contracts.py`.
 
 Methodology: `docs/planning/06-optimization-methodology.md`. This module
 implements the model of §3-§5 against the *frozen* `contracts.py` data
 shapes, which are simpler than the methodology's full parameter set (no
 supplier-level fixed cost, no separate `var_{s,l}` per-unit adder, no
-lexicographic strategies, no oversupply) — every `Offer` already carries a
+lexicographic strategies, no oversupply) - every `Offer` already carries a
 single fully landed per-unit cost per tier plus one fixed cost, so the
 material term and the `var` term of §5 collapse into one.
 
@@ -16,11 +16,11 @@ contract's docstring is normative but not exhaustive pseudocode):
   by `(code, id)` and lines by `(line_number, id)`; neither field exists on
   the frozen `DemandLine`/`Offer` dataclasses. This module sorts lines by
   `str(rfq_line_id)` and offers by `(str(rfq_line_id), str(supplier_id),
-  str(quote_line_id))` — the only stable, always-present keys — which still
+  str(quote_line_id))` - the only stable, always-present keys - which still
   gives a pure function of the data and is asserted by the reordering test.
 - **`model_hash`** is a SHA-256 over a canonical JSON *of the input*
   (sorted, ids as strings, Decimals as `to_wire` strings), not over the
-  built `CpModel` proto — cheaper, and it lets a pre-solve INFEASIBLE result
+  built `CpModel` proto - cheaper, and it lets a pre-solve INFEASIBLE result
   (no solver call at all) still carry a meaningful, reproducible hash.
 - **Tier cost linearisation.** Rather than the methodology's `q[s,l,t]`
   "quantity priced at tier `t`" auxiliary variables, this module ties an
@@ -31,15 +31,15 @@ contract's docstring is normative but not exhaustive pseudocode):
   bound relaxation.
 - **Deterministic tie-break (methodology §6) is deferred.** CP-SAT with
   `num_search_workers=1`, `random_seed=0`, and canonical variable-creation
-  order is deterministic for a fixed model — repeat solves and permuted-input
+  order is deterministic for a fixed model - repeat solves and permuted-input
   solves of the *same* problem provably return the same proto and therefore
   the same solution (asserted by the determinism tests). What is not
   guaranteed is which of several *exactly*-tied optima a future code change
   might surface. The methodology's epsilon tie-break term is real scope but
   is not part of this task's deliverable; flagged here for the principal
   rather than silently added or silently skipped.
-- **Assumption-literal groups.** Six relaxable constraint groups —
-  `moq`, `capacity`, `supplier_count`, `concentration`, `budget`, `locks` —
+- **Assumption-literal groups.** Six relaxable constraint groups -
+  `moq`, `capacity`, `supplier_count`, `concentration`, `budget`, `locks` -
   are always represented by boolean literals in the main solve (even when a
   problem does not use that constraint) so that
   `SufficientAssumptionsForInfeasibility` has a uniform, canonical set to
@@ -47,7 +47,7 @@ contract's docstring is normative but not exhaustive pseudocode):
   are not "policy" constraints a user could choose to relax.
 - **Rejected alternatives, scoped to the task.** Only the single-supplier
   comparison is computed (one extra deterministic solve with
-  `max_supplier_count=1`), per the task's explicit scope — not the
+  `max_supplier_count=1`), per the task's explicit scope - not the
   methodology's full "every supplier" + "next-best split" sweep.
 """
 
@@ -105,7 +105,7 @@ class ConsistencyError(RuntimeError):
     """The exact Decimal re-selection of a price-break tier at the allocated
     quantity disagrees with the tier CP-SAT chose. This indicates a modelling
     bug (the tier-linking constraints and `breaks.select_price_break` have
-    diverged) — it must never be silently swallowed."""
+    diverged) - it must never be silently swallowed."""
 
 
 # --------------------------------------------------------------------------
@@ -120,7 +120,7 @@ def _scale_money(value: Decimal) -> int:
 
 
 def _unscale_money(raw: int) -> Decimal:
-    """Inverse of `_scale_money`, for human-readable sentences ONLY — never
+    """Inverse of `_scale_money`, for human-readable sentences ONLY - never
     used for the authoritative `expected_total_cost`."""
     with localcontext(CALC_CONTEXT):
         value = Decimal(raw) / Decimal(MONEY_INT_SCALE)
@@ -534,7 +534,7 @@ def _max_scaling_error(
     """06-optimization-methodology.md §7.4 (2026-08 calculation audit F1):
     each scaled per-unit cost is off by at most 5e-5 (half-even at 4 dp), so
     a full allocation's scaled total is off by at most 5e-5 x allocated
-    units + 5e-5 per nonzero fixed cost — and comparing the chosen solution
+    units + 5e-5 per nonzero fixed cost - and comparing the chosen solution
     against a passed-over alternative doubles the band. This is the amount
     by which an unconsidered alternative could be cheaper in exact space
     while 'optimal' is still truthful in scaled space."""
@@ -553,7 +553,7 @@ def _check_overflow(
     the worst-case scaled objective bound (reused as variable domains).
 
     With a concentration cap, the constraint multiplies scaled spend by
-    `CONCENTRATION_DENOM` (10^6), so the effective ceiling is int64 / 10^6 —
+    `CONCENTRATION_DENOM` (10^6), so the effective ceiling is int64 / 10^6 -
     otherwise CP-SAT returns an opaque MODEL_INVALID above ~$922M total
     (2026-08 calculation audit F8)."""
     line_by_id = {line.rfq_line_id: line for line in lines}
@@ -587,7 +587,7 @@ def _check_overflow(
             f"worst-case scaled spend ({worst_case}) times the concentration "
             f"denominator ({CONCENTRATION_DENOM}) would overflow int64; the "
             "max_concentration constraint cannot be modelled at this problem "
-            "size — remove the concentration cap or reduce the total cost scale"
+            "size - remove the concentration cap or reduce the total cost scale"
         )
     return worst_case
 
@@ -971,7 +971,7 @@ class AllocationSolver:
         # SufficientAssumptionsForInfeasibility() returns the literal indices
         # directly (already ints), not literal objects. It is a *sufficient*
         # core, not guaranteed minimal (observed in practice to include
-        # groups with zero constraints wired in this instance) — refine it
+        # groups with zero constraints wired in this instance) - refine it
         # with deletion-based minimization below.
         core_indices = set(solver.sufficient_assumptions_for_infeasibility())
         raw_core = tuple(
@@ -1077,7 +1077,7 @@ class AllocationSolver:
                 if solver_tier_index is None:
                     raise ConsistencyError(
                         f"solver allocated {qty} units to {o.supplier_label} but no tier "
-                        "boolean is set — tier-linking constraints are inconsistent"
+                        "boolean is set - tier-linking constraints are inconsistent"
                     )
                 solver_tier = tiers_sorted[solver_tier_index]
                 if (
@@ -1193,7 +1193,7 @@ class AllocationSolver:
             if alt_result.status is AllocationStatus.OPTIMAL:
                 verb = "would cost"
             else:
-                # FEASIBLE is an upper bound, not a proven figure — the one
+                # FEASIBLE is an upper bound, not a proven figure - the one
                 # place this discipline lapsed (2026-08 calculation audit F9).
                 verb = "would cost at most"
             return (

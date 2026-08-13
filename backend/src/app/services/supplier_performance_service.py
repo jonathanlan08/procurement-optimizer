@@ -1,4 +1,4 @@
-"""Supplier performance record service — org-scoped business logic for the
+"""Supplier performance record service - org-scoped business logic for the
 `/suppliers/{id}/performance` sub-resource (docs/planning/03-api-contract.md
 §4.4).
 
@@ -8,11 +8,11 @@ exception), and every mutation writes exactly one audit event in the same
 transaction as the data change it describes.
 
 The parent supplier must exist in the caller's organization for every
-operation here — `SupplierRepository.get_or_raise` 404s on both a genuinely
+operation here - `SupplierRepository.get_or_raise` 404s on both a genuinely
 absent supplier and a same-id-different-org supplier.
 
 Records are point-in-time history (no VersionedMixin/ArchivableMixin on
-SupplierPerformanceRecord — see app.models.suppliers), and the contract's
+SupplierPerformanceRecord - see app.models.suppliers), and the contract's
 route table (§4.4) lists only GET and POST for this sub-resource, so there is
 deliberately no update or delete method here.
 """

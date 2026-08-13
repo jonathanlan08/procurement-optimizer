@@ -2,33 +2,33 @@
 mirroring api/v1/suppliers.py.
 
 Concurrency (§1.7): parts are explicitly listed among the resources carrying
-`ETag`/`If-Match` (suppliers, parts, RFQs, quotes, scoring configurations) —
+`ETag`/`If-Match` (suppliers, parts, RFQs, quotes, scoring configurations) -
 `GET` sets `ETag: "<version>"`; `PATCH` requires `If-Match` and returns `409
 conflict_version` on mismatch, exactly like suppliers.
 
 Alternatives (`GET/POST /parts/{id}/alternatives`, `DELETE
 /parts/{id}/alternatives/{aid}`) are folded into this single router rather
 than split into a separate module the way `supplier_contacts.py`/
-`supplier_performance.py` split off from `suppliers.py` — this task's
+`supplier_performance.py` split off from `suppliers.py` - this task's
 file-creation allowlist names only one new API module for parts.
 `DELETE .../alternatives/{aid}` returns `204` with no body: unlike supplier
 contacts ("delete = archive", a soft delete with a resulting state worth
 returning), `PartAlternative` has no `archived_at` (see
-app.models.parts.PartAlternative docstring — "a decision record ... not a
+app.models.parts.PartAlternative docstring - "a decision record ... not a
 mutable aggregate with a lifecycle of its own"), so removal is a genuine hard
 delete with nothing left to show the caller.
 
 Deviations from this task's prose (contract wins, per instructions):
 1. The contract's route table (§4.5) lists only `PATCH /parts/{id}`, not
-   `PUT` — same deviation already recorded in `api/v1/suppliers.py`.
-2. The contract's route table (§4.5) lists only `POST /parts/{id}/archive` —
+   `PUT` - same deviation already recorded in `api/v1/suppliers.py`.
+2. The contract's route table (§4.5) lists only `POST /parts/{id}/archive` -
    no `unarchive` route, unlike suppliers (§4.4) which lists both
    directions explicitly. Every other archivable resource in the contract
    (BOMs, RFQs, scoring-configurations, comparison-scenarios, quote-
    documents, reports, negotiation-briefs) is equally silent on unarchive,
    so this reads as the contract's general non-exhaustive listing habit
    rather than a deliberate one-way lifecycle carved out for parts
-   specifically — `Part` mixes in the identical `ArchivableMixin` as
+   specifically - `Part` mixes in the identical `ArchivableMixin` as
    `Supplier`, with the same reversible `archived_at`/`archived_by_id`/
    `archive_reason` shape and no DB constraint preventing un-archiving.
    This router still implements `POST /parts/{id}/unarchive`, mirroring

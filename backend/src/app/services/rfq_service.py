@@ -1,6 +1,6 @@
-"""RFQ service — org-scoped business logic for RFQ CRUD, the status
+"""RFQ service - org-scoped business logic for RFQ CRUD, the status
 workflow, invitations, and BOM explosion (docs/planning/03-api-contract.md
-§4.8, app/models/rfqs.py module docstring — `ALLOWED_RFQ_TRANSITIONS` is the
+§4.8, app/models/rfqs.py module docstring - `ALLOWED_RFQ_TRANSITIONS` is the
 single source of truth for the status machine, imported here rather than
 re-encoded).
 
@@ -9,7 +9,7 @@ commits on success and rolls back on any raised exception. Every mutation
 writes exactly one audit event in the same transaction as the data change it
 describes (this task's brief: `rfq.created/updated/line_added/line_updated/
 line_removed/supplier_invited/supplier_excluded/supplier_reinstated/
-status_changed`) — bulk operations (`add_lines`, `invite_suppliers`) write one
+status_changed`) - bulk operations (`add_lines`, `invite_suppliers`) write one
 event *per row added*, not one event for the whole batch: each row is its own
 audited fact, the same granularity `PartService.add_alternative` already
 established for a single-row sub-resource create.
@@ -23,8 +23,8 @@ one place this rule is encoded, mirroring how `ALLOWED_RFQ_TRANSITIONS` is the
 one place the status machine is encoded.
 
 **BOM explosion.** `create()` with `body.source_bom_id` set resolves the BOM
-in-org (404 if absent/cross-org — never 403, §1.1), requires `status ==
-active` (else `409 conflict_state` — a draft or superseded BOM is not a
+in-org (404 if absent/cross-org - never 403, §1.1), requires `status ==
+active` (else `409 conflict_state` - a draft or superseded BOM is not a
 released bill of materials to quote against), then copies every line of that
 BOM version into `rfq_lines` with `required_quantity = quantity_per_assembly
 * assembly_quantity` (assembly_quantity defaults to `Decimal("1")` when
@@ -37,12 +37,12 @@ result is quantized once at its boundary scale"). `BillOfMaterialLine.substitute
 part_id` has no equivalent column on `RfqLine` (see app/models/rfqs.py
 module docstring point #3's field-list deviation from the ERD) and is
 therefore simply dropped, not carried forward as a `notes` annotation or
-otherwise — a deliberate consequence of that already-documented schema
+otherwise - a deliberate consequence of that already-documented schema
 choice, not a new one made here.
 
 **Supplier sub-resource id.** Every method taking `rfq_supplier_id` addresses
 the `RfqSupplier` join row's own id (see app/schemas/rfqs.py module
-docstring) — never the invited `Supplier`'s id.
+docstring) - never the invited `Supplier`'s id.
 """
 
 from __future__ import annotations
@@ -97,13 +97,13 @@ from app.services.audit import AuditRecorder
 # class body below: RfqService defines a method named `list` (and `list_
 # lines`/`list_suppliers`), which (per `from __future__ import annotations`)
 # shadows the builtin `list` for any bare `list[...]` written in a method
-# signature anywhere in the same class body — mypy then reads it as
+# signature anywhere in the same class body - mypy then reads it as
 # "RfqService.list used as a type" instead of the builtin generic. Same
 # mypy-shadowing precedent as BomService/PartService (see their module
 # docstrings/comments); every method signature below uses one of these
 # aliases instead of a bare `list[...]`.
 _RfqWithLines = tuple[Rfq, list[RfqLine]]
-# (rfq, line_count) pairs — RfqRepository.search's own return shape, per its
+# (rfq, line_count) pairs - RfqRepository.search's own return shape, per its
 # module docstring (2026-08 product-audit remediation, P2).
 _RfqPage = tuple[list[tuple[Rfq, int]], int]
 _RfqStatusFilter = list[RfqStatus] | None
@@ -298,7 +298,7 @@ class RfqService:
         # (`fk_rfqs_organization_id_source_bom_id`), so inserting the row
         # with a cross-org `source_bom_id` already set would hit that
         # constraint at flush time and surface as a raw `IntegrityError`
-        # instead of the clean `404`/`409` this method means to raise —
+        # instead of the clean `404`/`409` this method means to raise -
         # doing the BOM lookup first (via `BomRepository.get_or_raise`,
         # itself org-scoped) means the composite FK can never fire on a
         # value this service didn't already confirm is valid.
@@ -335,7 +335,7 @@ class RfqService:
         self._repo.add(rfq)
         # flush before building lines: rfq_lines' composite FK targets
         # (organization_id, rfq_id) on this same row, which must actually
-        # exist (not merely be pending in the session) first — same reasoning
+        # exist (not merely be pending in the session) first - same reasoning
         # as BomService.create.
         self._db.flush()
 
@@ -376,13 +376,13 @@ class RfqService:
         bom_lines: _BomLineList,
         assembly_quantity: Decimal | None,
     ) -> tuple[_RfqLineList, str]:
-        """Pure construction — the BOM itself has already been resolved and
+        """Pure construction - the BOM itself has already been resolved and
         validated (`status == active`) by the caller (`create()`), before the
         `Rfq` row was ever flushed. Takes no DB-lookup action of its own."""
         qty = assembly_quantity if assembly_quantity is not None else Decimal("1")
 
         # Arithmetic runs at full precision inside CALC_CONTEXT, quantized
-        # once at the QTY_SCALE boundary — the same "full precision then
+        # once at the QTY_SCALE boundary - the same "full precision then
         # quantize once" policy `quantize()` itself follows
         # (app/core/money.py module docstring), applied here to the one
         # multiplication this service needs.
@@ -607,7 +607,7 @@ class RfqService:
             # `QuantityString`'s `PlainSerializer` unconditionally (its
             # `when_used` defaults to "always", not "json"), so the dict
             # produced by `model_dump()` above already holds the *wire*
-            # string form, not the parsed `Decimal` — `quantize_qty()` needs
+            # string form, not the parsed `Decimal` - `quantize_qty()` needs
             # the latter.
             line.required_quantity = quantize_qty(body.required_quantity)
         if "required_specifications" in changes:

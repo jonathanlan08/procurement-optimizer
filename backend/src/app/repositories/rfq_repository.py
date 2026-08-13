@@ -1,18 +1,18 @@
-"""RFQ repository — org-scoped data access (docs/planning/02-erd.md §5,
+"""RFQ repository - org-scoped data access (docs/planning/02-erd.md §5,
 app/models/rfqs.py).
 
 Extends OrgScopedRepository, so every query is filtered by organization_id
 before any other predicate (isolation control #2).
 
 Mirrors `BomRepository`'s split between "the aggregate itself" and "child rows
-fetched with their own explicit queries" — `RfqLine`, `RfqSupplier`, and
+fetched with their own explicit queries" - `RfqLine`, `RfqSupplier`, and
 `RfqStatusHistory` all carry a one-directional `.rfq` relationship (see
 app/models/rfqs.py: no `back_populates`/backref on the `Rfq` side), so lines,
 supplier invitations, and status-history rows are queried here directly
 rather than via an eager-loaded collection attribute that does not exist.
 
 Default listing hides archived RFQs (`archived_at IS NULL`) unless
-`include_archived=True` is passed — this task's own filter list
+`include_archived=True` is passed - this task's own filter list
 (03-api-contract.md §4.8: "filters status[], q, due_before, due_after") does
 not name `include_archived` for RFQs specifically, but §1.4's blanket rule
 ("include_archived=true required to see soft-deleted rows") is general and
@@ -23,9 +23,9 @@ carved out as an exception.
 **`search()` returns `(Rfq, line_count)` pairs, not bare `Rfq` rows**
 (2026-08 product-audit remediation, P2: "Lines column always displays a
 dash because the summary API omits the count"). `line_count` is joined on
-via `_line_count_subquery()` — one `GROUP BY rfq_id` query producing a
+via `_line_count_subquery()` - one `GROUP BY rfq_id` query producing a
 `(rfq_id, line_count)` row per RFQ that has any lines, outer-joined onto the
-paged RFQ rows with `COALESCE(..., 0)` for RFQs with none — so the list
+paged RFQ rows with `COALESCE(..., 0)` for RFQs with none - so the list
 endpoint gets every row's line count from the *same* query that fetches the
 page, not one extra `count(*)` per row (`BomRepository.
 _latest_version_subquery` is the closest existing precedent for "a
@@ -92,7 +92,7 @@ class RfqRepository(OrgScopedRepository[Rfq]):
         limit: int = 50,
         offset: int = 0,
     ) -> list[tuple[Rfq, int]]:
-        """Returns `(Rfq, line_count)` pairs — see module docstring. A
+        """Returns `(Rfq, line_count)` pairs - see module docstring. A
         single query (outer join onto a `GROUP BY` subquery), not
         `list_page()` + a per-row follow-up count, so this stays O(1)
         round trips regardless of page size."""
@@ -215,7 +215,7 @@ class RfqRepository(OrgScopedRepository[Rfq]):
     def get_supplier_by_supplier_id(
         self, rfq_id: uuid.UUID, supplier_id: uuid.UUID
     ) -> RfqSupplier | None:
-        """Existing invitation row for this (rfq, supplier) pair, if any —
+        """Existing invitation row for this (rfq, supplier) pair, if any -
         mirrors `uq_rfq_suppliers_org_rfq_supplier` so the service can raise
         a clean 409 before ever reaching the database constraint."""
         stmt = self._select(RfqSupplier).where(

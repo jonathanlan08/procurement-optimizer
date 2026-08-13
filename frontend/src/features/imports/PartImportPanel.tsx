@@ -1,4 +1,4 @@
-/** Part-import workflow — mounted as a self-contained "Import CSV/XLSX"
+/** Part-import workflow - mounted as a self-contained "Import CSV/XLSX"
  * button inside the Parts workspace toolbar (PartsPage.tsx's one-line
  * insertion; P0 audit finding: "the part-import backend workflow has no
  * UI"). Follows the reports/briefs feature-module convention (api.ts +
@@ -10,26 +10,26 @@
  *    `useAuth()` directly rather than threading `canWrite` down from
  *    PartsPage.tsx, so the PartsPage.tsx edit stays a single mount line.
  *    `POST /part-imports`/`.../commit`/`.../cancel` all require
- *    `Role.ANALYST` server-side (api/v1/part_imports.py) — this mirrors
+ *    `Role.ANALYST` server-side (api/v1/part_imports.py) - this mirrors
  *    that exactly, the same "hide, don't just disable" pattern the "New
  *    part" button already uses.
  *  - **A four-step state machine** (`pick` -> `preview` -> `done` |
  *    `cancelled`) inside one `Drawer`, not a route or a second stacked
- *    drawer — an import is a short, linear wizard the same way
+ *    drawer - an import is a short, linear wizard the same way
  *    ../rfqs/RfqsPage.tsx's `RfqForm` is one drawer with an internal mode
  *    toggle, not several drawers chained together.
  *  - **Commit is disabled while the batch has any error row**
- *    (`canCommitPartImport`, ./api.ts) — the exact client-side mirror of
+ *    (`canCommitPartImport`, ./api.ts) - the exact client-side mirror of
  *    `PartImportService.commit`'s own `409 conflict_state` refusal rule.
  *    The server re-validates regardless; this only saves a doomed round
  *    trip and tells the analyst why up front.
  *  - **The preview table renders `sample_rows` (up to 20), not the full
- *    cursor-paginated row list** — see ./api.ts's file header for the
+ *    cursor-paginated row list** - see ./api.ts's file header for the
  *    scope call. When `rows_total` exceeds the sample size, a caveat line
  *    says so explicitly ("Showing the first N of TOTAL rows") rather than
  *    implying the table is complete.
  *  - **Errors surface two ways**: the shared `ApiErrorBanner` for
- *    request-level failures (upload/commit/cancel — 413/415/422/409 all
+ *    request-level failures (upload/commit/cancel - 413/415/422/409 all
  *    share the one envelope, same as every other mutation in this app), and
  *    a per-row "Errors" column for row-level validation verdicts, which are
  *    a `200`/`201` response field, not a failure.
@@ -60,7 +60,7 @@ const ACCEPT = ".csv,.xlsx";
 
 const DISPOSITION_LABELS: Record<PartImportRowDisposition, string> = {
   create: "Will create",
-  skip_duplicate: "Skip — duplicate",
+  skip_duplicate: "Skip - duplicate",
   error: "Invalid",
 };
 
@@ -69,17 +69,17 @@ function DispositionBadge({ disposition }: { disposition: PartImportRowDispositi
 }
 
 /** Prefers the normalized (validated/parsed) value; falls back to the raw
- * uploaded cell — both are genuinely untyped JSONB (./api.ts's file
+ * uploaded cell - both are genuinely untyped JSONB (./api.ts's file
  * header), narrowed defensively here at the one render site. */
 function rowField(row: PartImportRowResponse, key: string): string {
   const fromNormalized = row.normalized_values?.[key];
   const v = fromNormalized !== undefined && fromNormalized !== null ? fromNormalized : row.raw_values[key];
-  if (v === null || v === undefined || v === "") return "—";
+  if (v === null || v === undefined || v === "") return "-";
   return String(v);
 }
 
 function ErrorsCell({ errors }: { errors: PartImportRowError[] }): ReactNode {
-  if (errors.length === 0) return "—";
+  if (errors.length === 0) return "-";
   return (
     <ul className="import-row-errors">
       {errors.map((e, i) => (
@@ -248,7 +248,7 @@ function ImportDrawerBody({ onClose }: { onClose: () => void }) {
         {!canCommitPartImport(step.preview) && (
           <p className="import-commit-hint" role="alert">
             {step.preview.rows_invalid} row(s) have errors. Fix the source file and re-upload, or cancel
-            this import — a batch with any invalid row cannot be committed.
+            this import - a batch with any invalid row cannot be committed.
           </p>
         )}
         <div className="form-actions">
@@ -305,7 +305,7 @@ function ImportDrawerBody({ onClose }: { onClose: () => void }) {
   return (
     <div className="import-step">
       <p className="detail-label">
-        Import of <span className="detail-value mono">{step.filename}</span> was cancelled — no parts
+        Import of <span className="detail-value mono">{step.filename}</span> was cancelled - no parts
         were created.
       </p>
       <div className="form-actions">

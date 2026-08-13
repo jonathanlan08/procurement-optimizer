@@ -1,7 +1,7 @@
 /* BOM-specific chrome layered on top of components/workspace.css +
    components/badges.css (both imported by BomsPage.tsx). Kept in its own
    file rather than editing either shared stylesheet (both are outside this
-   task's edit scope) — see BomsPage.tsx's file header for why. */
+   task's edit scope) - see BomsPage.tsx's file header for why. */
 
 /* Status badges: draft/active/superseded/archived need four visually
    distinct states (MASTER.md "never rely on color alone"); badges.css only
@@ -9,7 +9,7 @@
    share `.badge`'s base layout and follow the same color roles as
    badges.css's own active/archived variants, adding a fourth ("draft") from
    MASTER.md's info/neutral token. Superseded reuses the inactive/muted
-   treatment — a superseded version is not wrong or dangerous, just no
+   treatment - a superseded version is not wrong or dangerous, just no
    longer current. */
 .bom-badge--draft {
   background: rgba(3, 105, 161, 0.1);
@@ -104,7 +104,7 @@
   font-weight: 600;
 }
 
-/* Lines table (read-only detail view) — same tabular-nums/right-align
+/* Lines table (read-only detail view) - same tabular-nums/right-align
    convention as DataTable.css, reimplemented for this plain <table> since
    the drawer's line list isn't paginated/sortable like the page-level
    DataTable. */

@@ -1,6 +1,6 @@
 # Local development services for the Procurement Optimizer.
 #
-# The backend (FastAPI) and frontend run on the host, NOT in this compose file —
+# The backend (FastAPI) and frontend run on the host, NOT in this compose file -
 # see docs/planning/01-architecture.md §11 and docs/planning/08-test-strategy.md §4.
 # This file exists to give developers who don't use `pgserver` a real Postgres and
 # an S3-compatible MinIO without installing either natively.

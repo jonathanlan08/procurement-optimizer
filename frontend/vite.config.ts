@@ -26,7 +26,7 @@ export default defineConfig({
     globals: false,
     setupFiles: ["src/test/setup.ts"],
     // e2e/** holds Playwright specs (frontend/playwright.config.ts), which
-    // import `test`/`expect` from @playwright/test rather than vitest —
+    // import `test`/`expect` from @playwright/test rather than vitest -
     // without this exclusion vitest's default include glob (**/*.spec.ts)
     // also picks them up and fails them, since @playwright/test's `test`
     // registry only runs under the Playwright test runner.

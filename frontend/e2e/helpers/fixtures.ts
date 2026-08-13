@@ -5,20 +5,20 @@
  * fixtures at backend/tests/fixtures/documents/: `DocumentService.upload`
  * dedupes by sha256 PER ORGANIZATION (services/document_service.py's own
  * module docstring, deviation 3) and the demo seed already uploads all four
- * committed fixtures — including this same CSV shape — to the seeded org, so
+ * committed fixtures - including this same CSV shape - to the seeded org, so
  * re-uploading identical bytes through the UI would deterministically hit a
  * 409 `conflict_duplicate` instead of exercising the happy path. Embedding a
  * fresh random id in the content guarantees a new sha256 every run (and
  * across the "run twice" verification), the same way
  * backend/scripts/generate_fixtures.py's own four fixtures are generated
  * (this mirrors that script's documented header/table CSV shape, minus the
- * prompt-injection line — that trust-boundary case is already covered
+ * prompt-injection line - that trust-boundary case is already covered
  * end-to-end by documents.spec.ts against the seeded Nordic Fastener CSV).
  *
  * The table row is shaped so the backend's extraction MOCK PROVIDER's
  * regex heuristic (app/providers/extraction/mock.py) can find at least one
  * line item even though this generated file has no committed "golden"
- * fixture keyed by its sha256 — see that module's own header: any
+ * fixture keyed by its sha256 - see that module's own header: any
  * unrecognized document hash still gets a low-confidence heuristic pass
  * rather than failing outright, which is exactly the "no paid providers"
  * demo behavior this suite must exercise.

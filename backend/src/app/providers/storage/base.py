@@ -1,4 +1,4 @@
-"""`StorageProvider` Protocol — PRINCIPAL-SPECIFIED, implemented exactly as
+"""`StorageProvider` Protocol - PRINCIPAL-SPECIFIED, implemented exactly as
 given (frozen design; see the delegating task's own literal interface).
 
 No public URLs, ever: bytes are streamed through the API
@@ -6,16 +6,16 @@ No public URLs, ever: bytes are streamed through the API
 can fetch directly (04-document-pipeline.md §4). Every implementation MUST:
 
 1. validate `key` against `KEY_RE` before touching any backing store, raising
-   `ValueError` otherwise — `validate_key()` below is the one place this
+   `ValueError` otherwise - `validate_key()` below is the one place this
    check is written, and every provider in this package calls it from every
    public method rather than re-deriving the regex; and
 2. namespace strictly by `organization_id` (filesystem: `root/<org_id>/<key>`;
-   S3: `<bucket>/<org_id>/<key>`) — org isolation enforced at the storage
+   S3: `<bucket>/<org_id>/<key>`) - org isolation enforced at the storage
    layer itself, not merely trusted from the caller.
 
 `key` is always server-generated (`app.ingestion.file_validation.
 validate_upload`'s `storage_key`: 32 lowercase hex chars + the sniffed
-extension, e.g. `"a1b2c3...d4.pdf"`) — never derived from the client's
+extension, e.g. `"a1b2c3...d4.pdf"`) - never derived from the client's
 filename, so path traversal is structurally impossible upstream of this
 module too.
 """
@@ -43,7 +43,7 @@ class StorageProvider(Protocol):
 
 def validate_key(key: str) -> None:
     """Shared by every implementation's every public method. Raises
-    `ValueError` (not an `AppError` subclass — this is a package-internal
+    `ValueError` (not an `AppError` subclass - this is a package-internal
     contract violation, not a user-facing request error) when `key` is not a
     server-generated storage key."""
     if not KEY_RE.match(key):

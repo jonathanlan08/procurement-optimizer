@@ -1,7 +1,7 @@
 """Audit-event read routes (docs/planning/03-api-contract.md §4.19). Sync
 `def` by policy, mirroring every other router in this codebase.
 
-**No write/update/delete route anywhere in this module** — §4.19's own
+**No write/update/delete route anywhere in this module** - §4.19's own
 words: "There is no write, update, or delete route for audit events, by
 design." Every route below is `GET`; `app/services/audit_read_service.py`'s
 own module docstring explains the two independent enforcement layers this
@@ -12,20 +12,20 @@ contract test (`tests/integration/test_audit_api.py`) walks
 `/audit-events` and the entity-timeline path, as a mechanical backstop
 against ever adding one by accident.
 
-**Two routers, one module** — the same shape `api/v1/briefs.py`/
+**Two routers, one module** - the same shape `api/v1/briefs.py`/
 `api/v1/documents.py` already establish: `audit_events_router` (prefix
 `/audit-events`) owns list/get; `entity_audit_router` (prefix `/entities`)
 owns the entity-timeline route, since it does not nest under
 `/audit-events` at all (§4.19: `GET /entities/{entity_type}/{entity_id}/
 audit-events`). Both exported and mounted in `app/main.py`.
 
-**`from`/`to` are reserved-word-adjacent** (`from` is a Python keyword) —
+**`from`/`to` are reserved-word-adjacent** (`from` is a Python keyword) -
 the route parameter is `from_`, aliased to the wire name `from` via
 `Query(alias="from")`, the same `Header(alias=...)` technique every
 `If-Match`-consuming route in this codebase already uses for the same
 "the wire name isn't a valid Python identifier" reason.
 
-Role: every route here is `VIEWER` — §4.19's own route table marks all
+Role: every route here is `VIEWER` - §4.19's own route table marks all
 three "O A N V", including list (its own parenthetical spells out "(V read
 own-org read-only: yes)" as a deliberate contract answer to §6 gap #1, not
 an accident).
@@ -62,7 +62,7 @@ AuditReadServiceDep = Annotated[AuditReadService, Depends(get_audit_read_service
 def list_audit_events(
     service: AuditReadServiceDep,
     _principal: Annotated[Principal, Depends(require_role(Role.VIEWER))],
-    # B008 suppressed below — ruff's immutable-type allowlist for the
+    # B008 suppressed below - ruff's immutable-type allowlist for the
     # "function call in a default" check doesn't recognize `list[...]`/
     # `UUID`/`datetime` as immutable the way it does `str`/`bool`/`int`;
     # `Query()` itself is a side-effect-free, idempotent call either way

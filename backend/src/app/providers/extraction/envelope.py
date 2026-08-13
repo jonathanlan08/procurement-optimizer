@@ -1,4 +1,4 @@
-"""Prompt-injection isolation envelope + canary detector — PRINCIPAL-OWNED.
+"""Prompt-injection isolation envelope + canary detector - PRINCIPAL-OWNED.
 
 The envelope is the structural defense: document text is wrapped between
 per-request nonce fences, and the instructions outside the fences tell the
@@ -8,7 +8,7 @@ fences. The Anthropic adapter must build its prompt ONLY through this module.
 
 The canary detector is the observational defense: it flags instruction-like
 content so the run is marked, a security audit event is written, and the UI
-shows a banner — flagged, never silently dropped, because the text may be a
+shows a banner - flagged, never silently dropped, because the text may be a
 legitimate part of the quote ("please ignore our previous quotation").
 """
 
@@ -49,12 +49,12 @@ def build_document_envelope(pages: list[str], nonce: str) -> str:
 
 def _neutralize_fences(text: str, nonce: str) -> str:
     """A document cannot contain our nonce (it was generated after upload), but
-    strip lookalike fence markers anyway — defense in depth."""
+    strip lookalike fence markers anyway - defense in depth."""
     return text.replace("<<<", "<​<​<").replace(">>>", ">​>​>")
 
 
 # Instruction-like phrases that legitimate quotes rarely contain. Matching is
-# a FLAG, not a block: the run is marked, audited, and surfaced for review —
+# a FLAG, not a block: the run is marked, audited, and surfaced for review -
 # a false positive costs one review banner, never data. Text is normalized
 # first (zero-width characters stripped, NFKC) so "Ign​ore all previous
 # instructions" cannot slip between the characters of a pattern (2026-08

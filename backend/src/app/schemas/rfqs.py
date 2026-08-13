@@ -1,7 +1,7 @@
 """RFQ request/response schemas (docs/planning/03-api-contract.md §4.8).
 
 Wire conventions (§1.2): decimal fields are JSON strings, never numbers.
-`required_quantity` reuses `app.schemas.boms.QuantityString` — both
+`required_quantity` reuses `app.schemas.boms.QuantityString` - both
 `rfq_lines.required_quantity` and `bill_of_material_lines.quantity_per_
 assembly` are `NUMERIC(18,6)` (QTY_SCALE, 6dp), so the same parse/serialize
 pair applies unchanged. `CurrencyCode` and `RequiredSpecifications` are
@@ -14,7 +14,7 @@ specifications... nonempty keys, <=100 entries" apply identically here).
 **Create: explicit lines XOR BOM explosion.** `RfqCreate` matches this task's
 brief and 03-api-contract.md §4.8 ("optionally `{source_bom_id,
 assembly_quantity}` to explode a BOM into lines"): a caller supplies either
-`lines` (a manually-built RFQ, at least one line — mirrors `BomCreate.lines`
+`lines` (a manually-built RFQ, at least one line - mirrors `BomCreate.lines`
 requiring `min_length=1`) or `source_bom_id` (the BOM's own lines are copied
 in by the service, `RfqService.explode_from_bom`), never both.
 `assembly_quantity` is only meaningful paired with `source_bom_id` (the
@@ -28,9 +28,9 @@ validation error, not silently ignored.
 `status != draft` unless `A`/`O` with `{override_reason}` (audited)". That
 sentence covers both this schema (`RfqUpdate.override_reason`) and the line
 mutation schemas below (`RfqLineBulkCreate`/`RfqLineUpdate`/
-`RfqLineDeleteRequest` all carry the same field) — `RfqService` enforces the
+`RfqLineDeleteRequest` all carry the same field) - `RfqService` enforces the
 role/reason gate identically in both places (`_ensure_draft_or_override`).
-Concurrency itself is carried by the `If-Match` header, not the body — same
+Concurrency itself is carried by the `If-Match` header, not the body - same
 convention as `PartUpdate`/`SupplierUpdate` (no `version` field here).
 
 **Status change: `reason` on the wire, `note` internally.** 03-api-
@@ -39,13 +39,13 @@ contract.md §4.8 names the body field `reason` (`{to_status, reason}`); the
 principal's status-transition ruling text quoted in app/models/rfqs.py).
 Rather than pick one and contradict the other, the wire field here is named
 `reason` (contract wins on the wire shape) and `RfqService.change_status`
-maps it onto `RfqStatusHistory.note` — the identical "wire name differs from
+maps it onto `RfqStatusHistory.note` - the identical "wire name differs from
 the column it lands in" shape already used by `BomArchiveRequest.reason` ->
 `BillOfMaterials.archive_reason` / `Part.archive_reason` elsewhere in this
 codebase.
 
 **Supplier invitation: `supplier_ids`, not the literal `supplier_id[]`.**
-§4.8's route table entry reads `invite {supplier_id[]}` — read as prose
+§4.8's route table entry reads `invite {supplier_id[]}` - read as prose
 shorthand for "an array of supplier ids", the same shorthand convention the
 contract uses at `excluded_supplier_ids[]` / `locked_allocations[]` in
 §4.16's actual JSON body examples (which spell the field
@@ -53,7 +53,7 @@ contract uses at `excluded_supplier_ids[]` / `locked_allocations[]` in
 follows that literal JSON shape: `{"supplier_ids": [...]}`.
 
 **Supplier sub-resource id.** `{sid}` in `DELETE /rfqs/{id}/suppliers/{sid}`
-is the `RfqSupplier` join-row's own `id`, not the invited `Supplier`'s id —
+is the `RfqSupplier` join-row's own `id`, not the invited `Supplier`'s id -
 mirroring `/parts/{id}/alternatives/{aid}` and `/suppliers/{id}/contacts/
 {cid}`, both of which key their child sub-resource routes by the child row's
 own id, not by the id of the thing it references.
@@ -76,7 +76,7 @@ class RfqLineCreate(BaseModel):
     """One input line for `RfqCreate.lines[]` / `RfqLineBulkCreate.lines[]`.
 
     `unit_definition_id` is optional: when omitted, `RfqService` defaults it
-    to the referenced part's own `unit_definition_id` — same convention as
+    to the referenced part's own `unit_definition_id` - same convention as
     `BomLineCreate.unit_definition_id` (app/schemas/boms.py).
     """
 
@@ -127,7 +127,7 @@ class RfqCreate(BaseModel):
 class RfqUpdate(BaseModel):
     """Partial update (PATCH): only fields present in the payload are
     applied. Blocked once the RFQ's status is not `draft`, unless the actor
-    is administrator+ and supplies `override_reason` — see module docstring.
+    is administrator+ and supplies `override_reason` - see module docstring.
     """
 
     model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")
@@ -154,7 +154,7 @@ class RfqStatusChangeRequest(BaseModel):
 
 
 class RfqLineBulkCreate(BaseModel):
-    """`POST /rfqs/{id}/lines` body — "bulk POST accepted" (§4.8): one or
+    """`POST /rfqs/{id}/lines` body - "bulk POST accepted" (§4.8): one or
     more lines added in a single call, each becoming its own audit event
     (`rfq.line_added`) and its own `line_number` continuing on from the
     RFQ's current highest line number."""
@@ -178,7 +178,7 @@ class RfqLineUpdate(BaseModel):
 
 class RfqLineDeleteRequest(BaseModel):
     """Optional `DELETE /rfqs/{id}/lines/{lid}` body: empty (or omitted)
-    while the RFQ is `draft`; `override_reason` required otherwise — same
+    while the RFQ is `draft`; `override_reason` required otherwise - same
     override gate as every other line mutation."""
 
     model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")
@@ -254,7 +254,7 @@ class RfqStatusHistoryResponse(BaseModel):
     from_status: str
     to_status: str
     actor_user_id: str
-    # resolved display name (org-scoped); None when the actor is unknown —
+    # resolved display name (org-scoped); None when the actor is unknown -
     # raw UUIDs in the status timeline were a 2026-08 external-review P3
     actor_full_name: str | None = None
     note: str | None
@@ -278,7 +278,7 @@ class RfqStatusHistoryResponse(BaseModel):
 
 class RfqResponse(BaseModel):
     """Full detail: one RFQ with its lines and summary counts. Used by every
-    endpoint that returns a single RFQ (create/get/update/status-change) —
+    endpoint that returns a single RFQ (create/get/update/status-change) -
     mirrors `BomResponse` always carrying its lines.
 
     `line_count`/`invited_supplier_count` are the contract's "summary +
@@ -286,7 +286,7 @@ class RfqResponse(BaseModel):
     `unresolved_review_count` are not included: the quotes subsystem
     (migration 0009 `quotes`/`quote_lines`, built concurrently in a separate
     task) does not exist yet in this codebase, so there is nothing to count
-    — adding those counts is left to whichever phase lands quotes.
+    - adding those counts is left to whichever phase lands quotes.
     """
 
     model_config = ConfigDict(from_attributes=True)
@@ -348,19 +348,19 @@ class RfqResponse(BaseModel):
 
 class RfqSummaryResponse(BaseModel):
     """Version-free summary for `GET /rfqs` (list): no `lines` array, to
-    keep list payloads bounded — mirrors `BomSummaryResponse`.
+    keep list payloads bounded - mirrors `BomSummaryResponse`.
     `invited_supplier_count` is still omitted here (unlike `RfqResponse`):
     computing it per row would turn a bounded list query into an N+1, and
     the contract only asks for it on the single-resource `GET /rfqs/{id}`
     (§4.8).
 
     `line_count` IS included, unlike `invited_supplier_count` above, despite
-    that same N+1 concern — 2026-08 product-audit remediation, P2: "Lines
+    that same N+1 concern - 2026-08 product-audit remediation, P2: "Lines
     column always displays a dash because the summary API omits the count".
     `RfqRepository.search` sources it from one `GROUP BY` subquery joined
     onto the same paged query that fetches the rows (see that repository's
     module docstring), so adding it here does not reintroduce the N+1 this
-    class's own docstring warns against for supplier counts — it was never
+    class's own docstring warns against for supplier counts - it was never
     an N+1 to begin with. FROZEN wire name: `line_count`.
     """
 

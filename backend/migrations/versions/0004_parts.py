@@ -34,7 +34,7 @@ def upgrade() -> None:
         sa.Column("description", sa.Text(), nullable=True),
         sa.Column("category", sa.Text(), nullable=True),
         sa.Column(
-            # plain FK — unit_definitions.organization_id is nullable (global
+            # plain FK - unit_definitions.organization_id is nullable (global
             # catalogue), so the composite org-guard FK cannot apply here
             # (see UnitConversion.from_unit_id/to_unit_id, migration 0003,
             # and Part's docstring in app/models/parts.py).
@@ -83,7 +83,7 @@ def upgrade() -> None:
             "target_price_currency IS NULL OR target_price_currency ~ '^[A-Z]{3}$'",
             name="ck_parts_target_price_currency_iso",
         ),
-        # §1 "every amount column is accompanied by a currency column" —
+        # §1 "every amount column is accompanied by a currency column" -
         # enforced as pairing rather than mere convention: a price without a
         # currency (or vice versa) is a data error, not a valid "unset" state.
         sa.CheckConstraint(
@@ -114,7 +114,7 @@ def upgrade() -> None:
         # 02-erd.md §9 specifies `USING gin (normalized_key gin_trgm_ops)`
         # for fuzzy candidate retrieval via pg_trgm. This project uses no
         # Postgres extensions (00-decisions.md §7), so this is a plain
-        # btree index instead — it supports the *equality* normalized-text
+        # btree index instead - it supports the *equality* normalized-text
         # strategy fully (04-document-pipeline.md §10 strategy 4); fuzzy
         # candidate retrieval (strategy 5) stays application-side
         # (rapidfuzz), not a DB similarity index. Named without the "_trgm"
@@ -134,7 +134,7 @@ def upgrade() -> None:
             nullable=False,
         ),
         sa.Column("part_id", pg.UUID(as_uuid=True), nullable=False),
-        # nullable: "nullable if external" (02-erd.md §4) — see
+        # nullable: "nullable if external" (02-erd.md §4) - see
         # app/models/parts.py PartAlternative docstring.
         sa.Column("alternative_part_id", pg.UUID(as_uuid=True), nullable=True),
         sa.Column("alternative_mpn", sa.Text(), nullable=True),

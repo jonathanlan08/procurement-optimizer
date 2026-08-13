@@ -88,7 +88,7 @@ describe("BomsPage", () => {
   afterEach(() => {
     // vite.config.ts sets `test.globals: false`, so @testing-library/react's
     // automatic post-test cleanup (which checks for a *global* `afterEach`)
-    // never registers itself — without this, each `render()` in this file
+    // never registers itself - without this, each `render()` in this file
     // would stack on top of the previous test's still-mounted DOM.
     cleanup();
     vi.unstubAllGlobals();
@@ -164,7 +164,7 @@ describe("BomsPage", () => {
     fireEvent.click(row);
 
     // Wait for the version-history section (chain) to finish loading, then
-    // scope to its `<ul>` — the only list rendered in the detail drawer —
+    // scope to its `<ul>` - the only list rendered in the detail drawer -
     // so this doesn't get tangled up with the "v2" text that also appears
     // in the underlying table row and the Overview section's Version field.
     await screen.findByText("Version history");
@@ -174,7 +174,7 @@ describe("BomsPage", () => {
     const [firstButton, secondButton] = chainButtons;
     if (!firstButton || !secondButton) throw new Error("expected two version-chain buttons");
 
-    // v1 (superseded) renders before v2 (active/current) — ascending by
+    // v1 (superseded) renders before v2 (active/current) - ascending by
     // version_number, per GET /boms/{id}/versions's documented order.
     expect(firstButton).toHaveTextContent("v1");
     expect(firstButton).not.toHaveAttribute("aria-current");
@@ -211,7 +211,7 @@ describe("BomsPage", () => {
     const newBomBtn = await screen.findByRole("button", { name: /new bom/i });
     fireEvent.click(newBomBtn);
 
-    // Exactly one line renders by default, and it cannot be removed — the
+    // Exactly one line renders by default, and it cannot be removed - the
     // form structurally enforces "at least one line required" by hiding the
     // remove control whenever only one line is present.
     await screen.findByLabelText(/^Quantity/i);

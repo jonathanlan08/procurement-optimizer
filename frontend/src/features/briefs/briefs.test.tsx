@@ -27,8 +27,8 @@ function installFetchMock(
 }
 
 const SUPPLIER_OPTIONS: BriefSupplierOption[] = [
-  { id: "sup-a", label: "ACME-001 — Acme Components" },
-  { id: "sup-b", label: "GLBX-002 — Globex Manufacturing" },
+  { id: "sup-a", label: "ACME-001 - Acme Components" },
+  { id: "sup-b", label: "GLBX-002 - Globex Manufacturing" },
 ];
 
 const BRIEF_SUMMARY_1 = {
@@ -153,7 +153,7 @@ describe("BriefsPanel", () => {
 
   afterEach(() => {
     // vite.config.ts sets `test.globals: false`, so @testing-library/react's
-    // automatic post-test cleanup never registers itself — same reason
+    // automatic post-test cleanup never registers itself - same reason
     // ../comparison/comparison.test.tsx/../fx/fx.test.tsx call this by hand.
     cleanup();
     vi.unstubAllGlobals();
@@ -164,13 +164,13 @@ describe("BriefsPanel", () => {
 
     renderPanel();
 
-    const row1 = (await screen.findByText("ACME-001 — Acme Components")).closest("button");
+    const row1 = (await screen.findByText("ACME-001 - Acme Components")).closest("button");
     expect(row1).not.toBeNull();
     expect(within(row1 as HTMLElement).getByText("Draft")).toBeInTheDocument();
     expect(within(row1 as HTMLElement).getByText("Needs review")).toBeInTheDocument();
     expect(within(row1 as HTMLElement).getByText("Template")).toBeInTheDocument();
 
-    const row2 = (await screen.findByText("GLBX-002 — Globex Manufacturing")).closest("button");
+    const row2 = (await screen.findByText("GLBX-002 - Globex Manufacturing")).closest("button");
     expect(within(row2 as HTMLElement).getByText("Human reviewed")).toBeInTheDocument();
     expect(within(row2 as HTMLElement).queryByText("Needs review")).not.toBeInTheDocument();
   });
@@ -180,12 +180,12 @@ describe("BriefsPanel", () => {
 
     renderPanel();
 
-    fireEvent.click(await screen.findByText("ACME-001 — Acme Components"));
+    fireEvent.click(await screen.findByText("ACME-001 - Acme Components"));
 
     const dialog = await screen.findByRole("dialog");
-    expect(await within(dialog).findByText("Draft — requires human review")).toBeInTheDocument();
+    expect(await within(dialog).findByText("Draft - requires human review")).toBeInTheDocument();
     expect(
-      within(dialog).getByText("Template narrative — deterministic, not AI-generated"),
+      within(dialog).getByText("Template narrative - deterministic, not AI-generated"),
     ).toBeInTheDocument();
 
     expect(within(dialog).getByText("Supplier-provided")).toHaveClass(
@@ -226,11 +226,11 @@ describe("BriefsPanel", () => {
 
     renderPanel();
 
-    fireEvent.click(await screen.findByText("ACME-001 — Acme Components"));
+    fireEvent.click(await screen.findByText("ACME-001 - Acme Components"));
 
     const dialog = await screen.findByRole("dialog");
     await within(dialog).findByText(/^Reviewed/);
-    expect(within(dialog).queryByText("Draft — requires human review")).not.toBeInTheDocument();
+    expect(within(dialog).queryByText("Draft - requires human review")).not.toBeInTheDocument();
   });
 
   it("fires the review POST with the entered notes and updates the brief in place", async () => {
@@ -260,16 +260,16 @@ describe("BriefsPanel", () => {
 
     renderPanel();
 
-    fireEvent.click(await screen.findByText("ACME-001 — Acme Components"));
+    fireEvent.click(await screen.findByText("ACME-001 - Acme Components"));
     const dialog = await screen.findByRole("dialog");
-    await within(dialog).findByText("Draft — requires human review");
+    await within(dialog).findByText("Draft - requires human review");
 
     fireEvent.change(within(dialog).getByPlaceholderText("Notes for the record"), {
       target: { value: "Confirmed price target with the buyer." },
     });
     fireEvent.click(within(dialog).getByRole("button", { name: /mark reviewed/i }));
 
-    // BRIEF_SUMMARY_2's list row also reads "Human reviewed" — scope the
+    // BRIEF_SUMMARY_2's list row also reads "Human reviewed" - scope the
     // wait to the drawer's own review paragraph, not the ambient list.
     await within(dialog).findByText(/^Reviewed/);
     expect(reviewCalls).toBe(1);
@@ -277,7 +277,7 @@ describe("BriefsPanel", () => {
       approved: true,
       reviewer_notes: "Confirmed price target with the buyer.",
     });
-    expect(within(dialog).queryByText("Draft — requires human review")).not.toBeInTheDocument();
+    expect(within(dialog).queryByText("Draft - requires human review")).not.toBeInTheDocument();
   });
 
   it("posts the correct body when generating a brief with objective and target overrides", async () => {
@@ -317,7 +317,7 @@ describe("BriefsPanel", () => {
 
     // Success re-opens the drawer on the newly created brief; wait on its
     // requires-review banner (briefDetail()'s default) as the completion signal.
-    await screen.findByText("Draft — requires human review");
+    await screen.findByText("Draft - requires human review");
 
     expect(createBody).toEqual({
       supplier_id: "sup-b",
@@ -331,7 +331,7 @@ describe("BriefsPanel", () => {
 
     renderPanel(false);
 
-    await screen.findByText("ACME-001 — Acme Components");
+    await screen.findByText("ACME-001 - Acme Components");
     expect(screen.queryByRole("button", { name: /generate brief/i })).not.toBeInTheDocument();
   });
 });

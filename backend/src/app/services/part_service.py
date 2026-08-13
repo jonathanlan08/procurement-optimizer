@@ -1,4 +1,4 @@
-"""Part service — org-scoped business logic for part CRUD and alternatives.
+"""Part service - org-scoped business logic for part CRUD and alternatives.
 
 Services never commit: the request-scoped `get_db` dependency (app/api/deps.py)
 commits on success and rolls back on any raised exception. Every mutation
@@ -40,7 +40,7 @@ from app.services.audit import AuditRecorder
 # Module-level aliases, not inline `list[...]` annotations on `list_alternatives`
 # below: PartService defines a method named `list`, which (per `from __future__
 # import annotations`) shadows the builtin `list` for any bare `list[...]`
-# written later in the same class body — mypy then reads it as "PartService.list
+# written later in the same class body - mypy then reads it as "PartService.list
 # used as a type" instead of the builtin generic. Aliasing at module scope,
 # where `list` is unambiguously the builtin, sidesteps the collision.
 _PartPage = tuple[list[Part], int]
@@ -130,7 +130,7 @@ class PartService:
 
     def _validate_unit_definition(self, unit_definition_id: uuid.UUID) -> None:
         """unit_definition_id must reference the global catalogue (organization_id
-        IS NULL) or a unit owned by this organization — never another
+        IS NULL) or a unit owned by this organization - never another
         organization's private unit. Plain FK only (see app.models.parts.Part
         docstring: the composite org-guard FK cannot apply against a nullable
         parent organization_id), so this is enforced here, in the service.
@@ -255,7 +255,7 @@ class PartService:
                 # `body.target_price`, not `changes["target_price"]`:
                 # `model_dump()` runs the price type's `PlainSerializer`
                 # unconditionally (`when_used` defaults to "always"), so
-                # `changes` holds the *wire* string form — `quantize_unit_price()`
+                # `changes` holds the *wire* string form - `quantize_unit_price()`
                 # needs the parsed `Decimal` from the model attribute.
                 value = quantize_unit_price(body.target_price)
             setattr(part, field, value)
@@ -358,7 +358,7 @@ class PartService:
                     ],
                 )
             # internal: must resolve in-org via the repository, else 404
-            # (never 403 — cross-org existence must not leak, §1.1).
+            # (never 403 - cross-org existence must not leak, §1.1).
             if self._repo.get(body.alternative_part_id) is None:
                 raise NotFoundError("Part")
             if (

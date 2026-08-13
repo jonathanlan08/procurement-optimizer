@@ -1,4 +1,4 @@
-"""Supplier contact repository — org-scoped data access (docs/planning/02-erd.md §4).
+"""Supplier contact repository - org-scoped data access (docs/planning/02-erd.md §4).
 
 Extends OrgScopedRepository, so every query is filtered by organization_id
 before any other predicate (isolation control #2). Contacts are additionally
@@ -42,7 +42,7 @@ class SupplierContactRepository(OrgScopedRepository[SupplierContact]):
         self, supplier_id: uuid.UUID, contact_id: uuid.UUID
     ) -> SupplierContact | None:
         """None when the contact is absent, other-org, or belongs to a
-        different supplier — all indistinguishable, surfacing as 404."""
+        different supplier - all indistinguishable, surfacing as 404."""
         contact = self.get(contact_id)
         if contact is None or contact.supplier_id != supplier_id:
             return None

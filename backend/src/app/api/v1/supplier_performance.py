@@ -6,9 +6,9 @@ Roles per the contract's route table: `GET /suppliers/{id}/performance` is
 `O A N V`; `POST /suppliers/{id}/performance` is `O A N`.
 
 Deviation from this task's prose (contract wins, per instructions): the
-contract's route table (§4.4) lists only GET and POST for this sub-resource —
+contract's route table (§4.4) lists only GET and POST for this sub-resource -
 no PATCH/PUT/DELETE. Performance records are point-in-time history (no
-`version`/`archived_at` — see app.models.suppliers.SupplierPerformanceRecord),
+`version`/`archived_at` - see app.models.suppliers.SupplierPerformanceRecord),
 so this router intentionally has no update or delete route, and there is no
 `supplier_performance.deleted` audit event.
 """

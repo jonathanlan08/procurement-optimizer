@@ -398,8 +398,8 @@ class TestScenariosSchema:
         assert state == "draft"
 
     def test_snapshot_jsonb_round_trips(self, fx) -> None:
-        """02-erd.md §10: the FULL reproducibility snapshot — every input
-        that could change later — must survive a write/read cycle exactly."""
+        """02-erd.md §10: the FULL reproducibility snapshot - every input
+        that could change later - must survive a write/read cycle exactly."""
         constraints = {"max_supplier_count": 3, "budget_limit": "9140.00"}
         assumptions = {"tax_is_recoverable": False, "note": "assume DDP"}
         fx_rates = [
@@ -584,7 +584,7 @@ class TestScenariosSchema:
 
     def test_allocation_status_enum_accepts_every_frozen_member(self, fx) -> None:
         """wraps app.domain.optimization.contracts.AllocationStatus directly
-        (4 members) — module docstring point 8."""
+        (4 members) - module docstring point 8."""
         for status in ("optimal", "feasible", "infeasible", "error"):
             result_id = fx.mk_allocation_result(status=status)
             value = fx.db.execute(

@@ -1,4 +1,4 @@
-/* Audit log — dense filterable table + a Drawer with a two-column
+/* Audit log - dense filterable table + a Drawer with a two-column
    before/after JSON diff (no external diff library, per the task brief). */
 
 .audit-filters {

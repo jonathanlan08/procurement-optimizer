@@ -4,7 +4,7 @@ reproducibility strategy; docs/SPEC.md §Scenario comparison).
 
 This is a schema-only phase: no routes/services. The delegating task's own
 column brief for this file explicitly instructs "Follow the ERD's literal
-columns where they differ from this paraphrase" — the OPPOSITE default from
+columns where they differ from this paraphrase" - the OPPOSITE default from
 the precedent set in `rfqs.py`/`quotes.py`/`analysis.py` (where the
 delegating task's own narrower/differently-shaped field list wins over the
 ERD's literal box). That reversal is honored deliberately and unevenly
@@ -12,7 +12,7 @@ below, resolved column-by-column against two things the task's paraphrase
 does NOT override: (a) the ERD's own literal box for
 `COMPARISON_SCENARIOS`/`SCENARIO_RESULTS`/`ALLOCATION_RESULTS` (02-erd.md
 §7), and (b) the two FROZEN, principal-owned domain contracts this table
-set exists to persist — `app.domain.optimization.contracts.AllocationResult`
+set exists to persist - `app.domain.optimization.contracts.AllocationResult`
 (explicitly called out in this task's own READ FIRST list as "the shape you
 persist") and `app.domain.scoring.contracts.ScoringResult` (same
 "PRINCIPAL-OWNED"/frozen-dataclass status, discovered while reading
@@ -21,15 +21,15 @@ decision, per this codebase's standing convention.
 
 **1. `ComparisonScenario` follows the ERD's literal, granular snapshot
 columns**, not the task paraphrase's single consolidated `inputs_snapshot`
-JSONB. The ERD box (02-erd.md §7) gives five separate JSONB columns —
+JSONB. The ERD box (02-erd.md §7) gives five separate JSONB columns -
 `constraints_snapshot`, `assumptions_snapshot`, `fx_snapshot`,
-`quote_snapshot_refs`, `weights_snapshot` — each independently inspectable,
+`quote_snapshot_refs`, `weights_snapshot` - each independently inspectable,
 which is strictly more useful for the "historical results reproducible
 after assumptions change" requirement (SPEC §Scenario comparison) than one
 opaque blob, and is exactly the case the closing "follow the ERD's literal
 columns" instruction reads as targeting. `quote_snapshot_refs`' JSONB shape
 is documented here to also carry the landed-cost result id used per quote
-line (the task paraphrase's "quote ids + landed-cost result ids") — the ERD
+line (the task paraphrase's "quote ids + landed-cost result ids") - the ERD
 box's own inline comment ("quote ids + revisions") predates
 `landed_cost_results` existing in this codebase as a queryable table
 (`analysis.py`, migration 0011) and could not have anticipated it; folding
@@ -43,7 +43,7 @@ addition** the task's paraphrase never mentions at all (not a conflict to
 resolve in either direction, just a gap the ERD fills): 02-erd.md §7's own
 relationship diagram draws `SCORING_CONFIGURATIONS ||--o{
 COMPARISON_SCENARIOS : uses`, and `scoring_configurations` already exists in
-this codebase (`analysis.py`). Nullable — the `lowest_unit_price` /
+this codebase (`analysis.py`). Nullable - the `lowest_unit_price` /
 `lowest_landed_cost` / `fastest_delivery` / `lowest_risk` strategies are
 single-criterion sorts that need no weighted scoring configuration at all;
 only `balanced`/`custom` genuinely require one.
@@ -56,7 +56,7 @@ custom`). Four of six members are already verbatim-identical between the
 two; the other two are strict, self-documenting expansions of the same
 concept (SPEC §Scenario comparison's own prose: "lowest quoted unit price,
 lowest total landed cost, fastest delivery, lowest supply risk, balanced,
-user-configured"), not a contradictory rename — taken as the task's
+user-configured"), not a contradictory rename - taken as the task's
 own explicit, freshly-reconciled spelling of "per ERD/SPEC," the same
 "verbatim task spelling wins, documented as intentional" precedent
 `rfqs.py`/`quotes.py` already establish for renamed columns.
@@ -67,7 +67,7 @@ spelled `state` (`scenario_state_enum state "draft|running|complete|
 failed"`), so the literal ERD name is used verbatim.
 
 **5. `ComparisonScenario.notes` is a genuine addition beyond the ERD box**,
-which has no `notes` column for `COMPARISON_SCENARIOS` at all — kept as
+which has no `notes` column for `COMPARISON_SCENARIOS` at all - kept as
 requested by the task's own explicit field list, the same "additive, not a
 reshaping of anything the ERD already specifies" reasoning `rfqs.py`
 documents for `RfqSupplier.notes`.
@@ -92,7 +92,7 @@ box carries per-row `supplier_id`, `quote_id`, `total_landed_cost`,
 the task's paraphrase is followed over the ERD's literal shape, because the
 paraphrase's four columns ("scoring output JSONB (ranked scores incl.
 reasons), calculation_version, scoring_version, computed_at") map exactly
-onto `app.domain.scoring.contracts.ScoringResult` — a FROZEN,
+onto `app.domain.scoring.contracts.ScoringResult` - a FROZEN,
 principal-owned dataclass whose `scores: tuple[SupplierScore, ...]` field
 *is* "ranked scores incl. reasons" (`SupplierScore.criterion_scores` already
 carries a human-auditable `reason` string per criterion) and whose
@@ -109,13 +109,13 @@ supplies and the ERD is simply silent on, not a case of "differs from").
 
 **8. `AllocationResultRecord` mirrors `app.domain.optimization.contracts.
 AllocationResult` field-for-field** (this task's own READ FIRST instruction
-calls that dataclass "the shape you persist — FROZEN"), which is also
+calls that dataclass "the shape you persist - FROZEN"), which is also
 exactly what the task's own paraphrase for this table already describes
 column-by-column. Deviations from the ERD's literal `ALLOCATION_RESULTS`
 box, each because the FROZEN dataclass shape wins over the ERD box where
 the two differ:
    - `status` (task's literal name), typed by wrapping
-     `app.domain.optimization.contracts.AllocationStatus` directly — the
+     `app.domain.optimization.contracts.AllocationStatus` directly - the
      same "domain enum is the single source of truth, the DB type just
      mirrors it" pattern `analysis.py`'s `RESULT_COMPLETENESS_ENUM`/
      `LANDED_COST_COMPONENT_ENUM` and `documents.py`'s
@@ -123,24 +123,24 @@ the two differ:
      members (`optimal|feasible|infeasible|error`); the ERD's literal
      `solver_status_enum` has five (`optimal|feasible|infeasible|
      solver_error|timeout`) and would let a persisted row express a status
-     the domain contract cannot produce — the FROZEN contract's member set
+     the domain contract cannot produce - the FROZEN contract's member set
      wins.
    - `expected_total_cost` (task's literal name, `NUMERIC(18,6)` nullable
-     exactly as instructed), not the ERD's `objective_total_cost` — matches
+     exactly as instructed), not the ERD's `objective_total_cost` - matches
      `AllocationResult.expected_total_cost` and its docstring's own
      "the EXACT Decimal recomputation ... never the solver's scaled
      objective" framing, which the ERD's name does not convey.
    - `solved_at` (task's literal name), not the ERD's `computed_at`.
    - `optimization_version` is its own top-level column (mirrors
-     `AllocationResult.optimization_version`, always known — it identifies
-     the deployed contract/solver-model version — even when `stats` itself
+     `AllocationResult.optimization_version`, always known - it identifies
+     the deployed contract/solver-model version - even when `stats` itself
      is `None`), separate from the `stats` JSONB blob, exactly as the task
      paraphrase lists it ("solver stats JSONB incl. model_hash,
      optimization_version").
    - `model_hash` is promoted to its own top-level `text` column *in
      addition to* appearing inside the serialized `stats` JSONB (which is
      the verbatim serialization of `SolverStats`, whose own `model_hash`
-     field does not go away) — reconciling the task paraphrase ("solver
+     field does not go away) - reconciling the task paraphrase ("solver
      stats JSONB incl. model_hash", nested) with the ERD's literal box
      (`text model_hash`, a standalone column) rather than picking one
      over the other, since a standalone column is genuinely useful for a
@@ -151,11 +151,11 @@ the two differ:
      that failed before a model was ever built.
    - `error_message` is a genuine addition beyond the task's own explicit
      column list for this table, needed to persist
-     `AllocationResult.error_message: str | None` losslessly — since this
+     `AllocationResult.error_message: str | None` losslessly - since this
      task's READ FIRST instruction calls the whole dataclass "the shape you
      persist," omitting the one field the paraphrase's bullet list happens
      not to enumerate would silently drop data the FROZEN contract carries.
-   - `supplier_count` is likewise a genuine addition for the same reason —
+   - `supplier_count` is likewise a genuine addition for the same reason -
      `AllocationResult.supplier_count: int` (not optional on the frozen
      dataclass) has no ERD-box or task-paraphrase counterpart at all.
    - The ERD's `char3 currency` column is deliberately NOT carried over:
@@ -167,7 +167,7 @@ the two differ:
    - The ERD's `solver_seed` is NOT modeled as a column: per
      `contracts.py`'s own module docstring, determinism fixes
      `random_seed=0` as a constant solver configuration value, not data
-     that varies per result — there is nothing to persist per-row. Noted
+     that varies per result - there is nothing to persist per-row. Noted
      here explicitly as an accepted, deliberate ERD gap, in the spirit of
      02-erd.md §12's own "spec gaps" list.
 
@@ -177,7 +177,7 @@ explicit CASCADE whitelist (only four pairs are: `quote_lines ->
 quote_price_breaks`, `extraction_runs -> extraction_fields`,
 `landed_cost_results -> landed_cost_components`, `part_import_batches ->
 part_import_rows`), so both are `RESTRICT` by the "everything else is
-RESTRICT" default — the same letter-of-the-whitelist discipline
+RESTRICT" default - the same letter-of-the-whitelist discipline
 `quotes.py`/`analysis.py` already apply.
 
 **Immutability (02-erd.md §10).** `scenario_results` and
@@ -186,7 +186,7 @@ results creates a NEW `ComparisonScenario` row entirely ("historical
 results reproducible after assumptions change" is satisfied by the
 snapshot on `comparison_scenarios`, not by mutating a result row). Both
 tables therefore carry no `TimestampedMixin`/`VersionedMixin`/
-`ArchivableMixin` at all — no `updated_at`, no `version`, no `archived_at` —
+`ArchivableMixin` at all - no `updated_at`, no `version`, no `archived_at` -
 which is also how the schema test asserts immutability (columns absent,
 not merely unused). `UNIQUE (organization_id, scenario_id)` on both tables
 encodes "at most one result row per scenario" directly.
@@ -310,7 +310,7 @@ class ComparisonScenario(TimestampedMixin, VersionedMixin, ArchivableMixin, OrgO
     assumptions_snapshot: Mapped[dict[str, Any]] = mapped_column(JSONB(), default=dict)
     fx_snapshot: Mapped[list[Any]] = mapped_column(JSONB(), default=list)
     # shape includes landed-cost result ids per quote line, not just quote
-    # ids + revisions — module docstring point 1.
+    # ids + revisions - module docstring point 1.
     quote_snapshot_refs: Mapped[list[Any]] = mapped_column(JSONB(), default=list)
     weights_snapshot: Mapped[list[Any]] = mapped_column(JSONB(), default=list)
     calculation_version: Mapped[str] = mapped_column(Text())
@@ -324,7 +324,7 @@ class ComparisonScenario(TimestampedMixin, VersionedMixin, ArchivableMixin, OrgO
 
 
 class ScenarioResult(OrgOwnedBase):
-    """The immutable scoring outcome of one `ComparisonScenario` — one row
+    """The immutable scoring outcome of one `ComparisonScenario` - one row
     per scenario, not one row per supplier (module docstring point 7): the
     whole `app.domain.scoring.contracts.ScoringResult` (ranked
     `SupplierScore`s incl. per-criterion reasons, weights used, cohort size,
@@ -356,7 +356,7 @@ class ScenarioResult(OrgOwnedBase):
     scenario_id: Mapped[uuid.UUID] = mapped_column()
     # the serialized ScoringResult (scores incl. reasons, weights_used,
     # cohort_size, notes) minus scoring_version, which gets its own column
-    # below — module docstring point 7.
+    # below - module docstring point 7.
     scoring_output: Mapped[dict[str, Any]] = mapped_column(JSONB())
     calculation_version: Mapped[str] = mapped_column(Text())
     scoring_version: Mapped[str] = mapped_column(Text())
@@ -365,7 +365,7 @@ class ScenarioResult(OrgOwnedBase):
 
 class AllocationResultRecord(OrgOwnedBase):
     """The immutable optimizer outcome of one `ComparisonScenario`. Mirrors
-    `app.domain.optimization.contracts.AllocationResult` field-for-field —
+    `app.domain.optimization.contracts.AllocationResult` field-for-field -
     module docstring point 8 for every naming/shape decision and the
     additions (`error_message`, `supplier_count`) needed to persist that
     FROZEN dataclass losslessly.
@@ -398,7 +398,7 @@ class AllocationResultRecord(OrgOwnedBase):
             "supplier_count >= 0", name="ck_allocation_results_supplier_count_nonneg"
         ),
         # SolverStats (and therefore model_hash) does not exist for an
-        # ERROR result that failed before a model was ever built — module
+        # ERROR result that failed before a model was ever built - module
         # docstring point 8.
         CheckConstraint(
             "(stats IS NULL) = (model_hash IS NULL)",
@@ -434,7 +434,7 @@ class AllocationResultRecord(OrgOwnedBase):
 # participates in several FKs on most mappers here (the plain org FK plus one
 # or more composite FKs each), so `foreign_keys` disambiguates which
 # constraint each relationship follows, and `overlaps` silences SQLAlchemy's
-# warning about the shared organization_id column between them — the same
+# warning about the shared organization_id column between them - the same
 # pattern as rfqs.py/quotes.py/analysis.py.
 ComparisonScenario.organization = relationship(
     "Organization", foreign_keys=[ComparisonScenario.organization_id], lazy="select"

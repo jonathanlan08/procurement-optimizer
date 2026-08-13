@@ -7,7 +7,7 @@ reconciliation (`sections` not `content`, `simulated` not
 `created_by_id`/timestamps/`version`/archivable are present despite the
 ERD §7 box not spelling them out for this table specifically).
 
-## `SectionProvenance` — SPEC's own five-label vocabulary, not
+## `SectionProvenance` - SPEC's own five-label vocabulary, not
 `app.domain.values.Provenance`
 
 SPEC §Negotiation brief: "Clearly label: supplier-provided vs
@@ -15,7 +15,7 @@ user-assumption vs calculated vs AI narrative vs missing." This is a
 distinct, smaller vocabulary from `app.domain.values.Provenance` (six
 members, built for landed-cost *component* provenance, e.g.
 `DEFAULT`/`USER_INPUT`), and that module is PRINCIPAL-OWNED/frozen and not
-on this task's edit allowlist — reusing it here would silently import two
+on this task's edit allowlist - reusing it here would silently import two
 extra members no negotiation-brief section can ever legitimately carry.
 Defined here, next to the model that persists sections labelled with it,
 rather than in `app/services/brief_service.py`, so `app/schemas/briefs.py`
@@ -63,7 +63,7 @@ BRIEF_STATE_ENUM = SaEnum(
 
 
 class SectionProvenance(StrEnum):
-    """SPEC §Negotiation brief's five labels — see module docstring."""
+    """SPEC §Negotiation brief's five labels - see module docstring."""
 
     SUPPLIER_PROVIDED = "supplier_provided"
     USER_ASSUMPTION = "user_assumption"
@@ -101,7 +101,7 @@ class NegotiationBrief(TimestampedMixin, VersionedMixin, ArchivableMixin, OrgOwn
     # part of composite FK #2 above, not a single-column ForeignKey
     supplier_id: Mapped[uuid.UUID] = mapped_column()
     # {section_key: {"provenance": SectionProvenance, "text": str, "data": ...}}
-    # — every SPEC content item, always present (module docstring).
+    # - every SPEC content item, always present (module docstring).
     sections: Mapped[dict[str, Any]] = mapped_column(JSONB(), default=dict)
     # CALCULATED, formula disclosed in sections["price_target"]/["stretch_target"]/
     # ["walk_away_threshold"]["text"]; null when no scored alternative supplier
@@ -126,7 +126,7 @@ class NegotiationBrief(TimestampedMixin, VersionedMixin, ArchivableMixin, OrgOwn
 # UOW insert-ordering relationships (see identity.py comment). organization_id
 # participates in two composite FKs here alongside the plain org FK, so
 # `foreign_keys` disambiguates which constraint each relationship follows,
-# and `overlaps` silences SQLAlchemy's shared-column warning — the same
+# and `overlaps` silences SQLAlchemy's shared-column warning - the same
 # pattern as scenarios.py/quotes.py/analysis.py.
 NegotiationBrief.organization = relationship(
     "Organization", foreign_keys=[NegotiationBrief.organization_id], lazy="select"

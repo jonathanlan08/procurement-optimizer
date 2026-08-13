@@ -32,7 +32,7 @@ class Supplier(TimestampedMixin, VersionedMixin, ArchivableMixin, OrgOwnedBase):
 
     `code` uniqueness is enforced by a partial, case-insensitive index
     `(organization_id, lower(code)) WHERE archived_at IS NULL` created in
-    migration 0002 (02-erd.md §8 `uq_suppliers_org_code_active`) — not
+    migration 0002 (02-erd.md §8 `uq_suppliers_org_code_active`) - not
     represented here, matching how `organizations.slug` / `users.email`
     functional uniqueness lives only in migration 0001 (see identity.py).
     Archiving frees the code for reuse, same soft-delete convention as

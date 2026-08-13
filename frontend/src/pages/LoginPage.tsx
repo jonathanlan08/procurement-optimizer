@@ -8,12 +8,12 @@ import "./login.css";
 /** Demo credentials are intentionally public: the seed
  * (backend/src/app/seed/demo_dataset.py) creates them, the README documents
  * them, and every byte behind them is synthetic. Surfacing them here with
- * one-click sign-in is the front door doing its job for a portfolio demo —
+ * one-click sign-in is the front door doing its job for a portfolio demo -
  * a real multi-tenant deployment would gate this block on a demo-mode flag. */
 const DEMO_ACCOUNTS = [
   {
     role: "Analyst",
-    hint: "Full workflow — quotes, scenarios, briefs, reports.",
+    hint: "Full workflow - quotes, scenarios, briefs, reports.",
     email: "demo-analyst@meridianfab.example",
     password: "demo-analyst-2026",
   },
@@ -25,7 +25,7 @@ const DEMO_ACCOUNTS = [
   },
   {
     role: "Viewer",
-    hint: "Read-only — see the role enforced server-side.",
+    hint: "Read-only - see the role enforced server-side.",
     email: "demo-viewer@meridianfab.example",
     password: "demo-viewer-2026",
   },
@@ -83,7 +83,7 @@ export function LoginPage() {
             <span style={{ background: "var(--hue-reports)" }} />
             <span style={{ background: "var(--hue-audit)" }} />
           </div>
-          <p className="login-brand-footnote">Demo — synthetic data throughout.</p>
+          <p className="login-brand-footnote">Demo - synthetic data throughout.</p>
         </div>
       </aside>
 
@@ -126,14 +126,14 @@ export function LoginPage() {
         <section className="login-demo" aria-label="Demo accounts">
           <h2 className="login-demo-title">Try the demo</h2>
           <p className="login-demo-note">
-            Synthetic organization, public demo credentials — one click signs you in.
+            Synthetic organization, public demo credentials - one click signs you in.
           </p>
           {/* There is deliberately no self-service sign-up: this is a
               multi-tenant B2B workspace where an administrator provisions
               members into an organization (see docs/SPEC.md). Saying so keeps
               a first-time visitor from hunting for a "Create account" link. */}
           <p className="login-demo-note">
-            There&rsquo;s no public sign-up — procurement workspaces are provisioned per
+            There&rsquo;s no public sign-up - procurement workspaces are provisioned per
             organization, and members are invited by an administrator. These demo accounts
             are the way in.
           </p>

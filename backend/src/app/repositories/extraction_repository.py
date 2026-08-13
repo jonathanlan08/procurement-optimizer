@@ -1,10 +1,10 @@
-"""Extraction repository — org-scoped data access for `extraction_runs`,
+"""Extraction repository - org-scoped data access for `extraction_runs`,
 `extraction_fields`, `document_pages`, and `quote_corrections`
 (docs/planning/02-erd.md §6, app/models/documents.py).
 
 Not on the delegating task's own "NEW files" list (which names
 `services/extraction_service.py`, `api/v1/extractions.py`, and the
-integration test file) — the same not-listed-but-necessary situation
+integration test file) - the same not-listed-but-necessary situation
 `app/repositories/document_repository.py`'s own module docstring already
 documents: every other service in this codebase delegates its org-scoped
 queries to a dedicated `app/repositories/<resource>.py` module rather than
@@ -16,7 +16,7 @@ repository lands here rather than growing that one.
 
 **Two repository classes in one file.** `ExtractionRepository` is bound to
 `ExtractionRun` (the aggregate `ExtractionField`/`QuoteCorrection` rows hang
-off of); `DocumentPageRepository` is bound to `DocumentPage` — a
+off of); `DocumentPageRepository` is bound to `DocumentPage` - a
 document-scoped, not run-scoped, table (module docstring of
 `app/models/documents.py`: "the audit record of exactly what text the
 extraction provider saw"). Co-located rather than split into a third file,
@@ -27,13 +27,13 @@ the same "not separately listed, so co-locate" judgement
 **`find_materialized_quote_id`** exists to solve a real gap: neither
 `ExtractionRun` nor `Quote` carries a stored forward/back link between a run
 and the quote `ExtractionService.materialize()` built from it (`Quote` has no
-`source_extraction_run_id` column at all — see `app/models/quotes.py`'s own
+`source_extraction_run_id` column at all - see `app/models/quotes.py`'s own
 module docstring point 1, "meaningless before the extraction pipeline
-exists" — and this phase does not add one; the frozen model is not modified).
+exists" - and this phase does not add one; the frozen model is not modified).
 The one durable, already-existing place that link is recorded is the
 `extraction.materialized` audit event's own `after_state` (which
 `ExtractionService` writes with `extraction_run_id` alongside the quote it
-describes) — so this method reads it back from there. Used by
+describes) - so this method reads it back from there. Used by
 `ExtractionService.correct_field` to decide whether a post-materialization
 correction can also produce a `QuoteCorrection` row (`quote_id` is `NOT NULL`
 on that table; see `services/extraction_service.py`'s own module docstring
@@ -140,7 +140,7 @@ class ExtractionRepository(OrgScopedRepository[ExtractionRun]):
     def _select(self, model: type[OrgOwnedBase]) -> Any:
         """Org-scoped `select(model)` for the child tables above: none of
         them are `ModelT` (the repository is generic over `ExtractionRun`),
-        so `_base_query()` cannot be reused directly — same pattern as
+        so `_base_query()` cannot be reused directly - same pattern as
         `QuoteRepository._select`/`RfqRepository._select`."""
         return select(model).where(model.organization_id == self.organization_id)
 

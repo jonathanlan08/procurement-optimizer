@@ -1,10 +1,10 @@
-/** Scenario history — saved `ComparisonScenario` rows for one RFQ
+/** Scenario history - saved `ComparisonScenario` rows for one RFQ
  * (`GET /rfqs/{id}/comparison-scenarios`), with detail expansion, "Clone &
  * re-run" (analyst+), and archive (admin+).
  *
  * Design decisions:
  *  - **Expanding a row IS selecting it.** `ScenarioSummaryResponse` (the
- *    list shape) carries no snapshots and no allocation/scoring payload —
+ *    list shape) carries no snapshots and no allocation/scoring payload -
  *    showing the snapshot summary at all requires the same `GET
  *    /comparison-scenarios/{id}` fetch the brief's "selecting a history row
  *    loads its stored results into the panels" behavior needs, so one
@@ -12,23 +12,23 @@
  *    the detail query resolves, `onSelectSaved(null)` fires on collapse.
  *  - **No expected-cost column in the collapsed row.** `ScenarioSummaryResponse`
  *    has no such field (only the full detail fetch's `allocation_result.
- *    objective_total_cost` does) — see ./api.ts's file header for the full
+ *    objective_total_cost` does) - see ./api.ts's file header for the full
  *    reasoning. Faking it would mean an N+1 GET per row on every render;
  *    this follows the same "flag the gap, don't fake the list" call
  *    `RfqsPage.tsx`'s own file header already makes for its own list-vs-
  *    detail shape gap. The true expected cost renders once a row expands.
  *  - **The collapsed status badge shows `state`** (draft/running/complete/
  *    failed), not the granular `solver_status` (optimal/feasible/
- *    infeasible/error) AllocationPanel.tsx uses — same reason: only `state`
+ *    infeasible/error) AllocationPanel.tsx uses - same reason: only `state`
  *    exists on the summary row. The true solver status is visible in the
  *    AllocationPanel once a row is expanded/selected.
- *  - **"Clone & re-run" does not open the creation form** — `POST
+ *  - **"Clone & re-run" does not open the creation form** - `POST
  *    /comparison-scenarios/{id}/clone` re-solves immediately from the
  *    original's stored snapshots with no editable step in between (api/v1/
  *    scenarios.py's own module docstring, "Deviation 2": "a NEW scenario,
  *    freshly solved... not a draft pre-fill"), so there is nothing for an
  *    intermediate form to collect. The clone's result is treated as a fresh
- *    live run (`onCloned`), not a "saved result" — it is functionally
+ *    live run (`onCloned`), not a "saved result" - it is functionally
  *    identical to pressing "Run scenario" again with the original's inputs.
  */
 
@@ -71,7 +71,7 @@ function formatDateTime(raw: string): string {
   return Number.isNaN(d.getTime()) ? raw : d.toLocaleDateString(undefined, { dateStyle: "medium" });
 }
 
-/** Renders a `dict[str, Any]`/`list[Any]` JSONB snapshot field defensively —
+/** Renders a `dict[str, Any]`/`list[Any]` JSONB snapshot field defensively -
  * see ./api.ts's file header on why these are genuinely untyped. */
 function fxRateLabel(raw: unknown): string {
   if (typeof raw !== "object" || raw === null) return JSON.stringify(raw);

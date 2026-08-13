@@ -2,24 +2,24 @@
 extraction_runs, extraction_fields, quote_corrections, part_match_candidates
 (docs/planning/02-erd.md §6; docs/planning/04-document-pipeline.md).
 
-**Schema-only phase.** No routes, services, or providers land here — only the
+**Schema-only phase.** No routes, services, or providers land here - only the
 tables, their constraints, and the two closed-set state machines the ERD ties
 to named Postgres `ENUM` types (`document_state_enum`, `extraction_state_enum`).
 The *document* state machine's transition table is explicitly assigned by
 04-document-pipeline.md §9 to `app/domain/documents/transitions.py` ("a single
-dict ... unit-tested exhaustively") — a concurrent agent's responsibility
+dict ... unit-tested exhaustively") - a concurrent agent's responsibility
 (`domain/`), not this file's. `DocumentState` here exists only so the column's
 `ENUM` type has the right members; no transition dict for it is defined in
 this module.
 
 The *extraction-run* machine has no such explicit alternate home in the docs,
-so — mirroring `app/models/rfqs.py`'s `ALLOWED_RFQ_TRANSITIONS` precedent
+so - mirroring `app/models/rfqs.py`'s `ALLOWED_RFQ_TRANSITIONS` precedent
 ("services and tests share one source of truth" for a state machine the ERD
 says is "enforced in the service layer with an explicit transition table")
-— `ALLOWED_EXTRACTION_RUN_TRANSITIONS` is defined alongside `ExtractionRunState`
+- `ALLOWED_EXTRACTION_RUN_TRANSITIONS` is defined alongside `ExtractionRunState`
 below, transcribed from 04-document-pipeline.md §9's `stateDiagram-v2` verbatim.
 Unlike the RFQ machine, this one has a genuine self-transition
-(`needs_review -> needs_review`, "field corrected / confirmed") — captured
+(`needs_review -> needs_review`, "field corrected / confirmed") - captured
 faithfully rather than forced into the RFQ machine's "no self-transitions"
 shape.
 
@@ -34,7 +34,7 @@ shape.
    for the schema shape" when the task's own words differ from the ERD box).
 2. **`QuoteDocument` nullability for `detected_mime`, `content_sha256`, and
    `page_count`.** 04-document-pipeline.md §9's document state machine says
-   `quarantined` is reachable from *both* `uploaded` and `validated` — i.e. a
+   `quarantined` is reachable from *both* `uploaded` and `validated` - i.e. a
    row can exist, and be terminally quarantined, before Stage 2 (magic-byte
    sniffing / hashing) or Stage 4 (page acquisition) ever runs. All three are
    therefore nullable, populated progressively as the pipeline advances;
@@ -50,17 +50,17 @@ shape.
    matching the `Quote`/`Rfq`/`BillOfMaterials` precedent of applying the full
    mixin whenever at least `archived_at` is present) but names its own
    creation timestamp `uploaded_at`, not `created_at`, and lists no
-   `updated_at` or `version` at all — followed literally, the same restraint
+   `updated_at` or `version` at all - followed literally, the same restraint
    `app/models/part_imports.py` already shows for `PartImportBatch`.
 4. **`DocumentPage` carries no provenance-bbox JSONB.** The delegating task
    asks for one "if the ERD has them"; 02-erd.md §6's `DOCUMENT_PAGES` box has
    no such column (provenance boxes exist only on `EXTRACTION_FIELDS.
-   source_bbox`) — omitted per the task's own conditional.
+   source_bbox`) - omitted per the task's own conditional.
 5. **`ExtractionRun` has no self-referential "supersedes" FK.** The task's
    own prose says "superseded_by self-FK if ERD has it"; 02-erd.md §6's
    `EXTRACTION_RUNS` box has only a plain `timestamptz superseded_at`, no
    self-FK (unlike `Quote.superseded_by_id` or `BillOfMaterials.
-   previous_version_id`) — omitted per the task's own conditional. A run's
+   previous_version_id`) - omitted per the task's own conditional. A run's
    "next" run is discoverable via `(document_id, run_number + 1)`, not a
    stored pointer.
 6. **`confidence`/`overall_confidence`/`ocr_confidence` are `NUMERIC(9,6)`,
@@ -71,18 +71,18 @@ shape.
    explicitly `"9,6"`, matching `SUPPLIER_PERFORMANCE_RECORDS`' ratio columns
    elsewhere in the same ERD. `NUMERIC(9,6)` is used throughout; the bands
    themselves (thresholds 0.95/0.60) come from `app.domain.confidence`
-   (00-decisions.md §4 #27) — `ConfidenceBand` is imported directly rather
+   (00-decisions.md §4 #27) - `ConfidenceBand` is imported directly rather
    than redefined, and `CONFIDENCE_BAND_ENUM` wraps that same Python enum so
    the DB type's members can never drift from the domain module's.
 7. **`PartMatchCandidate.strategy` values follow 02-erd.md §6's literal
    spelling, not the delegating task's paraphrase.** The task's own prose
    says `exact_ipn/mpn/normalized/alternative/fuzzy`; the ERD box (and
    04-document-pipeline.md §10's own strategy table) spell these
-   `internal_pn`, `mpn`, `normalized_text`, `alternative`, `fuzzy` — the same
+   `internal_pn`, `mpn`, `normalized_text`, `alternative`, `fuzzy` - the same
    "ERD wins over the task's own shorthand" resolution as point 1.
 8. **`QuoteCorrection.extraction_field_id` is nullable.** The ERD box marks it
    `FK` with no explicit nullability note, but SPEC's correction log is not
-   scoped to extraction-derived quotes only — a manually-entered quote
+   scoped to extraction-derived quotes only - a manually-entered quote
    (`Quote.source = 'manual'`, `app/models/quotes.py`) has no extraction run
    or fields to reference at all, yet its lines are just as correctable. Made
    nullable (composite FK, `MATCH SIMPLE` exempts NULL rows, same pattern as
@@ -97,13 +97,13 @@ shape.
     docstring previously flagged in detail: 04-document-pipeline.md's
     pipeline places Stage 10 (Corrections) *before* Stage 11 (Materialize),
     i.e. a correction can legitimately happen while only an `ExtractionRun`/
-    `ExtractionField` exist and no `Quote` row has been built yet — but
+    `ExtractionField` exist and no `Quote` row has been built yet - but
     `quote_id` was originally `NOT NULL`, so `correct_field` could not write
     a `QuoteCorrection` row at all in that case (only the audit event
     recorded the edit). With `quote_id` nullable (same `MATCH SIMPLE`
     NULL-exempts-the-row pattern as point 8's `extraction_field_id`) and a
-    new `extraction_run_id` giving every correction — pre- or
-    post-materialization — a durable, directly queryable link back to the
+    new `extraction_run_id` giving every correction - pre- or
+    post-materialization - a durable, directly queryable link back to the
     run that produced the field it corrects (previously the *only* place
     that link existed at all was buried in the `extraction.materialized`
     audit event's `after_state`, per `ExtractionRepository.
@@ -116,13 +116,13 @@ shape.
 9. **Every non-cascade FK introduced by this module is `RESTRICT`.**
    02-erd.md §11's cascade whitelist names exactly four pairs; the only one
    relevant to this module is `extraction_runs` → `extraction_fields`
-   ("the child cannot exist alone" — a field cannot exist without the run
+   ("the child cannot exist alone" - a field cannot exist without the run
    that produced it, and re-extraction never mutates a prior run's fields, so
    CASCADE is purely a teardown/purge safety net, same as the whitelist's
-   other three pairs). Every other FK here — `quote_documents` →
+   other three pairs). Every other FK here - `quote_documents` →
    `document_pages`, `quote_documents` → `extraction_runs`, `quotes` →
    `quote_corrections`, `extraction_fields` → `quote_corrections`,
-   `quote_lines`/`rfq_lines`/`parts` → `part_match_candidates` — is
+   `quote_lines`/`rfq_lines`/`parts` → `part_match_candidates` - is
    `RESTRICT` by the ERD's explicit "everything else is RESTRICT" default,
    the same letter-of-the-whitelist discipline `app/models/quotes.py` and
    `app/models/boms.py` already document for equally aggregate-internal pairs
@@ -131,17 +131,17 @@ shape.
     each the same class of duplicate-row bug the ERD already guards against
     elsewhere in this schema (precedent: `app/models/part_imports.py`'s
     `row_number` uniqueness, not spelled out in §8 either):
-    `document_pages`: `UNIQUE (organization_id, document_id, page_number)` —
+    `document_pages`: `UNIQUE (organization_id, document_id, page_number)` -
     two rows cannot claim the same page. `extraction_runs`: §8's literal
     `uq_extraction_run_number` is `UNIQUE (document_id, run_number)`;
     scoped to `organization_id` too, the same adaptation
     `app/models/quotes.py` already documents for `uq_price_break_min`.
     `extraction_fields`: `UNIQUE (organization_id, extraction_run_id,
-    field_path)` — one row per field per run. `part_match_candidates`:
+    field_path)` - one row per field per run. `part_match_candidates`:
     the delegating task's own suggested `UNIQUE (line, part, strategy)`,
     `UNIQUE (organization_id, quote_line_id, part_id, strategy)`.
     `quote_corrections` additionally gets `ix_quote_corrections_quote
-    (organization_id, quote_id, corrected_at DESC)` — 02-erd.md §2's own
+    (organization_id, quote_id, corrected_at DESC)` - 02-erd.md §2's own
     stated reason for this table's existence is "the review UI needs to
     query it cheaply," which is exactly the index that query needs (§9's
     "index discipline" rule: "add an index only with a query that needs it").
@@ -149,12 +149,12 @@ shape.
     `part_match_candidates`): `confirmed_by_id`/`confirmed_at` must be
     NULL together or set together, and the boolean confirmation flag
     (`is_confirmed`/`human_confirmed`) must agree with whether `confirmed_at`
-    is set — the same shape of "a flagged state with a missing partner field
+    is set - the same shape of "a flagged state with a missing partner field
     is a data error, not a valid state" reasoning `app/models/fx.py`'s
     `ck_exchange_rates_override_reason_required` and `app/models/rfqs.py`'s
     `ck_rfq_suppliers_exclusion_reason_paired` already establish. State
     *transitions* (e.g. whether a `low`-band field may be bulk-confirmed)
-    stay in the service layer per 02-erd.md §8 — these CHECKs only forbid an
+    stay in the service layer per 02-erd.md §8 - these CHECKs only forbid an
     internally-contradictory row, never encode a workflow rule.
 """
 
@@ -192,7 +192,7 @@ from app.models.base import ArchivableMixin, OrgOwnedBase, org_identity_constrai
 class DocumentState(StrEnum):
     """Coarse `quote_documents.state` machine (04-document-pipeline.md §9).
     Transition table lives in `app/domain/documents/transitions.py` (module
-    docstring point — out of this file's scope), not here."""
+    docstring point - out of this file's scope), not here."""
 
     UPLOADED = "uploaded"
     VALIDATED = "validated"
@@ -280,7 +280,7 @@ ALLOWED_EXTRACTION_RUN_TRANSITIONS: dict[ExtractionRunState, frozenset[Extractio
 class MatchStrategy(StrEnum):
     """`part_match_candidates.strategy` (04-document-pipeline.md §10's
     strategy table; ordering here follows the ERD box's own listed order,
-    which differs from §10's execution order — both are the same five
+    which differs from §10's execution order - both are the same five
     values, see module docstring point 7)."""
 
     INTERNAL_PN = "internal_pn"
@@ -297,7 +297,7 @@ MATCH_STRATEGY_ENUM = SaEnum(
 )
 
 # ConfidenceBand (app.domain.confidence, PRINCIPAL-OWNED) is imported, not
-# redefined — module docstring point 6. This is the DB-type mirror of that
+# redefined - module docstring point 6. This is the DB-type mirror of that
 # same Python enum, so `extraction_fields.band`'s legal values can never
 # drift from the thresholds module.
 CONFIDENCE_BAND_ENUM = SaEnum(
@@ -370,7 +370,7 @@ class QuoteDocument(ArchivableMixin, OrgOwnedBase):
 
 
 class DocumentPage(OrgOwnedBase):
-    """One page/sheet's acquired text (native or OCR) — the audit record of
+    """One page/sheet's acquired text (native or OCR) - the audit record of
     exactly what text the extraction provider saw (04-document-pipeline.md
     §5). No timestamp/version/archive mixins: 02-erd.md §6 lists none for
     `DOCUMENT_PAGES`, the same judgement already made for `RfqLine`/
@@ -380,7 +380,7 @@ class DocumentPage(OrgOwnedBase):
     __table_args__ = (
         org_identity_constraint("document_pages"),
         # composite org FK: the document this page belongs to. RESTRICT, not
-        # CASCADE — module docstring point 9: not in 02-erd.md §11's whitelist.
+        # CASCADE - module docstring point 9: not in 02-erd.md §11's whitelist.
         ForeignKeyConstraint(
             ["organization_id", "document_id"],
             ["quote_documents.organization_id", "quote_documents.id"],
@@ -406,7 +406,7 @@ class DocumentPage(OrgOwnedBase):
     ocr_text: Mapped[str | None] = mapped_column(Text(), default=None)
     ocr_confidence: Mapped[Decimal | None] = mapped_column(Numeric(9, 6), default=None)
     preview_storage_key: Mapped[str | None] = mapped_column(Text(), default=None)
-    # "text_layer|ocr|sheet|csv" — plain Text + comment, not a DB enum, same
+    # "text_layer|ocr|sheet|csv" - plain Text + comment, not a DB enum, same
     # pattern as PartAlternative.approval_status (app/models/parts.py): the
     # ERD box types this column lowercase `text`, not a named enum type.
     extraction_source: Mapped[str] = mapped_column(Text())
@@ -424,7 +424,7 @@ class ExtractionRun(OrgOwnedBase):
     __table_args__ = (
         org_identity_constraint("extraction_runs"),
         # composite org FK: the document this run processed. RESTRICT, not
-        # CASCADE — module docstring point 9.
+        # CASCADE - module docstring point 9.
         ForeignKeyConstraint(
             ["organization_id", "document_id"],
             ["quote_documents.organization_id", "quote_documents.id"],
@@ -474,7 +474,7 @@ class ExtractionRun(OrgOwnedBase):
 
 
 class ExtractionField(OrgOwnedBase):
-    """One extracted (or explicitly missing) field of one extraction run —
+    """One extracted (or explicitly missing) field of one extraction run -
     verbatim + normalized + confidence, per the trust-boundary rule that only
     normalized, confirmed values ever feed `quotes`/`quote_lines`/
     `quote_terms` (04-document-pipeline.md §6). No timestamp/version/archive
@@ -484,7 +484,7 @@ class ExtractionField(OrgOwnedBase):
     __table_args__ = (
         org_identity_constraint("extraction_fields"),
         # composite org FK: the run that produced this field. CASCADE per
-        # 02-erd.md §11's explicit whitelist (module docstring point 9) — a
+        # 02-erd.md §11's explicit whitelist (module docstring point 9) - a
         # field cannot exist without its run.
         ForeignKeyConstraint(
             ["organization_id", "extraction_run_id"],
@@ -549,12 +549,12 @@ class QuoteCorrection(OrgOwnedBase):
     module docstring point 8 for why `extraction_field_id` is nullable. No
     timestamp/version/archive mixins beyond its own `corrected_at`: the same
     append-only-by-convention shape as `RfqStatusHistory`
-    (app/models/rfqs.py) — rows here are never updated."""
+    (app/models/rfqs.py) - rows here are never updated."""
 
     __tablename__ = "quote_corrections"
     __table_args__ = (
         org_identity_constraint("quote_corrections"),
-        # composite org FK, nullable: module docstring point 8a — a
+        # composite org FK, nullable: module docstring point 8a - a
         # correction made before materialization has no quote yet.
         ForeignKeyConstraint(
             ["organization_id", "quote_id"],
@@ -597,7 +597,7 @@ class QuoteCorrection(OrgOwnedBase):
 
 
 class PartMatchCandidate(OrgOwnedBase):
-    """One candidate (of possibly several, all kept — SPEC §8) part match for
+    """One candidate (of possibly several, all kept - SPEC §8) part match for
     one quote line against one RFQ line (04-document-pipeline.md §10). No
     timestamp/version/archive mixins beyond its own `confirmed_at`: 02-erd.md
     §6 lists none else for `PART_MATCH_CANDIDATES`."""
@@ -674,7 +674,7 @@ class PartMatchCandidate(OrgOwnedBase):
 # -- indexes not already implied by a UniqueConstraint/PK ------------------
 #
 # 02-erd.md §9's index plan, transcribed exactly, is created in the migration
-# (Alembic `op.create_index`), not here — the same split every other model
+# (Alembic `op.create_index`), not here - the same split every other model
 # module in this schema already follows (constraints/FKs live on the mapped
 # class, plain performance indexes live in the migration). See
 # migrations/versions/0010_documents.py.
@@ -684,7 +684,7 @@ class PartMatchCandidate(OrgOwnedBase):
 # participates in several FKs on most mappers here (the plain org FK plus one
 # or more composite FKs each), so `foreign_keys` disambiguates which
 # constraint each relationship follows, and `overlaps` silences SQLAlchemy's
-# warning about the shared organization_id column between them — the same
+# warning about the shared organization_id column between them - the same
 # pattern as quotes.py/rfqs.py/boms.py.
 QuoteDocument.organization = relationship(
     "Organization", foreign_keys=[QuoteDocument.organization_id], lazy="select"

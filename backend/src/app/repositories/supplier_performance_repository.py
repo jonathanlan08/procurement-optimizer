@@ -1,4 +1,4 @@
-"""Supplier performance record repository — org-scoped data access
+"""Supplier performance record repository - org-scoped data access
 (docs/planning/02-erd.md §4).
 
 Extends OrgScopedRepository, so every query is filtered by organization_id
@@ -41,7 +41,7 @@ class SupplierPerformanceRepository(OrgScopedRepository[SupplierPerformanceRecor
         self, supplier_id: uuid.UUID, record_id: uuid.UUID
     ) -> SupplierPerformanceRecord | None:
         """None when the record is absent, other-org, or belongs to a
-        different supplier — all indistinguishable, surfacing as 404."""
+        different supplier - all indistinguishable, surfacing as 404."""
         record = self.get(record_id)
         if record is None or record.supplier_id != supplier_id:
             return None

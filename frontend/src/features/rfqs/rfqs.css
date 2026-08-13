@@ -1,10 +1,10 @@
 /* RFQ-specific chrome layered on top of components/workspace.css +
    components/badges.css (both imported by RfqsPage.tsx). Kept in its own
    file rather than editing either shared stylesheet (both are outside this
-   task's edit scope) — mirrors features/boms/boms.css's own rationale. */
+   task's edit scope) - mirrors features/boms/boms.css's own rationale. */
 
 /* Status badges: draft/open/under_review/awarded/closed/archived need six
-   visually distinct states (MASTER.md "never rely on color alone" — every
+   visually distinct states (MASTER.md "never rely on color alone" - every
    badge here still carries its own text label). draft/closed/archived are
    all "muted" in spirit but differentiated by background, foreground token,
    and (for archived) a dashed border, rather than inventing three more hues
@@ -46,7 +46,7 @@
   border-style: dashed;
 }
 
-/* Toolbar status filter — a row of toggle chips (not a native <select
+/* Toolbar status filter - a row of toggle chips (not a native <select
    multiple>, which is a poor fit for this dense a 6-option toolbar and hard
    to scan at a glance). Each button independently toggles its status in/out
    of the filter set. */
@@ -87,7 +87,7 @@
   color: var(--color-on-primary);
 }
 
-/* Create-form mode toggle (inline lines vs. from-BOM explosion) — a two-way
+/* Create-form mode toggle (inline lines vs. from-BOM explosion) - a two-way
    segmented control, mutually exclusive by construction (radio-like via
    aria-pressed pairs, not two independent checkboxes). */
 .mode-toggle {
@@ -119,7 +119,7 @@
   color: var(--color-on-primary);
 }
 
-/* Line editor / line list rows (create form + drawer lines section) —
+/* Line editor / line list rows (create form + drawer lines section) -
    same shape as features/boms/boms.css's `.bom-line-row`, renamed for this
    feature rather than importing boms.css into a sibling feature directory. */
 .rfq-line-list {
@@ -149,13 +149,13 @@
 }
 
 /* Wraps the drawer's "add a line" inline form (AddRfqLineForm) below the
-   read-only lines table, and the create form's line-add affordance — a
+   read-only lines table, and the create form's line-add affordance - a
    dedicated class instead of an inline style. */
 .rfq-add-line-wrap {
   margin-top: var(--space-lg);
 }
 
-/* Read-only lines table (drawer detail) — same tabular-nums/right-align
+/* Read-only lines table (drawer detail) - same tabular-nums/right-align
    convention as boms.css's `.bom-lines-table`. */
 .rfq-lines-table {
   width: 100%;
@@ -206,7 +206,7 @@
   background: var(--color-surface);
 }
 
-/* Status timeline — compact vertical list, most-recent last (chronological
+/* Status timeline - compact vertical list, most-recent last (chronological
    read order), each entry a single line of "from -> to", actor, note. */
 .status-timeline {
   list-style: none;
@@ -242,7 +242,7 @@
   color: var(--color-secondary);
 }
 
-/* Status-change action panel — mirrors boms.css's archive-panel shape:
+/* Status-change action panel - mirrors boms.css's archive-panel shape:
    optional note field + Confirm/Cancel. */
 .status-change-panel {
   margin-top: var(--space-xl);
@@ -288,7 +288,7 @@
 }
 
 /* Name/meta + action buttons on one line; the exclude-reason panel (when
-   open) renders as a sibling block below, at full row width — see
+   open) renders as a sibling block below, at full row width - see
    `.rfq-supplier-row`'s column flex-direction above. */
 .rfq-supplier-row-top {
   display: flex;

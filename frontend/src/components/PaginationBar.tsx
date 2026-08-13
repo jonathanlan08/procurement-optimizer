@@ -16,7 +16,7 @@ export function PaginationBar({ total, limit, offset, onOffsetChange }: Paginati
 
   return (
     <div className="pagination-bar">
-      <span>{total === 0 ? "No results" : `${from}–${to} of ${total}`}</span>
+      <span>{total === 0 ? "No results" : `${from}-${to} of ${total}`}</span>
       <div className="pagination-controls">
         <button
           type="button"

@@ -3,7 +3,7 @@
 
 **Contract's literal paths kept, but `POST .../comparison-scenarios` and
 `POST .../{id}/clone` run synchronously and do MORE than their contract-table
-one-line description says** — see `app/services/scenario_service.py`'s own
+one-line description says** - see `app/services/scenario_service.py`'s own
 module docstring ("Deviation 1"/"Deviation 2") for the full reasoning: this
 codebase has no job queue anywhere (`services/extraction_service.py`'s
 `JOB_RUNNER=inline` precedent, already applied the same way by
@@ -22,12 +22,12 @@ transaction, not two. Route-by-route:
   scenario. Mounted for contract-path compatibility; it never re-solves.
 - `POST /comparison-scenarios/{id}/clone` is this task's own `rerun`
   (scenario_service.py "Deviation 2"): a NEW scenario, freshly solved from
-  the original's stored snapshots — not a draft pre-fill.
+  the original's stored snapshots - not a draft pre-fill.
 - `GET .../results` / `GET .../allocation` are the scoring/allocation
   halves of `GET .../{id}`'s full package, addressable individually per
   §4.16's own route table.
 
-**Two routers, one module** — same shape `api/v1/extractions.py`/
+**Two routers, one module** - same shape `api/v1/extractions.py`/
 `api/v1/matching.py` already establish: `rfq_scenarios_router` (prefix
 `/rfqs`) owns list/create under the parent RFQ; `scenarios_router` (prefix
 `/comparison-scenarios`) owns every route that addresses a scenario
@@ -214,7 +214,7 @@ def optimize_scenario(
     service: ScenarioServiceDep,
     _principal: Annotated[Principal, Depends(require_role(Role.ANALYST))],
 ) -> AllocationResultResponse:
-    """Idempotent — see module docstring. Allocation already happened at
+    """Idempotent - see module docstring. Allocation already happened at
     scenario creation; this returns it rather than re-solving."""
     pkg = service.get(scenario_id)
     return AllocationResultResponse.from_model(pkg.allocation, base_currency=pkg.rfq.base_currency)
@@ -227,7 +227,7 @@ def clone_scenario(
     service: ScenarioServiceDep,
     principal: Annotated[Principal, Depends(require_role(Role.ANALYST))],
 ) -> ScenarioResponse:
-    """`ScenarioService.rerun` — see module docstring "Deviation 2"."""
+    """`ScenarioService.rerun` - see module docstring "Deviation 2"."""
     pkg = service.rerun(scenario_id, notes=body.notes, actor_id=principal.user.id)
     return _to_response(pkg)
 

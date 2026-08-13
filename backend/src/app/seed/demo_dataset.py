@@ -11,12 +11,12 @@ script as a thin wrapper").
 the entity by its natural key directly against the ORM (a plain read, no
 service needed for that), and only call the owning service's mutating method
 when nothing was found. Services are used for every actual mutation (per
-this task's brief: "PREFER seeding through services where they exist") —
+this task's brief: "PREFER seeding through services where they exist") -
 suppliers/parts/BOMs/RFQs/quotes/FX/scoring/scenarios/documents/extraction
 all go through their real service, which gets the seed dataset audit events
 and domain validation for free. The two exceptions are documented at their
 call sites: `Organization`/`User`/`OrganizationMembership` (identity
-bootstrap; no service owns account creation) and nothing else — every other
+bootstrap; no service owns account creation) and nothing else - every other
 table in this dataset is reached exclusively through a service method.
 
 Re-running `seed_demo_dataset` against an already-seeded organization is
@@ -26,20 +26,20 @@ repeated runs (verified in `tests/integration/test_demo_dataset.py`).
 
 **The dataset's engineered numbers** (SPEC's required demonstration cases)
 are documented next to the code that creates them:
-- suppliers: `_SUPPLIER_SPECS` — 6 suppliers, 5 distinct currencies, Net
+- suppliers: `_SUPPLIER_SPECS` - 6 suppliers, 5 distinct currencies, Net
   30/45/60 payment terms, lead times spanning the required 7-45 day range,
   differentiated quality/defect/on-time performance records.
-- parts: `_PART_SPECS` — 19 parts, 6 categories, one kg-based part
+- parts: `_PART_SPECS` - 19 parts, 6 categories, one kg-based part
   (`MF-GASK-510`), three approved alternatives including one external-MPN
   alternative (`MF-CAST-300` -> `SKF-BH-2205`).
-- BOMs: `_seed_boms` — "RK-200 Server Rack" exercises the copy-on-write
+- BOMs: `_seed_boms` - "RK-200 Server Rack" exercises the copy-on-write
   version chain (v1 draft->active, v2 active supersedes v1); "EN-50
   Enclosure" carries one substitute-part line.
-- RFQs: `_seed_rfqs` — (a) "Q3 Rack Hardware" open, BOM-exploded, all six
+- RFQs: `_seed_rfqs` - (a) "Q3 Rack Hardware" open, BOM-exploded, all six
   suppliers invited, one excluded with reason; (b) "Enclosure Pilot Build"
   under_review with four quotes; (c) "Legacy Gasket Buy" draft, inline
   lines.
-- quotes: `_seed_quotes` — four manual quotes on RFQ (b) in CNY/EUR/USD/MXN;
+- quotes: `_seed_quotes` - four manual quotes on RFQ (b) in CNY/EUR/USD/MXN;
   Cascade Precision's mounting-plate price breaks are SPEC §11's own example
   table verbatim (1-99: 12.00, 100-499: 10.50, 500-999: 9.20, 1000+: 8.60);
   Baltic Casting's quote has no payment terms (the missing-commercial-term
@@ -49,10 +49,10 @@ are documented next to the code that creates them:
   bearing-housing line (105.00 CNY ~= 14.50 USD normalized, below every
   other supplier) but, once its enormous shipping cost and the scenario's
   tariff/quality assumptions are applied, the HIGHEST landed effective unit
-  cost of the four — the product's own thesis, verified numerically in
+  cost of the four - the product's own thesis, verified numerically in
   `tests/integration/test_demo_dataset.py` by calling `LandedCostService`
   directly.
-- scenarios: `_seed_scenarios` — three persisted `ComparisonScenario` rows:
+- scenarios: `_seed_scenarios` - three persisted `ComparisonScenario` rows:
   a feasible `lowest_landed_cost` run (whose ranking should put Cascade,
   not Shenzhen, first), a `budget_limit=500` run engineered infeasible, and
   a `lowest_unit_price` run whose allocation is forced into a >=2-supplier
@@ -125,7 +125,7 @@ from app.services.supplier_service import SupplierService
 DEMO_SLUG: Final[str] = "meridian-fab"
 DEMO_ORG_NAME: Final[str] = "Meridian Fabrication Works (Demo)"
 
-# Synthetic demo credentials — intentionally public, documented in the README.
+# Synthetic demo credentials - intentionally public, documented in the README.
 DEMO_USERS: Final[tuple[tuple[str, str, Role, str], ...]] = (
     ("demo-owner@meridianfab.example", "Morgan Reyes", Role.OWNER, "demo-owner-2026"),
     ("demo-analyst@meridianfab.example", "Ada Chen", Role.ANALYST, "demo-analyst-2026"),
@@ -168,7 +168,7 @@ def seed_identity(
     session: SaSession, clock: Clock, ids: IdGenerator
 ) -> tuple[Organization, dict[str, User]]:
     """Idempotent: the demo org (by slug) and its three demo users (by
-    email). Direct model inserts — no service owns organization/user/
+    email). Direct model inserts - no service owns organization/user/
     membership creation in this codebase."""
     now = clock.now()
     org = session.execute(
@@ -260,7 +260,7 @@ _PERFORMANCE_PERIOD_START: Final[date] = date(2025, 1, 1)
 _PERFORMANCE_PERIOD_END: Final[date] = date(2025, 12, 31)
 
 # Six suppliers: the four fixture suppliers (docs/planning §, scripts/
-# generate_fixtures.py) plus two new fictional ones — a US domestic
+# generate_fixtures.py) plus two new fictional ones - a US domestic
 # short-lead supplier and a German precision supplier, per this task's
 # brief. Currencies span USD/CNY/MXN/EUR/SEK (5 distinct, exceeding the
 # "at least 3 distinct" requirement and naming all 5 of the SPEC's own
@@ -666,7 +666,7 @@ def _seed_parts(
         part_ids[spec.ipn] = part.id
     session.flush()
 
-    # Three approved alternatives, one external (no catalogued Part —
+    # Three approved alternatives, one external (no catalogued Part -
     # alternative_mpn only): see module docstring.
     _ensure_alternative(
         session, service, organization_id,
@@ -774,7 +774,7 @@ def _seed_boms(
     service = BomService(session, organization_id, audit, clock, ids)
     bom_ids: dict[str, uuid.UUID] = {}
 
-    # "RK-200 Server Rack": copy-on-write version chain — v1 activated, then
+    # "RK-200 Server Rack": copy-on-write version chain - v1 activated, then
     # v2 (bracket qty revised, standoff line added) forked and activated,
     # marking v1 superseded.
     rk200_v1 = _get_or_create_bom_v1(
@@ -849,8 +849,8 @@ _RFQ_CHAIN: Final[dict[RfqStatus, RfqStatus]] = {
     RfqStatus.OPEN: RfqStatus.UNDER_REVIEW,
 }
 # The forward progression this module ever drives an RFQ through. Used so a
-# second seed run — which calls _ensure_rfq_status(..., OPEN, ...) again
-# even though RFQ (b) has already moved on to UNDER_REVIEW — recognizes the
+# second seed run - which calls _ensure_rfq_status(..., OPEN, ...) again
+# even though RFQ (b) has already moved on to UNDER_REVIEW - recognizes the
 # target as an already-passed milestone (no-op) rather than attempting an
 # illegal backward transition.
 _RFQ_PROGRESSION: Final[tuple[RfqStatus, ...]] = (
@@ -865,7 +865,7 @@ def _ensure_rfq_status(
 ) -> Rfq:
     """Walks the single allowed chain draft->open->under_review one step at
     a time until `target` is reached; a no-op if already there OR already
-    past it (idempotent on re-run — see `_RFQ_PROGRESSION`)."""
+    past it (idempotent on re-run - see `_RFQ_PROGRESSION`)."""
     current = rfq
     target_index = _RFQ_PROGRESSION.index(target)
     while current.status != target:
@@ -1003,7 +1003,7 @@ def _seed_rfqs(
     service = RfqService(session, organization_id, audit, clock, ids)
     rfq_ids: dict[str, uuid.UUID] = {}
 
-    # (a) "Q3 Rack Hardware" — open, exploded from RK-200's active v2, all
+    # (a) "Q3 Rack Hardware" - open, exploded from RK-200's active v2, all
     # six suppliers invited, one (Pacific Metal) excluded with reason.
     rfq_a = _get_or_create_rfq(
         session, service, organization_id, actor_id,
@@ -1038,7 +1038,7 @@ def _seed_rfqs(
         ),
     )
 
-    # (b) "Enclosure Pilot Build" — under_review with manual lines (quotes
+    # (b) "Enclosure Pilot Build" - under_review with manual lines (quotes
     # attached by _seed_quotes).
     rfq_b = _get_or_create_rfq(
         session, service, organization_id, actor_id,
@@ -1083,7 +1083,7 @@ def _seed_rfqs(
     )
     rfq_ids["RFQ-2026-ENC-PILOT"] = rfq_b.id
 
-    # (c) "Legacy Gasket Buy" — draft, inline lines, no suppliers/quotes.
+    # (c) "Legacy Gasket Buy" - draft, inline lines, no suppliers/quotes.
     rfq_c = _get_or_create_rfq(
         session, service, organization_id, actor_id,
         internal_reference="RFQ-2026-LEGACY-GASKET",
@@ -1291,7 +1291,7 @@ def _enclosure_pilot_quote_specs(
                     ),
                     # Exact part-number match (auto-confirms via
                     # MatchingService) so RFQ line 3 (MF-GASK-510) has at
-                    # least one real, matched offer — Pacific Metal's own
+                    # least one real, matched offer - Pacific Metal's own
                     # gasket line below is deliberately a near-miss that
                     # stays unmatched (the uncertain-part-match demo), so
                     # this line is what keeps every scenario over this RFQ
@@ -1564,7 +1564,7 @@ def _seed_scoring_configs(
 # quality 2%, annual 8%, baseline Net-30. `delay_risk_per_day="0"` +
 # `required_lead_time_days` are also supplied so DELAY_RISK is
 # ASSUMPTION_DEPENDENT (present, zero-cost) rather than MISSING for every
-# offer — required_lead_time_days has no source column anywhere in this
+# offer - required_lead_time_days has no source column anywhere in this
 # schema (app/services/landed_cost_service.py module docstring), so without
 # an explicit override every offer's completeness degrades to INCOMPLETE and
 # app.services.scenario_service's Offer.incomplete_landed_cost gate excludes
@@ -1580,9 +1580,9 @@ SCENARIO_ASSUMPTIONS: Final[LandedCostAssumptions] = LandedCostAssumptions(
     required_lead_time_days="45",
 )
 
-SCENARIO_LOWEST_LANDED_COST_NAME: Final[str] = "Enclosure Pilot — Lowest Landed Cost"
-SCENARIO_INFEASIBLE_NAME: Final[str] = "Enclosure Pilot — Budget Ceiling (Infeasible Demo)"
-SCENARIO_SPLIT_NAME: Final[str] = "Enclosure Pilot — Capacity-Constrained Split"
+SCENARIO_LOWEST_LANDED_COST_NAME: Final[str] = "Enclosure Pilot - Lowest Landed Cost"
+SCENARIO_INFEASIBLE_NAME: Final[str] = "Enclosure Pilot - Budget Ceiling (Infeasible Demo)"
+SCENARIO_SPLIT_NAME: Final[str] = "Enclosure Pilot - Capacity-Constrained Split"
 
 
 def _seed_scenarios(
@@ -1603,8 +1603,8 @@ def _seed_scenarios(
             ComparisonStrategy.LOWEST_LANDED_COST,
             # allow_incomplete_offers=True: Baltic Casting's quote has no
             # payment terms (the missing-commercial-term case), which makes
-            # its FINANCING component — and therefore its landed-cost
-            # completeness — genuinely INCOMPLETE, not merely
+            # its FINANCING component - and therefore its landed-cost
+            # completeness - genuinely INCOMPLETE, not merely
             # assumption-dependent, and there is no assumption override for
             # payment_terms_days (see SCENARIO_ASSUMPTIONS above). Every
             # supplier should still be a real candidate in the comparison.

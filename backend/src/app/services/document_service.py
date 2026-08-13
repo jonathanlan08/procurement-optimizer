@@ -1,4 +1,4 @@
-"""Document service — org-scoped upload/read/download/archive for
+"""Document service - org-scoped upload/read/download/archive for
 `quote_documents` (docs/planning/03-api-contract.md §4.9,
 docs/planning/04-document-pipeline.md §§2-4, app/models/documents.py).
 
@@ -6,7 +6,7 @@ Services never commit: the request-scoped `get_db` dependency
 (app/api/deps.py) commits on success and rolls back on any raised exception.
 
 **Scope: Stages 1-3 of the pipeline only** (transport validation, content
-validation, storage) — text/table acquisition, OCR, extraction, review,
+validation, storage) - text/table acquisition, OCR, extraction, review,
 correction, materialization, and part matching (Stages 4-13,
 04-document-pipeline.md) are later phases and are not implemented here.
 `GET /quote-documents/{id}/pages/{n}/preview` (§4.9's route table) belongs to
@@ -23,7 +23,7 @@ task's `api/v1/documents.py`.
    raises (disk full, S3 unreachable, ...) *before* any `QuoteDocument` row
    exists, there is no metadata row left behind pointing at bytes that were
    never actually written. The row is created only once, already at its
-   final state for this phase (`DocumentState.STORED`) — "transitions
+   final state for this phase (`DocumentState.STORED`) - "transitions
    recorded honestly" (the task's own phrase) is read as "the persisted
    state must truthfully reflect how far the pipeline actually got," not as
    a requirement to literally persist three intermediate rows for a
@@ -34,7 +34,7 @@ task's `api/v1/documents.py`.
    and is left for `api/v1/documents.py` to map to a `413`/`415` HTTP error
    (per the task's own instruction, "implement mapping in the route").
    `app/models/documents.py`'s own module docstring notes `quarantined` is
-   reachable from `uploaded`/`validated` *before* Stage 2/4 ever run — a
+   reachable from `uploaded`/`validated` *before* Stage 2/4 ever run - a
    persisted quarantine audit trail for rejected uploads is a real future
    need, but it is not part of this task's brief (no test in this task's
    own required list exercises it) and is left to the extraction-pipeline
@@ -43,7 +43,7 @@ task's `api/v1/documents.py`.
    `03-api-contract.md` §4.9 literal annotation of `201 {document,
    duplicate_of?}`.** That same document's own §3 error-code table lists
    `conflict_duplicate | 409 | uniqueness violation (duplicate supplier
-   code, duplicate upload)` — i.e. the contract disagrees with itself
+   code, duplicate upload)` - i.e. the contract disagrees with itself
    between its terse per-route annotation and its own error table. This
    task's brief resolves that internal conflict explicitly and in detail
    ("sha256 dedupe per org (same hash -> 409 conflict_duplicate with
@@ -61,18 +61,18 @@ task's `api/v1/documents.py`.
    archived_at; business data is never hard-deleted"). Named `delete` here
    because that is the task brief's own method name; the route that calls
    it is `POST /quote-documents/{id}/archive` (the contract's literal route
-   name, §4.9) — both describe the same soft-delete action. "State permits"
-   is read as: not already archived (`409 conflict_state` otherwise) — the
+   name, §4.9) - both describe the same soft-delete action. "State permits"
+   is read as: not already archived (`409 conflict_state` otherwise) - the
    only two states this module ever produces are `stored` (terminal for
    this phase) and `archived`, so there is no other document-state gate to
    express yet.
 5. **`storage.put()` is called with the *detected* mime type**
    (`app.ingestion.file_validation`'s sniffed `DocumentKind`), not the
-   client's declared `Content-Type` header — `declared_mime` (the model's
+   client's declared `Content-Type` header - `declared_mime` (the model's
    own untrusted, as-received field) is kept on the row for audit purposes,
    but only the sniffed, verified type is ever treated as authoritative
    (04-document-pipeline.md §3: "Detected type must match the declared
-   extension" — the same "never trust the client's own label" posture
+   extension" - the same "never trust the client's own label" posture
    extended to what gets handed to the storage backend).
 """
 
@@ -169,7 +169,7 @@ class DocumentService:
 
         # Stages 1-2: transport + content validation. Raises
         # FileValidationError (not an AppError) on failure, deliberately
-        # left for api/v1/documents.py to map to 413/415 — see module
+        # left for api/v1/documents.py to map to 413/415 - see module
         # docstring point 2. No row is created below this line on failure.
         validated = validate_upload(
             original_filename=filename,
@@ -193,7 +193,7 @@ class DocumentService:
         mime = _MIME_OF_KIND[validated.kind]
 
         # Stage 3: store the immutable original before any metadata row
-        # exists — module docstring point 1.
+        # exists - module docstring point 1.
         self._storage.put(
             organization_id=self._organization_id,
             key=validated.storage_key,

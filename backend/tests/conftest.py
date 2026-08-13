@@ -1,8 +1,8 @@
-"""Test infrastructure — PRINCIPAL-OWNED.
+"""Test infrastructure - PRINCIPAL-OWNED.
 
 Database resolution order (docs/planning/09 task 1.18):
 1. PO_TEST_DATABASE_URL if set (CI service container, developer's own postgres)
-2. pgserver — real user-space PostgreSQL, no Docker required
+2. pgserver - real user-space PostgreSQL, no Docker required
 
 Integration tests are marked `integration`; pure unit tests never touch this.
 """

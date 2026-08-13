@@ -45,8 +45,8 @@ EXE_BYTES = b"MZ\x90\x00\x03\x00\x00\x00" + b"\x00" * 64  # PE header magic, not
 def _cleanup_quote_documents(migrated_engine: Engine) -> Generator[None, None, None]:
     """This module is the first integration test file to commit real
     `quote_documents` rows through the live API (every other API test file's
-    `client` fixture behaves identically — real commits against the shared,
-    session-scoped `migrated_engine` — but no earlier test file happens to
+    `client` fixture behaves identically - real commits against the shared,
+    session-scoped `migrated_engine` - but no earlier test file happens to
     write to *this* table). Left in place across tests, those rows would
     leak into `test_documents_schema.py::
     test_content_sha256_duplicate_allowed_across_orgs`'s deliberately

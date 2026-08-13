@@ -59,7 +59,7 @@ def upgrade() -> None:
         sa.CheckConstraint(
             "quote_currency ~ '^[A-Z]{3}$'", name="ck_exchange_rates_quote_currency_iso"
         ),
-        # SPEC §9: every rate preserves "manual override, override reason" —
+        # SPEC §9: every rate preserves "manual override, override reason" -
         # a flagged override with no reason is a data error, not a valid
         # "unset" state (same pairing-check shape as
         # ck_parts_target_price_currency_paired, migration 0004).

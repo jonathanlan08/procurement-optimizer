@@ -1,4 +1,4 @@
-"""Structured JSON logging to stdout — stdlib only.
+"""Structured JSON logging to stdout - stdlib only.
 
 One JSON object per line: ``ts`` (ISO-8601 UTC), ``level``, ``logger``, ``message``,
 plus any extra fields callers attach via ``extra={...}``. Keys that look like secrets
@@ -91,7 +91,7 @@ class _JsonStreamHandler(logging.StreamHandler[TextIO]):
 def configure_logging(level: str = "INFO") -> None:
     """Idempotent root-logger setup: one StreamHandler emitting JSON to stdout.
 
-    Safe to call more than once (e.g. from multiple entry points) — repeat calls
+    Safe to call more than once (e.g. from multiple entry points) - repeat calls
     only update the level on the existing handler rather than stacking up
     duplicate handlers.
     """

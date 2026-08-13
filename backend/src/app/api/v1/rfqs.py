@@ -2,18 +2,18 @@
 mirroring api/v1/boms.py / api/v1/parts.py.
 
 Concurrency (§1.7): RFQs are explicitly listed among the resources carrying
-`ETag`/`If-Match` — `GET`/`POST`/`PATCH`/`POST .../status` all set
+`ETag`/`If-Match` - `GET`/`POST`/`PATCH`/`POST .../status` all set
 `ETag: "<version>"` on the response; only `PATCH /rfqs/{id}` requires
 `If-Match` on the request, exactly the same split already established by
 `api/v1/parts.py`/`api/v1/suppliers.py` (archive/unarchive there bump
 `version` and return a new `ETag` without demanding `If-Match` as input;
 `POST /rfqs/{id}/status` and the line/supplier sub-resource routes below
-follow that same precedent — they mutate state and return a fresh `ETag`,
+follow that same precedent - they mutate state and return a fresh `ETag`,
 but only `PATCH` itself gates on the header matching).
 
 Roles follow the contract's §4.8 route table exactly: list/get/status-
 history/line-list/supplier-list are `O A N V`; create/update/status-change/
-line & supplier mutations are `O A N` (no route here is admin-only — unlike
+line & supplier mutations are `O A N` (no route here is admin-only - unlike
 BOMs/parts, the contract does not carve out a separate admin-gated archive
 endpoint for RFQs; reaching `archived` status happens through the same
 `POST /rfqs/{id}/status` analyst-level route as any other transition).
@@ -27,20 +27,20 @@ instructions but both are recorded here:
    un-exclude") the same way `api/v1/boms.py`'s `POST /boms/{id}/activate`
    fills a brief-mandated, contract-silent gap. Gated `O A N` (analyst+),
    mirroring the gate the contract itself puts on `DELETE .../suppliers/
-   {sid}` (exclude) — not lifted to administrator+ the way BOM/Part archive
+   {sid}` (exclude) - not lifted to administrator+ the way BOM/Part archive
    is, because the contract's own exclude gate is already analyst-level.
 2. **`{sid}` in the suppliers sub-resource routes is the `RfqSupplier` join
-   row's own id**, not the invited `Supplier`'s id — see app/schemas/rfqs.py
+   row's own id**, not the invited `Supplier`'s id - see app/schemas/rfqs.py
    module docstring for why (mirrors `/parts/{id}/alternatives/{aid}` and
    `/suppliers/{id}/contacts/{cid}`).
 3. **`DELETE /rfqs/{id}/suppliers/{sid}` takes a JSON body** (`{exclusion_
    reason}`, required) despite DELETE conventionally being bodyless
    elsewhere in this codebase (`DELETE /parts/{id}/alternatives/{aid}` takes
-   none) — the contract's own route table explicitly names a body for this
+   none) - the contract's own route table explicitly names a body for this
    one DELETE (`{exclusion_reason} -> status excluded, retained for audit`),
    so it is honored here rather than smoothed over to match sibling routes.
 4. **`DELETE /rfqs/{id}/lines/{lid}` takes an optional JSON body**
-   (`{override_reason}`) for the same reason `PATCH /rfqs/{id}` does — see
+   (`{override_reason}`) for the same reason `PATCH /rfqs/{id}` does - see
    app/schemas/rfqs.py module docstring on the draft-only-with-override gate.
 """
 
@@ -120,7 +120,7 @@ def _rfq_response(
 def list_rfqs(
     service: RfqServiceDep,
     _principal: Annotated[Principal, Depends(require_role(Role.VIEWER))],
-    # B008 is suppressed below — ruff's immutable-type allowlist for the
+    # B008 is suppressed below - ruff's immutable-type allowlist for the
     # "function call in a default" check doesn't recognize `list[...]`/
     # `date` as immutable the way it does `str`/`bool`/`int`; `Query()`
     # itself is a side-effect-free, idempotent call either way (same

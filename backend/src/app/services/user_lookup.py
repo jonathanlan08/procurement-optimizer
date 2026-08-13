@@ -2,7 +2,7 @@
 
 2026-08 external review P3: RFQ status history and reviewed briefs showed
 raw actor UUIDs. This helper joins `users` through `organization_memberships`
-so a name is only ever resolved for members of the CALLER's organization —
+so a name is only ever resolved for members of the CALLER's organization -
 an id from another org (or a stale/unknown id) resolves to None and callers
 fall back to the truncated id, never a cross-org name leak.
 """

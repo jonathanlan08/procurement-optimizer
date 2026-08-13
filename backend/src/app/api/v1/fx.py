@@ -5,12 +5,12 @@ by policy.
 contract's own prose: "filters `base`, `quote`, `as_of` (returns the
 effective row plus its provenance)". When **all three** of `base`, `quote`,
 `as_of` are given, the query is answered as a single *effective-rate lookup*
-(`EffectiveExchangeRateResponse`) — manual override wins, else the fixture,
+(`EffectiveExchangeRateResponse`) - manual override wins, else the fixture,
 per `FxService.get_effective_rate`. Any other combination (e.g. `base` and
 `quote` alone, to see an org's override history for one pair) is a plain
 paginated listing of this org's stored override rows
 (`ExchangeRateListResponse`), matching every other list endpoint in this API
-— it cannot also mean "effective lookup with `as_of` defaulted to today",
+- it cannot also mean "effective lookup with `as_of` defaulted to today",
 because a plain filtered list is a real, distinct need (an audit/history
 view) that requiring all three params keeps unambiguous. The contract has no
 separate `/exchange-rates/effective` path, so this task's own brief (which

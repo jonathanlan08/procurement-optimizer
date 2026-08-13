@@ -1,4 +1,4 @@
-"""SyntheticFxProvider — the only FX rate provider shipped in v0.1.
+"""SyntheticFxProvider - the only FX rate provider shipped in v0.1.
 
 SPEC §9: "Public demo ships deterministic synthetic exchange rates; automated
 tests must not depend on external services."
@@ -6,9 +6,9 @@ docs/planning/05-calculation-methodology.md §4: "Fixture provider ships a
 fixed synthetic table (USD base; EUR, GBP, JPY, CNY, MXN, INR) ... Clearly
 labelled synthetic."
 
-These are demonstration rates only — not sourced from any real market feed.
+These are demonstration rates only - not sourced from any real market feed.
 Purely functional: no network I/O, no randomness, no mutable state, and (by
-design) no dependence on `as_of_date` — the fixture table is flat. Exercising
+design) no dependence on `as_of_date` - the fixture table is flat. Exercising
 as-of *date-selection* logic (picking the latest stored row on or before a
 target date, manual override vs. not) is `fx_service`'s job over persisted
 `ExchangeRate` rows, not this provider's; see that module's docstring.
@@ -45,7 +45,7 @@ SOURCE_LABEL = "synthetic_fixture"
 
 
 class SyntheticFxProvider:
-    """Deterministic, offline FX rate fixture. Stateless — safe to construct
+    """Deterministic, offline FX rate fixture. Stateless - safe to construct
     freely; every instance returns identical answers for identical inputs."""
 
     def _usd_leg(self, currency: str) -> Decimal | None:
@@ -63,7 +63,7 @@ class SyntheticFxProvider:
         if base_leg is None or quote_leg is None:
             return None
 
-        # 1 base = (usd_to_quote / usd_to_base) * quote — triangulated through
+        # 1 base = (usd_to_quote / usd_to_base) * quote - triangulated through
         # USD; when base == "USD" this reduces to usd_to_quote directly, and
         # when quote == "USD" it reduces to the inverse of usd_to_base.
         rate = quote_leg / base_leg

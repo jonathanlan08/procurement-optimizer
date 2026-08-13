@@ -307,7 +307,7 @@ def upgrade() -> None:
         sa.UniqueConstraint(
             "organization_id", "id", name="uq_extraction_fields_org_identity"
         ),
-        # CASCADE: 02-erd.md §11's explicit whitelist — a field cannot exist
+        # CASCADE: 02-erd.md §11's explicit whitelist - a field cannot exist
         # without its run.
         sa.ForeignKeyConstraint(
             ["organization_id", "extraction_run_id"],

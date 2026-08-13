@@ -2,7 +2,7 @@
 (docs/planning/03-api-contract.md §4.4).
 
 Contacts have no `version` column (SupplierContact does not mix in
-VersionedMixin — see app.models.suppliers), so unlike SupplierUpdate there is
+VersionedMixin - see app.models.suppliers), so unlike SupplierUpdate there is
 no `If-Match` concurrency story here: §1.7 lists suppliers/parts/RFQs/quotes/
 scoring configurations as the resources that carry ETag/If-Match, and contacts
 are deliberately not among them.

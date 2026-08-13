@@ -1,4 +1,4 @@
-"""Scoring-configuration service — CRUD + validation for
+"""Scoring-configuration service - CRUD + validation for
 `scoring_configurations` (docs/planning/03-api-contract.md §4.14,
 app/domain/scoring/contracts.py, app/models/analysis.py).
 
@@ -11,14 +11,14 @@ describes (`scoring_configuration.created`/`.updated`/`.archived`).
 a known `Criterion` (`app.domain.scoring.contracts.Criterion`), its `weight`
 must be a fraction in `[0, 1]`, and its `direction` must be a valid
 `Direction`. For every criterion except `USER_DEFINED`, `direction` must
-match that criterion's canonical direction (`DEFAULT_DIRECTIONS`) — a
+match that criterion's canonical direction (`DEFAULT_DIRECTIONS`) - a
 `total_landed_cost` weight tagged `higher_is_better` is not a "custom
 opinion", it is a data-entry error the domain layer has no way to catch
 later (`VendorScorer` trusts `CriterionSpec.direction` as given).
 `USER_DEFINED` entries require a non-blank `label` (the domain's own
 `CriterionSpec.label` docstring: "required for USER_DEFINED"). A weight sum
 that is not exactly `1` is **not** rejected (02-erd.md §8: "weights are
-stored raw... normalized at calculation time" — the same policy this task's
+stored raw... normalized at calculation time" - the same policy this task's
 brief describes as "warn-note"); instead a human-readable note is returned
 alongside the created/updated row so the UI can surface it without the
 write being blocked.
@@ -26,12 +26,12 @@ write being blocked.
 **Sample-configuration seeding.** `ensure_sample_configuration` inserts
 `SAMPLE_WEIGHTS` (app/domain/scoring/contracts.py) under the fixed name
 "Sample weights (demonstration)", `is_sample=True`, if no non-archived row
-with that name already exists for the org — idempotent by construction (a
+with that name already exists for the org - idempotent by construction (a
 second call is a no-op, verified by the org-scoped uniqueness index rather
 than a pre-check race). `list()` calls this before returning rows, using the
 requesting principal as `created_by_id`, so the contract's "`GET
 /scoring-configurations` ... includes the seeded sample config" (§4.14) is
-true on every org's very first read — there is no separate seed script in
+true on every org's very first read - there is no separate seed script in
 this phase to have run it already.
 """
 
@@ -79,7 +79,7 @@ class CriterionSpecInput:
 # Module-level aliases, not inline `list[...]` annotations: ScoringConfigService
 # defines a method literally named `list`, which shadows the builtin inside
 # every other annotation in the same class body once `from __future__ import
-# annotations` defers evaluation — the same precaution rfq_service.py/
+# annotations` defers evaluation - the same precaution rfq_service.py/
 # bom_service.py already take (see their own module-level `_RfqLineList`-
 # style aliases) for exactly this reason.
 _CriterionSpecInputList = list[CriterionSpecInput]
@@ -240,7 +240,7 @@ class ScoringConfigService:
         total = sum((s.weight for s in specs), Decimal("0"))
         if total != Decimal("1"):
             notes.append(
-                f"weights sum to {total}, not 1 — stored as entered; renormalization (if "
+                f"weights sum to {total}, not 1 - stored as entered; renormalization (if "
                 "any) happens at scoring time, per calculation policy."
             )
         return specs, notes
@@ -338,7 +338,7 @@ class ScoringConfigService:
             existing_sum = total_or_none(row.weights)
             if existing_sum is not None and existing_sum != Decimal("1"):
                 notes.append(
-                    f"weights sum to {existing_sum}, not 1 — stored as entered; "
+                    f"weights sum to {existing_sum}, not 1 - stored as entered; "
                     "renormalization (if any) happens at scoring time, per calculation policy."
                 )
         return row, notes

@@ -59,7 +59,7 @@ const AUTH_HANDLER = (role: string) => ({
   respond: () => jsonResponse(200, sessionFor(role)),
 });
 
-// `GET /exchange-rates` serves two shapes off one route (api/v1/fx.py) —
+// `GET /exchange-rates` serves two shapes off one route (api/v1/fx.py) -
 // the effective-lookup branch always carries `as_of=`, the plain override-
 // history list never does (see features/fx/api.ts's file header). These two
 // handlers distinguish the branches by that query param alone, mirroring
@@ -85,7 +85,7 @@ describe("FxPanel", () => {
 
   afterEach(() => {
     // vite.config.ts sets `test.globals: false`, so @testing-library/react's
-    // automatic post-test cleanup never registers itself — see rfqs.test.tsx
+    // automatic post-test cleanup never registers itself - see rfqs.test.tsx
     // / boms.test.tsx's own identical comment for why this is required.
     cleanup();
     vi.unstubAllGlobals();
@@ -165,7 +165,7 @@ describe("FxPanel", () => {
     fireEvent.click(await screen.findByRole("button", { name: /add override/i }));
     fireEvent.change(await screen.findByLabelText(/^Rate/i), { target: { value: "0.930000000000" } });
 
-    // `override_reason` is left blank — ExchangeRateOverrideCreate requires
+    // `override_reason` is left blank - ExchangeRateOverrideCreate requires
     // it non-blank (fx.py: `Field(min_length=1, ...)`, backed by a DB CHECK).
     fireEvent.click(screen.getByRole("button", { name: /save override/i }));
 

@@ -1,30 +1,30 @@
-/** RFQs data layer — TanStack Query hooks over the live API.
+/** RFQs data layer - TanStack Query hooks over the live API.
  *
  * Shapes mirror backend/src/app/schemas/rfqs.py exactly:
  *  - list envelope is `{ items, page: { limit, offset, total } }`
  *    (`RfqListResponse`); `RfqSummaryResponse` (list rows) carries no
- *    `lines`/`invited_supplier_count` — those still only exist on
+ *    `lines`/`invited_supplier_count` - those still only exist on
  *    `RfqResponse` (single-resource GET), to keep the list query from
  *    turning into an N+1 (rfqs.py schema module docstring, `RfqSummaryResponse`).
  *  - **`RfqSummaryResponse.line_count` is a widened-contract exception to
  *    that N+1 guard.** A backend agent added a cheap aggregate count column
  *    to the list query concurrently with this task (P2 audit finding: the
- *    list "Lines" column previously always rendered "—"). It's typed
+ *    list "Lines" column previously always rendered "-"). It's typed
  *    optional (`line_count?: number`) rather than required, so a stale
  *    cached response or an older server build that hasn't shipped the field
- *    yet degrades to RfqsPage.tsx's previous "—" rendering instead of
- *    `undefined` leaking into the table — see that file's own header.
- *  - `required_quantity` is a NUMERIC(18,6) wire string (QTY_SCALE) — never
+ *    yet degrades to RfqsPage.tsx's previous "-" rendering instead of
+ *    `undefined` leaking into the table - see that file's own header.
+ *  - `required_quantity` is a NUMERIC(18,6) wire string (QTY_SCALE) - never
  *    run through Number()/parseFloat, same rule as `quantity_per_assembly`
  *    in ../boms/api.ts.
  *  - `GET /rfqs` DOES accept `q` (unlike `GET /boms`) plus `status[]`
  *    (repeated query param, FastAPI's `Query(list[...])` convention),
- *    `due_before`/`due_after`, and `include_archived` — so search/status
+ *    `due_before`/`due_after`, and `include_archived` - so search/status
  *    filtering here is server-side, not the client-side page-filter BomsPage
  *    uses (its own file header explains why `GET /boms` is different).
  *  - RFQs carry `version` + `ETag`/`If-Match` (api/v1/rfqs.py file header:
  *    "RFQs are explicitly listed among the resources carrying ETag/If-Match"),
- *    same mechanics as Parts/Suppliers — only `PATCH /rfqs/{id}` requires
+ *    same mechanics as Parts/Suppliers - only `PATCH /rfqs/{id}` requires
  *    `If-Match`; status-change and line/supplier sub-resource routes mutate
  *    and return a fresh `ETag`/`version` without demanding the header as
  *    input. `useUpdateRfq` therefore needs the same custom-header dance
@@ -32,19 +32,19 @@
  *    why the CSRF token has to be re-supplied by hand whenever a caller sets
  *    its own `headers`).
  *  - `ALLOWED_RFQ_TRANSITIONS` below is a client-side mirror of
- *    backend/src/app/models/rfqs.py's dict of the same name — the backend
+ *    backend/src/app/models/rfqs.py's dict of the same name - the backend
  *    dict is the single source of truth (re-validated server-side on every
  *    `POST /rfqs/{id}/status`); this copy only decides which transition
  *    buttons RfqsPage.tsx renders.
  *  - Every mutation here except `useUpdateRfq` relies on `api()`'s own
  *    automatic CSRF attachment (client.ts: any POST/PATCH/DELETE picks up
- *    the module-level csrf token) — no custom `headers` are passed, so
+ *    the module-level csrf token) - no custom `headers` are passed, so
  *    nothing needs to be re-supplied by hand for those calls, including the
  *    two DELETE routes that carry a JSON body (`excludeSupplier`,
  *    `removeRfqLine` with an override reason): `api()` already returns
- *    `undefined` for a `204`/empty body (client.ts), so — unlike
+ *    `undefined` for a `204`/empty body (client.ts), so - unlike
  *    ../parts/api.ts's `deleteAlternative`, written against an older
- *    client.ts — no hand-rolled fetch is needed here.
+ *    client.ts - no hand-rolled fetch is needed here.
  */
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -63,7 +63,7 @@ export const RFQ_STATUSES: RfqStatus[] = [
 ];
 
 /** Client-side mirror of backend/src/app/models/rfqs.py `ALLOWED_RFQ_TRANSITIONS`
- * — see this file's header. Every status is a key (including the terminal
+ * - see this file's header. Every status is a key (including the terminal
  * `archived`, mapped to `[]`) so lookups never need a fallback default. */
 export const ALLOWED_RFQ_TRANSITIONS: Record<RfqStatus, RfqStatus[]> = {
   draft: ["open", "archived"],
@@ -108,7 +108,7 @@ export interface RfqResponse {
   lines: RfqLineResponse[];
 }
 
-/** `GET /rfqs` items — no `lines`/`invited_supplier_count`; `line_count` is
+/** `GET /rfqs` items - no `lines`/`invited_supplier_count`; `line_count` is
  * present but optional, see this file's header. */
 export interface RfqSummaryResponse {
   id: string;

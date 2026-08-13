@@ -13,20 +13,20 @@ Related: [OPTIMIZATION.md](OPTIMIZATION.md) (allocation) ·
 ## 1. Decimal policy
 
 `backend/src/app/core/money.py` is the single source of truth. Binary floating point is
-forbidden for money and quantities — a discipline maintained by review, not tooling: the
+forbidden for money and quantities - a discipline maintained by review, not tooling: the
 2026-08 independent calculation audit confirmed **zero** `float(` calls anywhere in
 `backend/src`, and also confirmed that the `app.domain.float` `banned-api` entry in
 `backend/pyproject.toml` matches an import path that cannot exist, i.e. it enforces
 nothing.
 
 - Working precision **34** significant digits, rounding **`ROUND_HALF_EVEN`** (banker's).
-- Traps enabled for `InvalidOperation`, `DivisionByZero`, `Overflow` — arithmetic raises
+- Traps enabled for `InvalidOperation`, `DivisionByZero`, `Overflow` - arithmetic raises
   instead of quietly producing `NaN`/`Infinity`. (Honesty note: with no `Emax` set, the
   `Overflow` trap is effectively unreachable; the guard that actually stops runaway
-  magnitudes is `quantize_money` raising `InvalidOperation` past 34 digits — loudly.)
+  magnitudes is `quantize_money` raising `InvalidOperation` past 34 digits - loudly.)
 - Arithmetic runs at full precision *inside* a formula; each result is quantized **once**
   at its boundary scale. Components are quantized before summing, so **stored components
-  (6 dp) sum exactly to the stored total** — a Hypothesis property test proves it. The
+  (6 dp) sum exactly to the stored total** - a Hypothesis property test proves it. The
   2-dp *display* rendering of each row can differ from the displayed total by a cent
   (independent rounding of parts vs. whole); the stored figures, which every calculation
   and export reads, always reconcile exactly.
@@ -42,8 +42,8 @@ nothing.
 
 ## 2. Missing is not zero
 
-`backend/src/app/domain/values.py` defines `Quantified` — a `Decimal | None` plus a
-`Provenance` — with the invariant `value is None ⟺ provenance is MISSING`, enforced in
+`backend/src/app/domain/values.py` defines `Quantified` - a `Decimal | None` plus a
+`Provenance` - with the invariant `value is None ⟺ provenance is MISSING`, enforced in
 `__post_init__`.
 
 `Provenance`: `supplier` (stated on the quote) > `user_input` > `calculated` >
@@ -74,14 +74,14 @@ total_landed_cost      = Σ of the seven components
 effective_unit_cost    = total_landed_cost / accepted_quantity
 ```
 
-`accepted_quantity == 0` raises `ZeroQuantityError`; `< 0` raises `NegativeQuantityError` —
+`accepted_quantity == 0` raises `ZeroQuantityError`; `< 0` raises `NegativeQuantityError` -
 never a division into infinity.
 
 **Aggregation caveat.** When a supplier's offer spans multiple quote lines, the
 per-supplier `effective_unit_cost` used by scenario scoring, negotiation-brief targets,
 and reports is `Σ total_landed_cost / Σ accepted_quantity` across **all** of that
 supplier's matched lines. For a multi-line RFQ covering different parts this is a blended
-per-unit figure across unlike items — useful as a comparable index across suppliers
+per-unit figure across unlike items - useful as a comparable index across suppliers
 quoting the same line set, but not a price for any single part. All three consumers
 compute it identically (in `CALC_CONTEXT`, quantized once at `UNIT_PRICE_SCALE`).
 
@@ -91,7 +91,7 @@ compute it identically (in `CALC_CONTEXT`, quantized once at `UNIT_PRICE_SCALE`)
 organization's baseline (default Net-30, cost of capital default 8 %, both labelled user
 assumptions) produce a negative amount, and the formula string is suffixed
 `(financing benefit)`. This was blessed explicitly in `docs/planning/00-decisions.md` §2
-ruling 2 — a supplier who lets you pay later is genuinely cheaper in cash terms, and hiding
+ruling 2 - a supplier who lets you pay later is genuinely cheaper in cash terms, and hiding
 that behind `max(0, …)` would misstate the comparison.
 
 ### Duty basis
@@ -106,7 +106,7 @@ rate-derived rather than quoted, an `Assumption` row records the basis
 ### Missingness cascades
 
 Additive components (`allocated_fixed`, `logistics`, `import`) drop a missing field from the
-sum and record a `MissingInput` — unless the caller sets `assume_missing_costs_zero`, which
+sum and record a `MissingInput` - unless the caller sets `assume_missing_costs_zero`, which
 substitutes zero **and records an `Assumption`** instead.
 
 Multiplicative/derived components (`extended_material`, `quality_risk`, `delay_risk`,
@@ -114,7 +114,7 @@ Multiplicative/derived components (`extended_material`, `quality_risk`, `delay_r
 required input makes the whole component `is_missing=True` (amount reported as `0`,
 excluded from provenance aggregation). And because `quality_risk`, `financing`, and the
 CIF-like duty basis all consume `extended_material_cost`, a missing unit price cascades into
-all of them, each recording its own `MissingInput` — rather than silently multiplying by the
+all of them, each recording its own `MissingInput` - rather than silently multiplying by the
 placeholder zero.
 
 ### Completeness
@@ -163,7 +163,7 @@ These exact strings are asserted twice: in the pure unit test
 the database (`backend/tests/integration/test_landed_cost_api.py`). Any change to these
 numbers must be a deliberate `calculation_version` bump.
 
-## 5. Price breaks — all-units
+## 5. Price breaks - all-units
 
 `backend/src/app/domain/landed_cost/breaks.py`.
 
@@ -172,15 +172,15 @@ accepted quantity, not just to the units above the tier minimum
 (`docs/planning/00-decisions.md` §2 ruling 1). Incremental/marginal breaks are
 [roadmap](ROADMAP.md).
 
-Intervals are **closed on both ends** — `[min_quantity, max_quantity]` — with
+Intervals are **closed on both ends** - `[min_quantity, max_quantity]` - with
 `max_quantity = None` meaning an open-ended top tier. The SPEC's own example table
-(1–99 · 100–499 · 500–999 · 1000+) is exactly this shape and is reproduced verbatim in the
+(1-99 · 100-499 · 500-999 · 1000+) is exactly this shape and is reproduced verbatim in the
 demo dataset for Cascade Precision's mounting plate.
 
 Two situations return `tier=None` with a reason string rather than a guess:
 
 - the quantity is below every tier's minimum;
-- the quantity falls in a genuine gap between two tiers (upstream data defect) — the reason
+- the quantity falls in a genuine gap between two tiers (upstream data defect) - the reason
   names the bounding tiers.
 
 Nearest-matching to an adjacent tier is deliberately never done: guessing a price break is
@@ -188,7 +188,7 @@ exactly the fabrication this codebase forbids everywhere else.
 
 Because tiers depend on quantity, splitting an order changes the applicable tier. The solver
 therefore re-selects the tier at the **allocated** quantity and cross-checks that against
-CP-SAT's chosen tier — see [OPTIMIZATION.md](OPTIMIZATION.md) §5.
+CP-SAT's chosen tier - see [OPTIMIZATION.md](OPTIMIZATION.md) §5.
 
 ## 6. Currency and unit normalization
 
@@ -196,12 +196,12 @@ CP-SAT's chosen tier — see [OPTIMIZATION.md](OPTIMIZATION.md) §5.
 
 Rate convention for stored `exchange_rates` and `FxRateProvider.get_rate(base, quote)`:
 **`1 base = rate × quote`**. Converting an amount stated in the *quote* currency into the
-*base* currency therefore **divides** by the rate — the worked example's
+*base* currency therefore **divides** by the rate - the worked example's
 `EUR 10.50 / 0.92 = USD 11.41304348`.
 
 The pure function `backend/src/app/domain/fx/normalize.py::normalize_price` deliberately uses
-a different, unambiguous convention — **`rate` is "target per source":
-`target = source × rate`** — and states so loudly in its docstring. Inverting a stored
+a different, unambiguous convention - **`rate` is "target per source":
+`target = source × rate`** - and states so loudly in its docstring. Inverting a stored
 base/quote rate into that form is the service layer's job
 (`backend/src/app/services/fx_service.py`), because only the service knows which side of the
 stored pair is the target for this call.
@@ -237,12 +237,12 @@ have compatible normalized meanings.
 ## 7. `COMPLETE` completeness: how it went from structurally unreachable to reachable
 
 This section was originally titled "Why `COMPLETE` completeness is structurally unreachable
-in v0.1" — kept below as history, because the *reason* `COMPLETE` was rare (most real quotes
+in v0.1" - kept below as history, because the *reason* `COMPLETE` was rare (most real quotes
 don't state every cost field) is still true even though the *structural* blocker is gone.
 
 **Original gap (through migration 0015).** `FixedCosts` requires a `documentation` cost and
 `LogisticsCosts` requires a `handling` cost. Neither had a source column anywhere in the
-schema — `quote_lines` had `tooling_cost`, `setup_cost`, `packaging_cost`, `shipping_cost`,
+schema - `quote_lines` had `tooling_cost`, `setup_cost`, `packaging_cost`, `shipping_cost`,
 `insurance_cost`, `other_fixed_cost`, and the import charges, but no documentation and no
 handling column. `LandedCostService` therefore always passed:
 
@@ -252,12 +252,12 @@ handling=Quantified.missing(note="handling cost has no source column on quote_li
 ```
 
 regardless of what the quote line actually said, so every persisted result was either
-`INCOMPLETE` (default) or `ASSUMPTION_DEPENDENT` (with `assume_missing_costs_zero`) — never
+`INCOMPLETE` (default) or `ASSUMPTION_DEPENDENT` (with `assume_missing_costs_zero`) - never
 `COMPLETE` through the service path, only by calling the pure calculator directly with those
 fields supplied, which the unit tests did.
 
 **Closed in migration 0016 (2026-08 product-audit remediation).** `quote_lines` gained real
-`documentation_cost`/`handling_cost` columns — `NUMERIC(18,6)`, nullable, `>= 0`, same shape
+`documentation_cost`/`handling_cost` columns - `NUMERIC(18,6)`, nullable, `>= 0`, same shape
 and "missing stays missing" semantics as every sibling fixed/logistics-cost column (see
 [DATA_DICTIONARY.md](DATA_DICTIONARY.md)). `LandedCostService` now sources both the same way
 it sources `tooling_cost`/`packaging_cost`/etc.:
@@ -268,18 +268,18 @@ handling=money(line.handling_cost, "handling"),
 ```
 
 `app.domain.landed_cost.contracts`/`calculator.py` (PRINCIPAL-OWNED) required no change at
-all — both fields were already real inputs to the formula; only the service-layer source was
+all - both fields were already real inputs to the formula; only the service-layer source was
 missing. `Completeness.COMPLETE` is now structurally **reachable**: a quote line with every
 commercial field populated, under a request that supplies every risk/financing assumption
 (`quality_risk_rate`, `delay_risk_per_day`, `required_lead_time_days`, `annual_rate`,
-`baseline_terms_days` — these five still have no source column of their own and must come from
+`baseline_terms_days` - these five still have no source column of their own and must come from
 the request), produces a `complete` result end to end
 (`backend/tests/integration/test_landed_cost_api.py::TestCompleteReachable`).
 
 **Why `COMPLETE` will still be uncommon in practice.** Reachable is not the same as typical.
 `documentation_cost`/`handling_cost` are manual-entry fields (the extraction payload schema is
-versioned and intentionally not touched by this change — see
-`backend/src/app/services/extraction_service.py`'s module docstring — and documents rarely
+versioned and intentionally not touched by this change - see
+`backend/src/app/services/extraction_service.py`'s module docstring - and documents rarely
 state either cost as a standalone line item), so most quotes still won't carry them, and most
 scenario requests won't bother supplying all five assumption-only fields. Most persisted
 results will continue to land `INCOMPLETE` or `ASSUMPTION_DEPENDENT`, honestly.
@@ -290,15 +290,15 @@ results will continue to land `INCOMPLETE` or `ASSUMPTION_DEPENDENT`, honestly.
 requires the `allow_incomplete_offers` override
 (`backend/src/app/services/scenario_service.py` module docstring, Deviation 4). The demo
 dataset's scenarios still set that override, for a *different* honest reason: Baltic Casting's
-quote states no payment terms at all, so its financing component — and hence its completeness
-— is genuinely `INCOMPLETE`, and the supplier would otherwise silently vanish from the
+quote states no payment terms at all, so its financing component - and hence its completeness
+- is genuinely `INCOMPLETE`, and the supplier would otherwise silently vanish from the
 comparison.
 
 ## 8. Vendor scoring
 
 Contract: `backend/src/app/domain/scoring/contracts.py` (frozen,
 `SCORING_VERSION = "1.0.0"`). Implementation: `backend/src/app/domain/scoring/scorer.py`
-(`ScorerV1`). Pure and reproducible **without an LLM** — same inputs, same scores, bit for
+(`ScorerV1`). Pure and reproducible **without an LLM** - same inputs, same scores, bit for
 bit, forever within a `scoring_version`.
 
 ### Criteria and direction
@@ -312,8 +312,8 @@ and on-time delivery higher-is-better; defect rate lower-is-better).
 
 ### Normalization
 
-Min–max across the compared cohort. **Equal values across the cohort score 1.0 for
-everyone** — nobody is penalized for a tie. Ties share the smallest rank.
+Min-max across the compared cohort. **Equal values across the cohort score 1.0 for
+everyone** - nobody is penalized for a tie. Ties share the smallest rank.
 
 ### Missing values → renormalize, never impute
 
@@ -342,14 +342,14 @@ docstring.
 ### Every score carries a reason
 
 `CriterionScore.reason` is a human-auditable sentence
-(e.g. "lowest landed cost 7240.55 of cohort 7240.55–9100.00"), surfaced in the comparison
+(e.g. "lowest landed cost 7240.55 of cohort 7240.55-9100.00"), surfaced in the comparison
 UI's explainability drawer.
 
 ### Sample weights are labelled as such
 
-`SAMPLE_WEIGHTS` in the contract — landed cost 0.35, spec compliance 0.25, lead time 0.15,
+`SAMPLE_WEIGHTS` in the contract - landed cost 0.35, spec compliance 0.25, lead time 0.15,
 supplier reliability (on-time delivery) 0.10, payment terms 0.05, MOQ flexibility 0.05,
-quality history 0.05 — is the SPEC's own demonstration set. Every entry carries
+quality history 0.05 - is the SPEC's own demonstration set. Every entry carries
 `is_sample_weight=True`, and `scoring_configurations.is_sample` mirrors that in the
 database, so the UI can say "these are sample assumptions, change them" rather than
 implying a house view.
@@ -366,11 +366,11 @@ mirrors it.
 | `low` | < **0.60** | **Must be confirmed before use** |
 
 A confidence outside `[0, 1]` raises. Materialization of an extraction run is blocked while
-any `low`-band field is unconfirmed — see [DOCUMENT_PIPELINE.md](DOCUMENT_PIPELINE.md).
+any `low`-band field is unconfirmed - see [DOCUMENT_PIPELINE.md](DOCUMENT_PIPELINE.md).
 
 ## 10. What is deliberately not modelled in v0.1
 
-- Incremental (marginal-unit) price breaks — all-units only.
+- Incremental (marginal-unit) price breaks - all-units only.
 - Scrap/yield adjustments, minimum-order charges as a distinct concept (they fold into
   `other_fixed_cost` with a note).
 - Freight is linear in quantity; no break-bulk / container-step freight curves.

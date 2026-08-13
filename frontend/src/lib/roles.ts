@@ -1,7 +1,7 @@
 /** Client-side role hierarchy helpers.
  *
  * Mirrors the backend's `ROLE_ORDER` (backend/src/app/api/deps.py) purely for
- * UI gating (show/hide affordances). The backend re-checks every request —
+ * UI gating (show/hide affordances). The backend re-checks every request -
  * these helpers never substitute for server-side authorization.
  */
 

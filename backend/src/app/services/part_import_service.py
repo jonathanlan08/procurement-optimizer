@@ -1,11 +1,11 @@
-"""Part import service — org-scoped orchestration of CSV/XLSX part imports
+"""Part import service - org-scoped orchestration of CSV/XLSX part imports
 (SPEC §3; docs/planning/03-api-contract.md §4.5).
 
 Three phases, matching the contract's three mutating routes:
 
 - `preview()` (`POST /part-imports`): parses + validates the file (`app.
-  importing.part_import_parser`, pure/no-DB), then — still in this one
-  request's transaction — persists a `PartImportBatch` and one
+  importing.part_import_parser`, pure/no-DB), then - still in this one
+  request's transaction - persists a `PartImportBatch` and one
   `PartImportRow` per data row with a `disposition` already assigned
   (`create`/`skip_duplicate`/`error`). **Nothing is written to `parts`
   here** (§4.5). Services never commit (`app.services.audit` docstring);
@@ -13,11 +13,11 @@ Three phases, matching the contract's three mutating routes:
   exception.
 - `commit()` (`POST /part-imports/{id}/commit`): all-or-nothing. Refuses
   outright if the batch is not `previewing` (idempotent-guard, `409
-  conflict_state` — this task's brief) or if it contains any `error` row
-  (the whole batch is refused, not just that row — see
+  conflict_state` - this task's brief) or if it contains any `error` row
+  (the whole batch is refused, not just that row - see
   `PartImportService.commit` docstring for why). Otherwise creates one
-  `Part` per `create` row via `PartService.create` — the exact same
-  validation/duplicate/audit path a hand-entered part goes through — and
+  `Part` per `create` row via `PartService.create` - the exact same
+  validation/duplicate/audit path a hand-entered part goes through - and
   lets any failure (a duplicate that appeared since preview, a unit that
   stopped resolving) propagate unhandled: `get_db`'s rollback-on-exception
   is *itself* the "rollback after failure" SPEC §3 asks for, so nothing
@@ -27,7 +27,7 @@ Three phases, matching the contract's three mutating routes:
 
 Unit resolution (`unit_code` -> `unit_definition_id`) and existing-active-
 part duplicate detection both need the database, so both happen here, not in
-the pure parser — see `app.importing.part_import_parser` module docstring.
+the pure parser - see `app.importing.part_import_parser` module docstring.
 `commit()` re-runs both (this task's brief: "re-check duplicates") rather
 than trusting what `preview()` recorded, because time passes between preview
 and commit and another request may have changed what is true.
@@ -83,7 +83,7 @@ class PartImportRowRepository(OrgScopedRepository[PartImportRow]):
     model = PartImportRow
 
     def all_for_batch_ordered(self, batch_id: uuid.UUID) -> list[PartImportRow]:
-        """Unbounded — `commit()` needs every row of a batch (up to
+        """Unbounded - `commit()` needs every row of a batch (up to
         `app.importing.part_import_parser.MAX_ROWS`), not a paginated page.
         `OrgScopedRepository.list_page` caps at 200, which is correct for
         the paginated `GET` endpoint (`page_after` below) but wrong here."""
@@ -180,12 +180,12 @@ class PartImportService:
         over the global one when both define the same code. A blank/absent
         `unit_code` defaults to `"each"` (`app.seed.units_catalog.
         STANDARD_UNIT_CATALOG`'s canonical count-dimension unit, factor 1 by
-        definition) — see `app.importing.part_import_parser` module
+        definition) - see `app.importing.part_import_parser` module
         docstring for why `unit_code` is an optional import column despite
         `Part.unit_definition_id` being `NOT NULL`.
 
         Returns `(unit_definition_id, None)` on success, `(None, issue)` on
-        failure — never both/neither.
+        failure - never both/neither.
         """
         code = (unit_code or "").strip() or _DEFAULT_UNIT_CODE
         stmt = (
@@ -357,13 +357,13 @@ class PartImportService:
     def commit(self, batch_id: uuid.UUID) -> PartImportCommitResult:
         """All-or-nothing (§4.5). Two distinct failure shapes, both `409`:
 
-        1. The batch is not `previewing` (already committed/cancelled) —
+        1. The batch is not `previewing` (already committed/cancelled) -
            `commit` is idempotent-guarded, this task's brief.
         2. The batch contains any `error` row. The *whole* batch is refused
            here, not just that row: `create` rows in the same batch are not
            created either. This reads `SPEC §3`'s "transactional import...
            rollback after failure" as applying to the decision to commit at
-           all, not only to a failure encountered mid-commit — there is no
+           all, not only to a failure encountered mid-commit - there is no
            edit-a-row endpoint in the contract, so once a batch contains an
            invalid row the only paths forward are fixing the source file and
            re-uploading, or `cancel`.

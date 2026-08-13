@@ -1,4 +1,4 @@
-"""Vendor-scoring contracts — PRINCIPAL-OWNED.
+"""Vendor-scoring contracts - PRINCIPAL-OWNED.
 
 SPEC §Vendor comparison engine, methodology in 05 §7, rulings in
 00-decisions.md §2 (#5: missing criterion values renormalize weights; missing
@@ -76,7 +76,7 @@ class CriterionSpec:
 
     def __post_init__(self) -> None:
         # The API boundary already enforces weight in [0, 1]; this is the
-        # defence-in-depth the scorer's [0,1] total-score proof relies on —
+        # defence-in-depth the scorer's [0,1] total-score proof relies on -
         # a negative weight silently voids it (2026-08 calculation audit F10).
         if self.weight < 0:
             raise ValueError(f"criterion weight must be >= 0, got {self.weight}")

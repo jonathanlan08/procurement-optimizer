@@ -1,4 +1,4 @@
-"""Extraction-confidence bands — single source of truth (PRINCIPAL-OWNED).
+"""Extraction-confidence bands - single source of truth (PRINCIPAL-OWNED).
 
 Mirrored by the design system (design-system/procurement-optimizer/MASTER.md);
 this module is authoritative. Thresholds per 00-decisions.md §4 ruling #27.
@@ -15,9 +15,9 @@ CONFIDENCE_LOW: Final[Decimal] = Decimal("0.60")  # < low: confirmation mandator
 
 
 class ConfidenceBand(StrEnum):
-    HIGH = "high"  # >= 0.95 — accepted automatically, still correctable
-    MEDIUM = "medium"  # [0.60, 0.95) — requires review
-    LOW = "low"  # < 0.60 — must be confirmed before use
+    HIGH = "high"  # >= 0.95 - accepted automatically, still correctable
+    MEDIUM = "medium"  # [0.60, 0.95) - requires review
+    LOW = "low"  # < 0.60 - must be confirmed before use
 
 
 def band(confidence: Decimal) -> ConfidenceBand:

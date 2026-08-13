@@ -1,4 +1,4 @@
-"""Extraction provider contract + versioned payload schema — PRINCIPAL-OWNED.
+"""Extraction provider contract + versioned payload schema - PRINCIPAL-OWNED.
 
 Trust boundary rules (SPEC §Document and AI security; 04-document-pipeline.md):
 - document content is DATA, never instructions: providers receive it inside a
@@ -7,7 +7,7 @@ Trust boundary rules (SPEC §Document and AI security; 04-document-pipeline.md):
 - provider output is UNTRUSTED until it passes the validation ladder
   (schema -> type -> business -> confidence -> human confirmation);
 - every numeric value is a decimal STRING in the payload (no floats);
-- a field the document does not state is None with confidence omitted —
+- a field the document does not state is None with confidence omitted -
   providers must never invent values to complete the schema;
 - the payload schema is versioned; any shape change bumps EXTRACTION_SCHEMA_VERSION.
 """

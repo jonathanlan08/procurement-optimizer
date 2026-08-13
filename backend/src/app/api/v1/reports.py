@@ -1,7 +1,7 @@
 """Report routes (docs/planning/03-api-contract.md §4.18). Sync `def` by
 policy, mirroring every other router in this codebase.
 
-**`POST /reports` runs synchronously and returns `201`, not `202`** — see
+**`POST /reports` runs synchronously and returns `201`, not `202`** - see
 `app/services/report_service.py` module docstring "Deviation 1" (same
 `JOB_RUNNER=inline` precedent already established by
 `api/v1/briefs.py`/`api/v1/scenarios.py`); the response body is the finished
@@ -9,11 +9,11 @@ policy, mirroring every other router in this codebase.
 envelope to poll.
 
 **`GET /reports/{id}/content` returns `410 gone` (hand-built envelope,
-`code="not_found"`) when the report has been purged** — see
+`code="not_found"`) when the report has been purged** - see
 `report_service.py` module docstring "Deviation 3" for why this is built by
 hand here rather than routed through `app.core.errors.AppError` (that
 hierarchy has no `410` entry, and `core/errors.py` is off this task's edit
-list — "check core/errors.py for the closest code; add none" per the
+list - "check core/errors.py for the closest code; add none" per the
 delegating task's own instruction: `ErrorCode.NOT_FOUND`'s wire value,
 `"not_found"`, is that closest code). A report that never produced bytes
 (`pending`/`failed`, never purged) is a plain `404 not_found` instead, via
@@ -21,9 +21,9 @@ the ordinary `NotFoundError` -> `AppError` exception-handler path in
 `app/main.py` (unchanged).
 
 Role: `POST` is `ANALYST`+ (generation is a compute/write action); every
-`GET` is `VIEWER`+ — §4.18's own route table ("O A N V" on every read row,
+`GET` is `VIEWER`+ - §4.18's own route table ("O A N V" on every read row,
 "O A N" only on `POST`) is this contract's explicit, literal answer to its
-own §6 gap #1 ("should viewer be able to download reports?"): "yes" — viewer
+own §6 gap #1 ("should viewer be able to download reports?"): "yes" - viewer
 downloads, never generates.
 """
 
@@ -63,7 +63,7 @@ def get_report_service(
     settings: SettingsDep,
 ) -> ReportService:
     # Built per request from Settings, not injected via api/deps.py
-    # (principal-owned, off limits) — mirrors api/v1/documents.py's own
+    # (principal-owned, off limits) - mirrors api/v1/documents.py's own
     # get_document_service (providers/storage/__init__.py module docstring).
     storage = build_storage_provider(settings)
     return ReportService(db, principal.organization_id, audit, clock, ids, storage=storage)
@@ -128,7 +128,7 @@ def download_report_content(
     try:
         data, content_type, filename = service.get_content(report_id)
     except ReportPurgedError:
-        # module docstring: hand-built 410 envelope, no AppError involved —
+        # module docstring: hand-built 410 envelope, no AppError involved -
         # core/errors.py has no 410 ErrorCode and is off this task's edit
         # list. X-Content-Type-Options: nosniff is already applied globally
         # by SecurityHeadersMiddleware (app/api/middleware.py).

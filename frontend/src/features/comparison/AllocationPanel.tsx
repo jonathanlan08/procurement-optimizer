@@ -1,28 +1,28 @@
-/** Allocation-result panel — renders `ScenarioResponse.allocation_result`
+/** Allocation-result panel - renders `ScenarioResponse.allocation_result`
  * (backend/src/app/schemas/scenarios.py's `AllocationResultResponse`) for
  * either a freshly-run scenario or a scenario loaded read-only from history
  * (ScenarioHistory.tsx passes `savedResult` in the latter case).
  *
  * Design decisions:
- *  - **Status banner first, four distinct tones** — `solver_status` drives
+ *  - **Status banner first, four distinct tones** - `solver_status` drives
  *    both the banner's tone and which body renders below it: `optimal`/
  *    `feasible` get the allocation table + summary strip (both are "solved",
  *    per `AllocationStatus`'s own docstring: "feasible... a valid
- *    allocation, optimality NOT proven" — a legitimate result, not a
+ *    allocation, optimality NOT proven" - a legitimate result, not a
  *    warning-toned near-failure); `infeasible` gets the explainer panel
  *    instead of a table (there is no `allocations[]` to show); `error` gets
  *    the raw `error_message` in the shared `.banner-error` destructive
  *    style. `status_explanation` (backend-composed, already the exact prose
- *    this task's brief paraphrases — "proven optimal" / "optimality not
+ *    this task's brief paraphrases - "proven optimal" / "optimality not
  *    proven") is rendered verbatim rather than re-derived client-side.
  *  - **"% of spend" is computed client-side with pure BigInt division**
- *    (`percentOfTotal` below) — `line_landed_cost` and the objective total
+ *    (`percentOfTotal` below) - `line_landed_cost` and the objective total
  *    are both decimal wire strings; running either through `Number()`/
  *    `parseFloat` would violate lib/money.ts's file-level rule. The backend
  *    has no such field itself (an accepted, documented derivation, same
  *    class of decision as `ComparisonPage.tsx`'s existing `toPercentDisplay`).
  *  - **Binding-constraint chips carry their `detail` sentence as a `title`
- *    tooltip** — the same "hover the row for the reason" convention
+ *    tooltip** - the same "hover the row for the reason" convention
  *    `ComparisonPage.tsx`'s `ScoringSection` already established for
  *    `score-criterion-row`, not a new interaction pattern.
  *  - **Provenance footer is always rendered** (model hash + optimization
@@ -58,7 +58,7 @@ const STATUS_META: Record<AllocationStatus, { label: string; tone: string }> = {
 };
 
 // -- pure-string/BigInt percentage (never Number()/parseFloat on decimal
-// wire strings — lib/money.ts's file-level rule) -----------------------
+// wire strings - lib/money.ts's file-level rule) -----------------------
 
 function toScaledBigInt(raw: string, scale: number): bigint {
   const negative = raw.startsWith("-");
@@ -73,7 +73,7 @@ function toScaledBigInt(raw: string, scale: number): bigint {
 }
 
 /** `(line / total) * 100`, truncated to `WORK_SCALE` internal digits then
- * rendered to `places` decimal digits — pure BigInt division. Returns null
+ * rendered to `places` decimal digits - pure BigInt division. Returns null
  * when `total` is zero/invalid (no spend to be a percentage of). */
 function percentOfTotal(line: string, total: string, places = 1): string | null {
   if (!isDecimalString(line) || !isDecimalString(total)) return null;
@@ -201,7 +201,7 @@ function AllocationTable({
                     <td>
                       <span className="allocation-tier-range">
                         {a.price_break.min_quantity}
-                        {"–"}
+                        {"-"}
                         {a.price_break.max_quantity ?? "∞"}
                       </span>
                       <span className="allocation-tier-price">
@@ -210,7 +210,7 @@ function AllocationTable({
                       </span>
                     </td>
                     <td className="num">{formatMoney(a.line_landed_cost, { currency })}</td>
-                    <td className="num">{pct !== null ? `${pct}%` : "—"}</td>
+                    <td className="num">{pct !== null ? `${pct}%` : "-"}</td>
                   </tr>
                 );
               })

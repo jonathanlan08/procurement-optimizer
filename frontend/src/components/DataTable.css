@@ -1,4 +1,4 @@
-/* Dense analytical table — MASTER.md "Data tables": sticky header, 36px rows,
+/* Dense analytical table - MASTER.md "Data tables": sticky header, 36px rows,
    zebra-free (hover highlight instead), tabular-nums right-aligned numerics. */
 
 .data-table-wrap {
@@ -176,11 +176,11 @@
    cramped on a phone"). Root cause: `.data-table td` had no `white-space`
    rule, so at a narrow container width the browser wrapped cell text across
    multiple lines to fit the 100%-width table instead of letting the table
-   grow past the container and scroll — the opposite of what a dense
+   grow past the container and scroll - the opposite of what a dense
    analytical table needs. Scoped to <=768px only so desktop truncation/
    wrapping behavior (verified fine at typical desktop widths) is untouched.
    `.data-table-wrap`'s `overflow: auto` (above) then does the actual
-   scrolling — this block only stops the table from shrinking to fit. */
+   scrolling - this block only stops the table from shrinking to fit. */
 @media (max-width: 768px) {
   .data-table td {
     white-space: nowrap;

@@ -1,4 +1,4 @@
-"""Permission matrix — PRINCIPAL-OWNED. Isolation/authorization control #4.
+"""Permission matrix - PRINCIPAL-OWNED. Isolation/authorization control #4.
 
 Every API route MUST have an entry here. A contract test walks the FastAPI
 route table and fails when a route has no declaration, so forgetting to think
@@ -28,7 +28,7 @@ PERMISSIONS: dict[tuple[str, str], PermissionLevel] = {
     ("PATCH", "/api/v1/suppliers/{supplier_id}"): Role.ANALYST,
     ("POST", "/api/v1/suppliers/{supplier_id}/archive"): Role.ADMINISTRATOR,
     ("POST", "/api/v1/suppliers/{supplier_id}/unarchive"): Role.ADMINISTRATOR,
-    # supplier contacts (03-api-contract.md §4.4): "O A N (V read)" — list is
+    # supplier contacts (03-api-contract.md §4.4): "O A N (V read)" - list is
     # viewer+, create/update/archive are analyst+; delete = archive (soft).
     ("GET", "/api/v1/suppliers/{supplier_id}/contacts"): Role.VIEWER,
     ("POST", "/api/v1/suppliers/{supplier_id}/contacts"): Role.ANALYST,
@@ -81,7 +81,7 @@ PERMISSIONS: dict[tuple[str, str], PermissionLevel] = {
     # RFQs (03-api-contract.md §4.8): "O A N V" for every read route
     # (list/get/status-history/lines-list/suppliers-list), "O A N" for every
     # mutation. Unlike BOMs/parts/suppliers, the contract carves out no
-    # separate admin-only archive route for RFQs — reaching `archived` status
+    # separate admin-only archive route for RFQs - reaching `archived` status
     # happens through the same analyst-level `POST .../status` route as any
     # other transition (see app/services/rfq_service.py module docstring).
     # `.../suppliers/{rfq_supplier_id}/reinstate` has no contract-table entry
@@ -117,7 +117,7 @@ PERMISSIONS: dict[tuple[str, str], PermissionLevel] = {
     ("POST", "/api/v1/quotes/{quote_id}/archive"): Role.ADMINISTRATOR,
     # Quote documents (03-api-contract.md §4.9): "O A N V" for every read
     # route (list/get/content), "O A N" for upload, "O A" (administrator+)
-    # for archive — mirroring every other archivable resource's archive
+    # for archive - mirroring every other archivable resource's archive
     # gate (suppliers/parts/BOMs/quotes). See app/services/document_service.py
     # and api/v1/documents.py module docstrings for the create/list nesting
     # under the RFQ vs. the contract's own terse route-table shorthand.
@@ -138,7 +138,7 @@ PERMISSIONS: dict[tuple[str, str], PermissionLevel] = {
     ("GET", "/api/v1/extraction-runs/{run_id}"): Role.VIEWER,
     ("GET", "/api/v1/extraction-runs/{run_id}/fields"): Role.VIEWER,
     ("PATCH", "/api/v1/extraction-runs/{run_id}/fields/{field_id}"): Role.ANALYST,
-    # Bulk field confirmation (2026-08 product-audit remediation, P2) — same
+    # Bulk field confirmation (2026-08 product-audit remediation, P2) - same
     # analyst+ gate as the single-field PATCH above.
     ("POST", "/api/v1/extraction-runs/{run_id}/fields/confirm-all"): Role.ANALYST,
     ("POST", "/api/v1/extraction-runs/{run_id}/confirm"): Role.ANALYST,
@@ -153,7 +153,7 @@ PERMISSIONS: dict[tuple[str, str], PermissionLevel] = {
     ("POST", "/api/v1/quote-lines/{quote_line_id}/match"): Role.ANALYST,
     ("DELETE", "/api/v1/quote-lines/{quote_line_id}/match"): Role.ANALYST,
     # Landed cost (03-api-contract.md §4.15). Preview is the contract's own
-    # literal "O A N V" — a stateless calculator, no audit row, viewer-
+    # literal "O A N V" - a stateless calculator, no audit row, viewer-
     # readable (§6 gap #2), NOT the analyst+ this task's own paraphrase
     # states; see api/v1/analysis.py module docstring point 1 for why the
     # contract's literal role wins. Persisting and the per-RFQ latest-per-
@@ -171,7 +171,7 @@ PERMISSIONS: dict[tuple[str, str], PermissionLevel] = {
     ("POST", "/api/v1/scoring-configurations/{config_id}/archive"): Role.ADMINISTRATOR,
     # Comparison scenarios (03-api-contract.md §4.16): "O A N V" for every
     # read route (list/get/results/allocation), "O A N" for create/optimize/
-    # clone, "O A" (administrator+) for archive — mirroring every other
+    # clone, "O A" (administrator+) for archive - mirroring every other
     # archivable resource's archive gate. See api/v1/scenarios.py's own
     # module docstring for why create/optimize/clone run synchronously and
     # why optimize is idempotent rather than a fresh solve.
@@ -187,7 +187,7 @@ PERMISSIONS: dict[tuple[str, str], PermissionLevel] = {
     # "O A N" per the contract's literal table; list routes (both nestings)
     # follow every other resource's "O A N V" read gate; archive is this
     # task's own explicit addition, gated administrator+ like every other
-    # archivable resource's archive route — see api/v1/briefs.py's own
+    # archivable resource's archive route - see api/v1/briefs.py's own
     # module docstring for why there is no PATCH edit route and no
     # `/email-draft` route in this build (the latter deliberately: SPEC
     # "never auto-send", and this task's own test requirement is "assert no
@@ -199,7 +199,7 @@ PERMISSIONS: dict[tuple[str, str], PermissionLevel] = {
     ("POST", "/api/v1/negotiation-briefs/{brief_id}/review"): Role.ANALYST,
     ("POST", "/api/v1/negotiation-briefs/{brief_id}/archive"): Role.ADMINISTRATOR,
     # Reports (03-api-contract.md §4.18): "O A N" for generate, "O A N V"
-    # for every read route (list/get/content) — the contract's own literal
+    # for every read route (list/get/content) - the contract's own literal
     # answer to its §6 gap #1 ("should viewer download reports?"): yes. See
     # api/v1/reports.py's own module docstring for why generate returns
     # 201 synchronously and why content returns a hand-built 410 on purge.
@@ -207,7 +207,7 @@ PERMISSIONS: dict[tuple[str, str], PermissionLevel] = {
     ("GET", "/api/v1/reports"): Role.VIEWER,
     ("GET", "/api/v1/reports/{report_id}"): Role.VIEWER,
     ("GET", "/api/v1/reports/{report_id}/content"): Role.VIEWER,
-    # Audit events (03-api-contract.md §4.19): "O A N V" on every route —
+    # Audit events (03-api-contract.md §4.19): "O A N V" on every route -
     # the contract's own parenthetical spells out viewer read-own-org
     # access explicitly. No write/update/delete route exists anywhere for
     # audit events (see api/v1/audit.py's own module docstring); there is

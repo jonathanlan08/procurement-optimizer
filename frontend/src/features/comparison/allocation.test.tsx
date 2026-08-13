@@ -7,7 +7,7 @@
  * allocation.test.tsx") to keep each file focused on one half of the page.
  *
  * Fixtures are intentionally self-contained (not shared with
- * comparison.test.tsx) — same "every test file owns its own fixtures"
+ * comparison.test.tsx) - same "every test file owns its own fixtures"
  * convention that file's own header attributes to features/fx/fx.test.tsx.
  */
 
@@ -208,7 +208,7 @@ function allocationResult(overrides: Record<string, unknown> = {}) {
         rfq_line_id: "line-1",
         quote_line_id: "qline-a",
         supplier_id: "sup-a",
-        supplier_label: "SUP-A — Acme Co",
+        supplier_label: "SUP-A - Acme Co",
         quantity: 500,
         price_break: { min_quantity: 100, max_quantity: 999, unit_price: "9.500000" },
         line_landed_cost: "4750.000000",
@@ -288,7 +288,7 @@ describe("scenario surface", () => {
 
   afterEach(() => {
     // vite.config.ts sets `test.globals: false`, so @testing-library/react's
-    // automatic post-test cleanup never registers itself — see
+    // automatic post-test cleanup never registers itself - see
     // comparison.test.tsx's own identical comment for why this is required.
     cleanup();
     vi.unstubAllGlobals();
@@ -384,9 +384,9 @@ describe("scenario surface", () => {
     await selectRfq();
     await runScenario();
 
-    expect(await screen.findByText("SUP-A — Acme Co")).toBeInTheDocument();
+    expect(await screen.findByText("SUP-A - Acme Co")).toBeInTheDocument();
     expect(screen.getByText("500")).toBeInTheDocument();
-    expect(screen.getByText("100–999")).toBeInTheDocument();
+    expect(screen.getByText("100-999")).toBeInTheDocument();
     expect(screen.getAllByText("$4,750.00").length).toBeGreaterThan(0);
     expect(screen.getByText("100.0%")).toBeInTheDocument();
   });

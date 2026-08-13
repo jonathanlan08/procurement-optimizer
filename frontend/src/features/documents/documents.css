@@ -1,6 +1,6 @@
 /* Documents-specific chrome layered on top of components/workspace.css +
    components/badges.css (both imported by DocumentsSection.tsx). Kept in its
-   own file rather than editing either shared stylesheet — same rationale as
+   own file rather than editing either shared stylesheet - same rationale as
    every other feature's own css file (see features/quotes/quotes.css's own
    header). */
 
@@ -62,14 +62,14 @@
   font-size: 12px;
 }
 
-/* Type badge — quiet, neutral (identifies the file kind, not a status). */
+/* Type badge - quiet, neutral (identifies the file kind, not a status). */
 .badge--doc-type {
   background: var(--color-muted);
   color: var(--color-secondary);
   border-color: var(--color-border);
 }
 
-/* State badges — one per DocumentState. Never color-alone (MASTER.md); every
+/* State badges - one per DocumentState. Never color-alone (MASTER.md); every
    badge keeps its own text label from statusLabel(). */
 .badge--doc-uploaded,
 .badge--doc-validated,

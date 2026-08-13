@@ -117,7 +117,7 @@ def _seed_unit(migrated_engine: Engine, organization_id: str | None = None) -> s
     default: this commits directly against the shared, session-scoped
     `migrated_engine`, so a `None` here would durably add a row to the
     *global* catalogue (organization_id IS NULL) for the lifetime of the
-    whole test session — polluting
+    whole test session - polluting
     test_units_schema.py::test_seed_unit_catalog_idempotent's exact-count
     assertion for every test file that happens to run after this one. See
     TestUnitDefinitionValidation.test_global_unit_is_accepted for the one
@@ -255,7 +255,7 @@ class TestPartCrudRoundTrip:
     def test_patch_target_price_round_trip(
         self, client: TestClient, org_a: dict[str, Any], migrated_engine: Engine
     ) -> None:
-        """Regression: PATCHing `target_price` 500'd — the service's
+        """Regression: PATCHing `target_price` 500'd - the service's
         `model_dump()` re-serialized the parsed Decimal back to its wire string
         (PlainSerializer's `when_used` defaults to "always"), and
         `quantize_unit_price()` then blew up on the str."""
@@ -742,7 +742,7 @@ class TestUnitDefinitionValidation:
     def test_global_unit_is_accepted(self, db, make_uuid) -> None:
         """Exercised at the service layer, not via TestClient/`migrated_engine`:
         a *global* (organization_id IS NULL) unit_definitions row must never
-        be durably committed to the shared, session-scoped test database —
+        be durably committed to the shared, session-scoped test database -
         test_units_schema.py::test_seed_unit_catalog_idempotent asserts an
         *exact* count of such rows, and TestClient requests run through a
         separate, already-committing session (see `_seed_unit`'s docstring

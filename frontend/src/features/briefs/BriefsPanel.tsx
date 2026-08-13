@@ -1,23 +1,23 @@
-/** Negotiation-briefs panel — attaches to the comparison workspace
+/** Negotiation-briefs panel - attaches to the comparison workspace
  * (../comparison/ComparisonPage.tsx inserts this once a scenario's scoring
  * result is loaded, per this task's ALLOWED insertion point).
  *
  * Design decisions:
  *  - **Supplier pick-list comes from the caller, not a fresh fetch.** The
  *    task brief: "offer the pick-list from the scenario's scoring result
- *    already loaded in the workspace" — `ComparisonPage.tsx` already holds
+ *    already loaded in the workspace" - `ComparisonPage.tsx` already holds
  *    `scenario.scoring_result.scores` (every scored, non-excluded supplier
  *    carries `supplier_name` inline), so this panel takes a plain
  *    `{id, label}[]` prop instead of re-deriving it from another endpoint.
  *  - **The brief list only fetches summaries; the drawer fetches full
- *    detail on open** — see ./api.ts's file header for why (mirrors
+ *    detail on open** - see ./api.ts's file header for why (mirrors
  *    ../comparison/ScenarioHistory.tsx's summary-vs-detail split).
  *  - **The `draft_supplier_email` section key gets special-cased** in the
  *    fixed `SECTION_ORDER` walk: rather than the generic text/data
  *    rendering every other section gets, it renders the brief's top-level
  *    `draft_email_subject`/`draft_email_body` inside the mandated
  *    "this system never sends emails" callout with a copy-only button (no
- *    `mailto:` link, per the task brief) — its own `sections` entry still
+ *    `mailto:` link, per the task brief) - its own `sections` entry still
  *    supplies the provenance badge shown alongside.
  *  - **"Mark reviewed" always posts `approved`** (default checked) plus
  *    optional notes; the two documented states (`draft`/`human_reviewed`)
@@ -94,7 +94,7 @@ function sectionLabel(key: BriefSectionKey): string {
   );
 }
 
-/** Renders a section's free-form `data` JSONB defensively — same "genuinely
+/** Renders a section's free-form `data` JSONB defensively - same "genuinely
  * untyped, narrow at the render site" convention
  * ../comparison/ScenarioHistory.tsx documents for its own snapshot fields. */
 function dataEntryValue(v: unknown): string {
@@ -153,18 +153,18 @@ function DraftEmailSection({
         <ProvenanceBadge provenance={section?.provenance ?? "missing"} />
       </div>
       <div className="brief-email-callout" role="note">
-        <strong>DRAFT — this system never sends emails.</strong> Review the content below and send
+        <strong>DRAFT - this system never sends emails.</strong> Review the content below and send
         it manually from your own email client.
       </div>
       {hasEmail ? (
         <div className="brief-email-content">
           <div>
             <span className="detail-label">Subject</span>
-            <p className="detail-value">{brief.draft_email_subject || "—"}</p>
+            <p className="detail-value">{brief.draft_email_subject || "-"}</p>
           </div>
           <div>
             <span className="detail-label">Body</span>
-            <pre className="brief-email-body-text">{brief.draft_email_body || "—"}</pre>
+            <pre className="brief-email-body-text">{brief.draft_email_body || "-"}</pre>
           </div>
           <div>
             <button type="button" className="btn-secondary-sm" onClick={onCopy}>
@@ -275,7 +275,7 @@ function GenerateBriefForm({
         </FormField>
       </div>
       <p className="brief-targets-hint">
-        Target overrides below are your assumption — will be marked{" "}
+        Target overrides below are your assumption - will be marked{" "}
         <span className="badge badge--brief-provenance-user_assumption">User assumption</span> in
         the brief.
       </p>
@@ -342,7 +342,7 @@ function BriefDrawer({
       await navigator.clipboard.writeText(text);
       setCopied(true);
     } catch {
-      // clipboard permission denied/unavailable — button stays actionable
+      // clipboard permission denied/unavailable - button stays actionable
     }
   }
 
@@ -368,12 +368,12 @@ function BriefDrawer({
         <div className="brief-detail">
           {brief.requires_review && (
             <div className="brief-review-banner" role="status">
-              Draft — requires human review
+              Draft - requires human review
             </div>
           )}
           {brief.simulated && (
             <div className="brief-simulated-label">
-              Template narrative — deterministic, not AI-generated
+              Template narrative - deterministic, not AI-generated
             </div>
           )}
 
@@ -430,7 +430,7 @@ function BriefDrawer({
                   <>
                     {" by "}
                     {/* the resolved name, falling back to a truncated id (full
-                        value on hover) when the reviewer can't be resolved —
+                        value on hover) when the reviewer can't be resolved -
                         a bare UUID here was a 2026-08 external-review P3 */}
                     <span title={brief.reviewed_by_id}>
                       {brief.reviewed_by_full_name ?? `${brief.reviewed_by_id.slice(0, 8)}…`}

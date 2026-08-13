@@ -1,8 +1,8 @@
-"""Quote routes — manual entry only (docs/planning/03-api-contract.md
+"""Quote routes - manual entry only (docs/planning/03-api-contract.md
 §4.11). Sync `def` by policy, mirroring api/v1/rfqs.py / api/v1/boms.py.
 
 **Two routers, one module.** Every other route module in this codebase
-mounts a single `APIRouter` at one prefix; quotes genuinely need two —
+mounts a single `APIRouter` at one prefix; quotes genuinely need two -
 `POST`/`GET` create/list are nested under the parent RFQ
 (`/rfqs/{rfq_id}/quotes`, §4.11's own route table), while every other quote
 route addresses the quote directly (`/quotes/{quote_id}`, ..., per §6's
@@ -14,7 +14,7 @@ families.
 
 Concurrency (§1.7): quotes carry `ETag`/`If-Match`. Every response that
 returns a quote sets `ETag: "<version>"`. Only `PATCH /quotes/{id}` requires
-`If-Match` on the way in — `POST .../supersede` and `POST .../archive`
+`If-Match` on the way in - `POST .../supersede` and `POST .../archive`
 mutate state and return a fresh `ETag` without demanding the header as
 input, the same split already established by `api/v1/rfqs.py` for
 `POST .../status` vs `PATCH /rfqs/{id}` (see that module's docstring, and
@@ -25,7 +25,7 @@ Deviations from the contract's literal §4.11 route table, contract wins per
 instructions but both are recorded here:
 
 1. **`POST /quotes/{id}/supersede`** and **`POST /quotes/{id}/archive`**
-   have no entry in §4.11's table at all — the contract's own `PATCH
+   have no entry in §4.11's table at all - the contract's own `PATCH
    /quotes/{id}` row alludes to supersession happening as a *side effect* of
    editing a `confirmed` quote ("edits after confirmed create revision + 1
    and supersede"), and never mentions archiving quotes anywhere. This
@@ -33,7 +33,7 @@ instructions but both are recorded here:
    (`QuoteService.supersede`/`.archive`) with their own audit event types
    (`quote.superseded`/`quote.archived`), the same kind of contract-silent,
    brief-mandated addition already made for `POST /boms/{id}/activate` and
-   `POST /rfqs/{id}/suppliers/{id}/reinstate` elsewhere in this codebase —
+   `POST /rfqs/{id}/suppliers/{id}/reinstate` elsewhere in this codebase -
    see those modules' docstrings for the identical judgement call. `archive`
    is gated `O A` (administrator+), mirroring every other archivable
    resource's archive route (suppliers/parts/BOMs); `supersede` is gated
@@ -41,7 +41,7 @@ instructions but both are recorded here:
 2. **No `PUT .../price-breaks`, `PUT .../terms`, `GET/POST/PATCH/DELETE
    .../lines[...]`, `GET .../corrections`, `POST .../confirm`, or any
    `/quotes/{id}/match(es)` route (§4.12).** All out of scope for this
-   task's manual-entry brief — see services/quote_service.py's module
+   task's manual-entry brief - see services/quote_service.py's module
    docstring "Scope: manual entry only".
 """
 

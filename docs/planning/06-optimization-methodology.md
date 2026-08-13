@@ -1,4 +1,4 @@
-# 06 — Order-Allocation Optimization Methodology
+# 06 - Order-Allocation Optimization Methodology
 
 Status: **DRAFT FOR PRINCIPAL REVIEW**
 Implements SPEC §Order-allocation optimization. Solver: OR-Tools CP-SAT (agreed with the principal,
@@ -12,7 +12,7 @@ Given an RFQ with lines `L` (each requiring a quantity of a part), and confirmed
 `S` (each quote line offering a price schedule, MOQ, capacity, lead time, compliance), choose how many
 units of each line to buy from each supplier so that **total landed cost is minimized** subject to
 demand, capacity, MOQ, tier, concentration, supplier-count, budget, deadline, lock and exclusion
-constraints — and report honestly whether the answer is proven optimal.
+constraints - and report honestly whether the answer is proven optimal.
 
 Problem size in this product: `|S| ≤ ~20`, `|L| ≤ ~200`, tiers per pair `≤ ~6`. That is small. CP-SAT
 solves it in milliseconds to low seconds; the engineering risk is **not** performance, it is
@@ -26,7 +26,7 @@ determinism, correct piecewise modelling, and honest status reporting.
 |---|---|
 | `L` | RFQ lines requiring allocation, `d_l` = required quantity (canonical units, integer-scaled) |
 | `S` | suppliers with a confirmed, non-excluded quote |
-| `P` | eligible pairs `(s,l)` — supplier `s` quoted line `l` **and** passed pre-filtering |
+| `P` | eligible pairs `(s,l)` - supplier `s` quoted line `l` **and** passed pre-filtering |
 | `T(s,l)` | ordered price-break tiers; tier `t` has `[lo_t, hi_t]` and unit cost `c_t` |
 | `cap_{s,l}` | supplier capacity for that line (units) |
 | `capS_s` | supplier-level capacity across lines (optional) |
@@ -38,19 +38,19 @@ determinism, correct piecewise modelling, and honest status reporting.
 | `ρ` | max concentration (fraction of total cost, see §4.6) |
 | `B` | budget cap |
 
-**Pre-solve filtering** removes candidates for reasons that are *explanations*, not constraints —
+**Pre-solve filtering** removes candidates for reasons that are *explanations*, not constraints -
 each removal is recorded with a reason string and surfaces in `rejected_alternatives`:
 
 - supplier excluded by the user, or `rfq_suppliers.status = 'excluded'`;
 - quote not `confirmed`, superseded, or expired at the scenario `as_of_date`;
 - quote line has unconfirmed low-confidence critical fields (SPEC: uncertain values must not silently
-  affect recommendations) — configurable to `warn_and_include` with an explicit override;
+  affect recommendations) - configurable to `warn_and_include` with an explicit override;
 - part match not confirmed for a non-exact match;
 - specification compliance below the RFQ's minimum;
 - lead time > days available before `required_by_date` (when `enforce_deadline=true`);
 - landed cost incomputable (missing unit conversion, missing FX rate, `MISSING` required cost).
 
-Filtering before the model keeps the MILP small and — more importantly — turns "no supplier can do
+Filtering before the model keeps the MILP small and - more importantly - turns "no supplier can do
 this" into a sentence a human can read, rather than a bare `INFEASIBLE`.
 
 ---
@@ -58,7 +58,7 @@ this" into a sentence a human can read, rather than a bare `INFEASIBLE`.
 ## 3. Decision variables
 
 All integers; quantities in canonical units scaled by `QTY_MULT` (default 1 for integral parts, `10^3`
-for parts measured in kg/m — see §7).
+for parts measured in kg/m - see §7).
 
 | Variable | Domain | Meaning |
 |---|---|---|
@@ -79,7 +79,7 @@ u[s,l] ≤ y[s]
 
 **Why this models all-units discounts exactly.** Because exactly one `z[s,l,t]` is 1 for a used pair,
 all other `q[s,l,t]` are forced to 0, so `x = q_t*` and the material cost `Σ_t c_t · q[s,l,t]` equals
-`c_{t*} · x`. The formulation is fully linear despite price and quantity both being decisions — this
+`c_{t*} · x`. The formulation is fully linear despite price and quantity both being decisions - this
 is the standard trick and it is exact, not an approximation. (Incremental discounts would need a
 different, also-linear formulation; they are out of scope, see §9.)
 
@@ -113,7 +113,7 @@ Big-M free: the upper linkage is the capacity bound, so there is no numerically 
 ### 4.4 Price-break tiers
 Encoded in §3. Additionally, tiers are validated non-overlapping and ascending before model build; a
 gap makes the intermediate quantities infeasible **for that pair only**, which is correct and is
-explained (`"supplier X has no price for quantities 100–199"`).
+explained (`"supplier X has no price for quantities 100-199"`).
 
 ### 4.5 Max supplier count
 ```
@@ -129,7 +129,7 @@ cost basis:  cost_s ≤ round(ρ · total_cost_var)     with total_cost_var an i
 qty basis:   Σ_l x[s,l] ≤ floor(ρ · Σ_l d_l)
 ```
 The cost-basis form is linear because both sides are linear integer expressions. It requires
-`total_cost_var` to exist as a variable rather than only as an objective expression — cheap, and it
+`total_cost_var` to exist as a variable rather than only as an objective expression - cheap, and it
 also gives the budget constraint (§4.8) something to bind to.
 
 ### 4.7 Locked allocations
@@ -205,7 +205,7 @@ Plus, at model-build time:
 - **Tie-break term.** Among equal-cost optima, prefer (a) fewer suppliers, (b) lexicographically
   smallest supplier code sequence. Implemented as `ε · (Σ_s 2^rank(s) · y[s])`-style penalty with `ε`
   chosen strictly below the smallest possible cost difference (1 scaled unit) divided by the maximum
-  penalty magnitude — with a pre-solve assertion that the bound holds. If the bound cannot be
+  penalty magnitude - with a pre-solve assertion that the bound holds. If the bound cannot be
   guaranteed for a given instance, the tie-break is **disabled** and the result is flagged
   `tiebreak_disabled` rather than silently risking a wrong optimum. Correctness beats tidiness.
 
@@ -228,7 +228,7 @@ QTY_MULT   = 1 for integral units; 1_000 for kg/m (3 dp of quantity)
 
 Why `10^4` and not `10^6` (the principal's provisional value): headroom. The largest objective term is
 `Σ c_t · q`, bounded by `max_unit_cost × total_qty × COST_SCALE`. With `10^6`, a 10 M-unit order of a
-$1 000 part reaches `10^16` — still inside int64 but within two orders of magnitude of the limit, and
+$1 000 part reaches `10^16` - still inside int64 but within two orders of magnitude of the limit, and
 CP-SAT's internal products can exceed it. With `10^4` there are four more decimal orders of headroom
 for the same worst case. A tenth of a *cent* of resolution is far below any decision-relevant
 difference in this domain.
@@ -279,14 +279,14 @@ Three layers, cheapest first:
 2. **Minimal conflicting-constraint core via CP-SAT assumption literals.** Each *relaxable constraint
    group* (`budget`, `max_supplier_count`, `max_concentration`, `moq`, `capacity`, `deadline`,
    `locked_allocations`, `exclusions`) is gated by a boolean assumption literal. On `INFEASIBLE`,
-   `solver.SufficientAssumptionsForInfeasibility()` returns a subset of those literals — a genuine,
+   `solver.SufficientAssumptionsForInfeasibility()` returns a subset of those literals - a genuine,
    solver-derived minimal-ish core, not a guess. Reported as `conflicting_constraint_groups`.
 3. **Minimal relaxation search.** For each group in the core, re-solve with that group alone relaxed
    (deterministically ordered) and report which single relaxation restores feasibility, including the
    numeric threshold where possible ("raising max supplier count from 2 to 3 restores feasibility";
    "a budget of $184,320 or more is required"). Bounded to `|core| + 1` extra solves.
 
-Every infeasible result still writes an `allocation_results` row and an audit event — an infeasible
+Every infeasible result still writes an `allocation_results` row and an audit event - an infeasible
 answer is a real analytical result, not an error to be swallowed.
 
 ### 8.2 Rejected alternatives
@@ -297,11 +297,11 @@ SPEC requires explaining "why alternatives were rejected". Deterministic, cheap 
    Report cost or infeasibility reason. This directly answers the question a CFO asks first.
 2. **The next-best split**: re-solve with a no-good cut excluding the recommended allocation vector;
    report the delta. One extra solve.
-3. **Constraint shadow information**: which constraints are binding (`binding_constraints`) — derived
+3. **Constraint shadow information**: which constraints are binding (`binding_constraints`) - derived
    by checking slack on each constraint at the solution, not from duals (CP-SAT has none).
 4. Alternatives are sorted by cost ascending, with infeasible ones last and their reason attached.
 
-This is `|S| + 1` additional solves of a small model — milliseconds — and it converts the optimizer
+This is `|S| + 1` additional solves of a small model - milliseconds - and it converts the optimizer
 from a black box into an explanation.
 
 ---
@@ -310,13 +310,13 @@ from a black box into an explanation.
 
 1. **All-units discounts assumed** (see `05-calculation-methodology.md` §6). Incremental/marginal
    discounts are a different formulation; if the principal wants them, it is a `q[s,l,t]` chain with
-   ordering constraints — roughly a day of work and a new set of boundary tests.
+   ordering constraints - roughly a day of work and a new set of boundary tests.
 2. **Deterministic demand.** No safety stock, no forecast uncertainty, no multi-period planning.
 3. **Costs are linear in quantity within a tier.** Volume-dependent freight (a second container at
    1 200 units) is not modelled; it would need step-fixed freight variables. Flagged as a realistic
    gap the demo should mention rather than hide.
 4. **One-shot award.** No lot-splitting over time, no delivery scheduling.
-5. **Concentration on cost basis by default** — confirm with the principal; qty basis is a one-line
+5. **Concentration on cost basis by default** - confirm with the principal; qty basis is a one-line
    switch but changes results.
 6. **Supplier-level capacity** is optional and, when absent, only per-line capacity binds. Real
    suppliers have shared capacity across parts; the field exists, the seed data should exercise it.
@@ -326,7 +326,7 @@ from a black box into an explanation.
 9. **The `balanced` strategy converts scores into cost penalties.** That conversion is inherently
    arbitrary; it must be displayed as "1 score point = $X" and be user-editable, or it becomes exactly
    the kind of opaque number this product exists to eliminate. I would rather ship `balanced` as
-   "cost objective + hard constraints derived from scores" than as a weighted blend — flagged for a
+   "cost objective + hard constraints derived from scores" than as a weighted blend - flagged for a
    principal decision.
 
 ---

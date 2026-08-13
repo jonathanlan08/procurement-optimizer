@@ -1,4 +1,4 @@
-"""Stage 4 — text/table acquisition (docs/planning/04-document-pipeline.md §5).
+"""Stage 4 - text/table acquisition (docs/planning/04-document-pipeline.md §5).
 
 Pure function over already content-validated bytes (`app.ingestion.file_validation` has
 already sniffed and admitted `kind` from magic bytes before this module ever runs): parses
@@ -6,14 +6,14 @@ the buffer in memory and returns one `PageText` per page/sheet. No I/O beyond pa
 network access, no OCR execution, no database access, nothing written to disk.
 
 This module deliberately does NOT interpret, filter, redact, or judge the text it
-acquires — trust-boundary framing (the nonce envelope) and injection-canary scanning both
+acquires - trust-boundary framing (the nonce envelope) and injection-canary scanning both
 happen downstream, in `app.providers.extraction.envelope`, over the text this module
 returns. A document that contains an injection string must see that string survive
 acquisition byte-for-byte; flagging it is the service layer's job, not this one's
 (04-document-pipeline.md §6 point 6: "filtering the text would be worse").
 
 OCR is provider-abstracted (04-document-pipeline.md §5's `OcrProvider` row) and, per SPEC
-"External-service strategy", v0.1.0 ships no bundled OCR engine — wiring a real OCR SDK
+"External-service strategy", v0.1.0 ships no bundled OCR engine - wiring a real OCR SDK
 (Tesseract, a cloud OCR API, ...) is out of scope for this portfolio build. PNG/JPEG
 documents therefore acquire as a single page with empty text and `used_ocr=True`; a real
 OCR adapter would honor the same `used_ocr=True` contract and simply fill in `text` with
@@ -45,7 +45,7 @@ from pypdf import PdfReader
 from app.ingestion.file_validation import DocumentKind
 
 # Acquisition-layer caps. Distinct from, and smaller than, Stage-2 content-validation caps
-# admitted at upload time (04-document-pipeline.md §3: CSV 50k rows / 200 cols) — those
+# admitted at upload time (04-document-pipeline.md §3: CSV 50k rows / 200 cols) - those
 # gate what is allowed into storage at all; these bound the cost of *this* parse. The
 # numbers mirror `app.importing.part_import_parser`'s identical row/column caps for the
 # same class of tabular acquisition, reused here for both XLSX (per the delegating task)
@@ -54,7 +54,7 @@ MAX_ACQUIRED_ROWS = 10_000
 MAX_ACQUIRED_COLUMNS = 50
 # Decompression-bomb bounds for XLSX (a zip container): row/column caps alone do not bound
 # cost, because a single cell can carry an arbitrarily long inline string that DEFLATE
-# compresses ~1000:1 — a 68 KiB upload expanding to 67 MB in-process satisfied both caps
+# compresses ~1000:1 - a 68 KiB upload expanding to 67 MB in-process satisfied both caps
 # before these limits existed (2026-08 security audit, HIGH-1). Checked against the zip
 # directory's declared sizes BEFORE openpyxl parses anything.
 MAX_XLSX_DECOMPRESSION_RATIO = 100
@@ -62,7 +62,7 @@ MAX_XLSX_DECOMPRESSED_BYTES = 100 * 1024 * 1024
 # Excel's own hard limit is 32,767 characters per cell; anything larger can only come from
 # a hand-crafted malicious container, never a real workbook.
 MAX_XLSX_CELL_CHARS = 32_767
-# Total acquired text per document, all pages combined — bounds DB row growth
+# Total acquired text per document, all pages combined - bounds DB row growth
 # (document_pages.text_layer) and downstream provider cost for every format.
 MAX_ACQUIRED_TEXT_CHARS = 10_000_000
 # PDFs: pypdf + pdfplumber both walk every page; a 20 MiB file can declare ~100k pages.
@@ -76,7 +76,7 @@ class AcquisitionLimitError(ValueError):
 
 @dataclass(frozen=True, slots=True)
 class PageText:
-    """One page's (or sheet's) acquired text — exactly what the extraction provider will
+    """One page's (or sheet's) acquired text - exactly what the extraction provider will
     see for this page. `used_ocr=True` marks pages whose `text` was not read from a native
     text layer (see module docstring)."""
 
@@ -86,8 +86,8 @@ class PageText:
 
 
 def acquire_pages(data: bytes, kind: DocumentKind) -> list[PageText]:
-    """Dispatch to the acquisition strategy for `kind`. `kind` is trusted input — already
-    sniffed from magic bytes by `file_validation.sniff_kind` — and is never re-derived
+    """Dispatch to the acquisition strategy for `kind`. `kind` is trusted input - already
+    sniffed from magic bytes by `file_validation.sniff_kind` - and is never re-derived
     from `data` here."""
     if kind is DocumentKind.PDF:
         return _acquire_pdf(data)
@@ -220,7 +220,7 @@ def _cell_text(value: object) -> str:
         return ""
     text = str(value)
     if len(text) > MAX_XLSX_CELL_CHARS:
-        # Excel itself cannot produce a cell this long (module constants) — only a
+        # Excel itself cannot produce a cell this long (module constants) - only a
         # hand-crafted container can, so this is a limit violation, not data.
         raise AcquisitionLimitError(
             f"a cell exceeds the {MAX_XLSX_CELL_CHARS}-character acquisition cap"

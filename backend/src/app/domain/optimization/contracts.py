@@ -1,4 +1,4 @@
-"""Order-allocation optimization contracts — PRINCIPAL-OWNED.
+"""Order-allocation optimization contracts - PRINCIPAL-OWNED.
 
 Methodology: docs/planning/06-optimization-methodology.md, rulings in
 00-decisions.md §1.1 (determinism) and §2/§4 (cost-basis concentration,
@@ -7,7 +7,7 @@ per-quote-line capacity, lead-time eligibility handled pre-solve).
 Model (CP-SAT, integers):
 - decision variables: alloc[line, offer] (integer units, scaled by QTY),
   used[supplier] (bool), tier[line, offer, k] (bool, exactly-one per used
-  offer — all-units price breaks make cost piecewise linear);
+  offer - all-units price breaks make cost piecewise linear);
 - objective: minimize Σ scaled landed unit cost * alloc (+ fixed costs via
   used/first-allocation booleans); money scaled by 10^4 into int64;
 - constraints: demand per line (Σ alloc == required), capacity per offer,
@@ -16,7 +16,7 @@ Model (CP-SAT, integers):
   allocations, exclusions.
 
 Honesty rules (non-negotiable):
-- solver status maps 1:1 onto AllocationStatus — FEASIBLE is never presented
+- solver status maps 1:1 onto AllocationStatus - FEASIBLE is never presented
   as OPTIMAL;
 - the reported expected_total_cost is the EXACT Decimal recomputation of the
   chosen allocation through the landed-cost machinery, never the solver's

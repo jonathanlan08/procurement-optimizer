@@ -188,7 +188,7 @@ describe("ReviewPane", () => {
 
   afterEach(() => {
     // vite.config.ts sets `test.globals: false`, so @testing-library/react's
-    // automatic post-test cleanup never registers itself — see
+    // automatic post-test cleanup never registers itself - see
     // features/fx/fx.test.tsx's own identical comment for why this is
     // required.
     cleanup();
@@ -314,7 +314,7 @@ describe("ReviewPane", () => {
     renderPane("analyst");
 
     // Wait for the actual <option> (populated only once useRfqSuppliers +
-    // its per-row useSupplier both resolve) before selecting it — selecting
+    // its per-row useSupplier both resolve) before selecting it - selecting
     // a value with no matching <option> yet mounted is a silent no-op.
     await screen.findByRole("option", { name: /acme components/i });
     const supplierSelect = screen.getByLabelText(/supplier/i);
@@ -351,7 +351,7 @@ describe("ReviewPane", () => {
       expect(button).toBeInTheDocument();
       expect(
         screen.getByText(
-          /confirms every remaining flagged field at once — review the values above first/i,
+          /confirms every remaining flagged field at once - review the values above first/i,
         ),
       ).toBeInTheDocument();
     });
@@ -450,7 +450,7 @@ describe("ReviewPane", () => {
       renderPane("analyst");
 
       // Two-step arm/confirm (2026-08 external review P1/P2: one-click bulk
-      // confirmation encouraged blind approval) — arming alone must NOT post.
+      // confirmation encouraged blind approval) - arming alone must NOT post.
       const button = await screen.findByRole("button", { name: /confirm all remaining \(2\)/i });
       fireEvent.click(button);
       expect(confirmAllCalled).toBe(false);

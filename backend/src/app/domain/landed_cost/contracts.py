@@ -1,4 +1,4 @@
-"""Landed-cost calculation contracts — PRINCIPAL-OWNED.
+"""Landed-cost calculation contracts - PRINCIPAL-OWNED.
 
 Formulas (docs/planning/05-calculation-methodology.md §3, ratified in
 00-decisions.md; the worked example in 05 §9 carries the principal's corrected
@@ -13,7 +13,7 @@ hand-verified values):
     quality_risk_cost      = quality_risk_rate * extended_material_cost
     delay_risk_cost        = delay_risk_per_day * max(0, promised - required lead time)
     financing_cost         = extended_material * annual_rate * (baseline_days - terms_days)/365
-                             — THE ONE SIGNED COMPONENT: longer payment terms than
+                             - THE ONE SIGNED COMPONENT: longer payment terms than
                              the baseline produce a negative amount, labelled
                              "financing benefit" (00-decisions.md §2 ruling 2)
     total_landed_cost      = Σ of the seven components
@@ -22,7 +22,7 @@ hand-verified values):
 Invariants the implementation MUST uphold:
 - every component is quantized at MONEY_SCALE before summing, so the displayed
   components sum EXACTLY to the displayed total;
-- effective_unit_cost is quantized at UNIT_PRICE_SCALE and is derived — the
+- effective_unit_cost is quantized at UNIT_PRICE_SCALE and is derived - the
   total is authoritative;
 - a missing required input never becomes zero: the component is reported
   missing and the result completeness degrades (INCOMPLETE), unless the caller

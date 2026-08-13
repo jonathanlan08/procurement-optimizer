@@ -190,7 +190,7 @@ describe("ReportsPage", () => {
 
   afterEach(() => {
     // vite.config.ts sets `test.globals: false`, so @testing-library/react's
-    // automatic post-test cleanup never registers itself — see
+    // automatic post-test cleanup never registers itself - see
     // ../comparison/comparison.test.tsx's identical comment for why this is
     // required.
     cleanup();
@@ -203,7 +203,7 @@ describe("ReportsPage", () => {
     renderPage();
 
     // "Supplier comparison"/"CSV"/etc. are also option labels in the
-    // generate form's selects (and two rows share the CSV format) — scope
+    // generate form's selects (and two rows share the CSV format) - scope
     // every lookup to its own table row to avoid ambiguous matches.
     const table = await screen.findByRole("table", { name: "Reports" });
     const pendingRow = within(table).getByText("Supplier comparison").closest("tr") as HTMLElement;
@@ -265,7 +265,7 @@ describe("ReportsPage", () => {
 
     fireEvent.change(await screen.findByLabelText(/^RFQ/i), { target: { value: "rfq-1" } });
     // wait for the scenario `<select>`'s option to actually populate before
-    // setting its value — setting a <select>'s value to a not-yet-rendered
+    // setting its value - setting a <select>'s value to a not-yet-rendered
     // option is a silent no-op.
     await screen.findByRole("option", { name: "Q3 widget award" });
     fireEvent.change(screen.getByLabelText(/^Scenario/i), {

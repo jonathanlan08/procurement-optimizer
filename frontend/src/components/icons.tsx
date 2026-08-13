@@ -1,4 +1,4 @@
-/** Minimal inline SVG icon set — no emoji, no icon-font dependency.
+/** Minimal inline SVG icon set - no emoji, no icon-font dependency.
  * Every icon inherits color via `currentColor` so it follows text color/tokens. */
 
 interface IconProps {

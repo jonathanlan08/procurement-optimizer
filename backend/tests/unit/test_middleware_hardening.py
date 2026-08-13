@@ -1,9 +1,9 @@
 """Regression tests for the middleware fixes from the 2026-08 security audit.
 
-- MEDIUM-2 — oversized DECLARED bodies are now rejected pre-routing by
+- MEDIUM-2 - oversized DECLARED bodies are now rejected pre-routing by
   `BodySizeLimitMiddleware`, instead of Starlette spooling the whole multipart
   body to disk before the route-level 413 fired.
-- MEDIUM-4 — rate-limit key eviction: the old oldest-inserted fallback let an
+- MEDIUM-4 - rate-limit key eviction: the old oldest-inserted fallback let an
   address-spray evict (and thereby reset) the sprayer's own auth bucket; now
   keys with fresh windows are never evicted and new clients overflow into a
   shared bucket instead.
@@ -42,7 +42,7 @@ class TestBodySizeLimit:
         app = create_app(_settings(max_upload_bytes=1024))
         with TestClient(app, base_url="http://testserver") as client:
             # cap = 1024 + 1 MiB slack; 2 MiB exceeds it. The login route
-            # would need a DB — the 413 must fire before it ever runs.
+            # would need a DB - the 413 must fire before it ever runs.
             resp = client.post(
                 "/api/v1/auth/login",
                 content=b"x" * (2 * 1024 * 1024),
@@ -99,8 +99,8 @@ class TestRateLimitEviction:
             for i in range(20):
                 await middleware.dispatch(_request("/api/v1/things", f"10.9.9.{i}"), _ok)
 
-            # The old behaviour evicted the oldest-inserted key — exactly
-            # auth:10.0.0.1 — resetting its counter. It must survive intact.
+            # The old behaviour evicted the oldest-inserted key - exactly
+            # auth:10.0.0.1 - resetting its counter. It must survive intact.
             assert "auth:10.0.0.1" in middleware._hits
             assert len(middleware._hits["auth:10.0.0.1"]) == before
             # Overflow requests were collectively tracked, not dropped.

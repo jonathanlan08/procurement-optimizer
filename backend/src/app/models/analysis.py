@@ -13,7 +13,7 @@ than silently narrowing or renaming:
    not exist yet in this codebase (a later phase), so `scenario_id` could not
    even be typed as a real FK today. The task's own `inputs_snapshot` JSONB
    is explicitly specified to capture "the full assembled input incl.
-   fx/unit normalization provenance" — the functional replacement for
+   fx/unit normalization provenance" - the functional replacement for
    `source_currency`/`exchange_rate_id`/`manual_overrides` in this schema-only
    phase (every FX rate id/value and unit-conversion note that produced the
    result is inside that snapshot, not broken out into its own columns).
@@ -22,11 +22,11 @@ than silently narrowing or renaming:
    concept `data_source`. Named per the task's explicit instruction.
 3. **`ScoringConfiguration.weights` (JSONB), not the ERD's `criteria` +
    `weight_sum`.** The task's own column list is explicit: "weights JSONB
-   (list of CriterionSpec-shaped objects)" — no separate `weight_sum`
+   (list of CriterionSpec-shaped objects)" - no separate `weight_sum`
    column; the sum is a validation-time computation
    (`ScoringConfigService`), not stored state (02-erd.md §8's own scoring
    note: "weights are stored raw ... normalized at calculation time, not at
-   storage time, so the user's raw intent survives" — the same reasoning
+   storage time, so the user's raw intent survives" - the same reasoning
    extends to not persisting a derived sum either).
 4. **`ScoringConfiguration.created_by_id`, not the task prose's unsuffixed
    "created_by".** Every other `created_by`-shaped column in this codebase
@@ -38,7 +38,7 @@ than silently narrowing or renaming:
 
 Both enums below wrap a principal-owned domain enum directly rather than
 re-declaring its members, so the DB type's members can never drift from the
-domain module's — the same pattern `app/models/documents.py`'s
+domain module's - the same pattern `app/models/documents.py`'s
 `CONFIDENCE_BAND_ENUM` already establishes for `app.domain.confidence.
 ConfidenceBand`:
 - `RESULT_COMPLETENESS_ENUM` wraps `app.domain.values.Completeness`.
@@ -49,7 +49,7 @@ ConfidenceBand`:
 recalculation always inserts a new row (`LandedCostService.calculate_and_store`).
 "Latest wins per line" is a query-time concern
 (`ix_landed_cost_results_line_latest` exists for exactly that lookup), not a
-DB constraint — there is nothing here preventing multiple rows per
+DB constraint - there is nothing here preventing multiple rows per
 `quote_line_id`, by design.
 
 **Cascades (02-erd.md §11).** `landed_cost_results` -> `landed_cost_components`
@@ -61,7 +61,7 @@ apply.
 
 **Uniqueness.** `scoring_configurations` enforces "unique active name per
 org" via a functional, case-insensitive partial index created directly in
-the migration (`uq_scoring_configurations_org_name_active`) — the same
+the migration (`uq_scoring_configurations_org_name_active`) - the same
 no-`citext`-extension adaptation `Rfq.internal_reference` /
 `Part.internal_part_number` already use; there is no SQLAlchemy
 `__table_args__` entry for it here because a `lower(name)` expression index
@@ -141,7 +141,7 @@ class LandedCostResult(OrgOwnedBase):
     completeness: Mapped[Completeness] = mapped_column(RESULT_COMPLETENESS_ENUM)
     calculation_version: Mapped[str] = mapped_column(Text())
     # the full assembled LandedCostInput incl. FX/unit normalization
-    # provenance — see module docstring point 1.
+    # provenance - see module docstring point 1.
     inputs_snapshot: Mapped[dict[str, Any]] = mapped_column(JSONB())
     missing_inputs: Mapped[list[Any]] = mapped_column(JSONB(), default=list)
     assumptions: Mapped[list[Any]] = mapped_column(JSONB(), default=list)
@@ -201,7 +201,7 @@ class ScoringConfiguration(TimestampedMixin, VersionedMixin, ArchivableMixin, Or
     __table_args__ = (org_identity_constraint("scoring_configurations"),)
 
     name: Mapped[str] = mapped_column(Text())
-    # list of CriterionSpec-shaped objects — module docstring point 3.
+    # list of CriterionSpec-shaped objects - module docstring point 3.
     weights: Mapped[list[Any]] = mapped_column(JSONB())
     is_sample: Mapped[bool] = mapped_column(Boolean(), default=False)
     created_by_id: Mapped[uuid.UUID] = mapped_column(
@@ -213,7 +213,7 @@ class ScoringConfiguration(TimestampedMixin, VersionedMixin, ArchivableMixin, Or
 # participates in a composite FK on LandedCostResult/LandedCostComponent
 # alongside the plain org FK, so `foreign_keys` disambiguates which
 # constraint each relationship follows, and `overlaps` silences SQLAlchemy's
-# warning about the shared organization_id column — the same pattern as
+# warning about the shared organization_id column - the same pattern as
 # quotes.py/rfqs.py.
 LandedCostResult.organization = relationship(
     "Organization", foreign_keys=[LandedCostResult.organization_id], lazy="select"

@@ -19,7 +19,9 @@ services:
     name: procurement-optimizer
     runtime: python
     plan: free
-    region: oregon
+    # Ohio, because the demo database (Neon) lives in aws-us-east-2: keeping
+    # the app next to its database keeps per-query latency low.
+    region: ohio
     branch: main
     # Build the SPA, then install the backend. Node is available on Render's
     # Python runtime image, so no Docker is required.

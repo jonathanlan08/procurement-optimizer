@@ -29,16 +29,15 @@ services:
       set -euo pipefail
       cd frontend && npm ci && npm run build && cd ..
       cd backend && pip install uv && uv sync --locked --no-dev
-    # Migrate to head and load the synthetic demo dataset (idempotent) before
-    # serving. preDeployCommand runs after the build and before traffic.
-    preDeployCommand: |
-      set -euo pipefail
-      cd backend
-      uv run alembic upgrade head
-      uv run python scripts/seed_demo.py
+    # Migrate to head and load the synthetic demo dataset at boot, then serve.
+    # Both steps are idempotent, and they live in startCommand (not
+    # preDeployCommand) because the free tier does not support pre-deploy
+    # commands - Render rejects the blueprint outright.
     startCommand: |
-      cd backend && uv run uvicorn app.main:create_app --factory \
-        --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips '*'
+      cd backend && uv run alembic upgrade head \
+        && uv run python scripts/seed_demo.py \
+        && uv run uvicorn app.main:create_app --factory \
+          --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips '*'
     healthCheckPath: /api/health
     envVars:
       - key: PYTHON_VERSION

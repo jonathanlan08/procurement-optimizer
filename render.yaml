@@ -33,10 +33,13 @@ services:
     # Both steps are idempotent, and they live in startCommand (not
     # preDeployCommand) because the free tier does not support pre-deploy
     # commands - Render rejects the blueprint outright.
+    # --no-dev --locked: `uv run` without them re-syncs the environment WITH
+    # dev dependencies at boot (mypy, ruff, pytest...), which slowed the first
+    # start past Render's port-scan patience.
     startCommand: |
-      cd backend && uv run alembic upgrade head \
-        && uv run python scripts/seed_demo.py \
-        && uv run uvicorn app.main:create_app --factory \
+      cd backend && uv run --no-dev --locked alembic upgrade head \
+        && uv run --no-dev --locked python scripts/seed_demo.py \
+        && uv run --no-dev --locked uvicorn app.main:create_app --factory \
           --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips '*'
     healthCheckPath: /api/health
     envVars:

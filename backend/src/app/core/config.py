@@ -43,17 +43,23 @@ class JobRunnerKind(StrEnum):
     THREAD = "thread"
 
 
+_DEV_DATABASE_URL = "postgresql+psycopg://postgres:postgres@localhost:5432/procurement"
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_prefix="PO_",
         env_file=".env",
         env_file_encoding="utf-8",
         extra="ignore",
+        # values pasted into a hosting dashboard often carry a trailing newline,
+        # which libpq would read as part of the last URL query parameter
+        str_strip_whitespace=True,
     )
 
     environment: Environment = Environment.DEV
     database_url: str = Field(
-        default="postgresql+psycopg://postgres:postgres@localhost:5432/procurement",
+        default=_DEV_DATABASE_URL,
         description="SQLAlchemy URL; tests may override with a pgserver socket URL",
     )
     session_ttl_hours: int = 12
@@ -117,6 +123,8 @@ class Settings(BaseSettings):
         if self.environment is Environment.PROD:
             if self.secret_key.get_secret_value() == "dev-only-secret-change-me":
                 raise ValueError("PO_SECRET_KEY must be set in prod")
+            if self.database_url == _DEV_DATABASE_URL:
+                raise ValueError("PO_DATABASE_URL must be set in prod")
             object.__setattr__(self, "cookie_secure", True)
         return self
 

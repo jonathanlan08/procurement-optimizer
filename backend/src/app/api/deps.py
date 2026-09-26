@@ -116,7 +116,10 @@ def current_principal(
 
     if request.method in MUTATING_METHODS:
         origin = request.headers.get("origin") or request.headers.get("referer")
-        if not origin_allowed(origin, settings.allowed_origins):
+        # same own-origin allowance as OriginCheckMiddleware, or a single-origin
+        # deploy lets you log in and then rejects every authenticated mutation
+        own = f"{request.url.scheme}://{request.url.netloc}"
+        if not origin_allowed(origin, [*settings.allowed_origins, own]):
             raise CsrfError("Request origin not allowed.")
         header_token = request.headers.get(CSRF_HEADER)
         if not header_token or not constant_time_equals(

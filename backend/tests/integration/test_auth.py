@@ -157,6 +157,39 @@ class TestLogin:
         assert resp.json()["error"]["code"] == "csrf_failed"
 
 
+class TestSingleOriginMutations:
+    OWN_ORIGIN = "http://testserver"  # TestClient's base_url
+
+    def test_authenticated_mutation_from_the_servers_own_origin_is_allowed(
+        self, client: TestClient, account
+    ) -> None:
+        """The per-session CSRF check in deps.py must share the middleware's
+        own-origin allowance: on a single-origin deploy, login passed and then
+        every signed-in POST (reports, suppliers...) was rejected with 403."""
+        resp = client.post(
+            "/api/v1/auth/login",
+            json={"email": account["email"], "password": PASSWORD},
+            headers={"Origin": self.OWN_ORIGIN},
+        )
+        assert resp.status_code == 200, resp.text
+        resp = client.post(
+            "/api/v1/auth/logout",
+            headers={"Origin": self.OWN_ORIGIN, "X-CSRF-Token": resp.json()["csrf_token"]},
+        )
+        assert resp.status_code == 200, resp.text
+
+    def test_authenticated_mutation_from_a_foreign_origin_is_still_rejected(
+        self, client: TestClient, account
+    ) -> None:
+        body = _login(client, account)
+        resp = client.post(
+            "/api/v1/auth/logout",
+            headers={"Origin": "https://evil.example", "X-CSRF-Token": body["csrf_token"]},
+        )
+        assert resp.status_code == 403
+        assert resp.json()["error"]["code"] == "csrf_failed"
+
+
 class TestSessionUse:
     def test_me_without_cookie_is_401(self, client: TestClient) -> None:
         client.cookies.clear()

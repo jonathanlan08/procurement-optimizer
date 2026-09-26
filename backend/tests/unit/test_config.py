@@ -43,6 +43,14 @@ def test_trailing_newline_from_a_pasted_value_is_stripped() -> None:
     assert settings.database_url == NEON_STYLE_URL
 
 
+@pytest.mark.parametrize("scheme", ["postgresql://", "postgres://"])
+def test_provider_style_urls_are_mapped_to_the_psycopg_driver(scheme: str) -> None:
+    """Neon and friends hand out plain URLs, which SQLAlchemy would route to
+    psycopg2 - not installed here - and the app would crash on boot."""
+    settings = _prod(database_url=scheme + "user:pw@db.example.com/app")
+    assert settings.database_url == "postgresql+psycopg://user:pw@db.example.com/app"
+
+
 def test_dev_keeps_the_local_default(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("PO_DATABASE_URL", raising=False)
     settings = Settings(_env_file=None, environment=Environment.DEV)  # type: ignore[call-arg]

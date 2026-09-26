@@ -9,7 +9,7 @@ from __future__ import annotations
 from enum import StrEnum
 from typing import Self
 
-from pydantic import Field, SecretStr, model_validator
+from pydantic import Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -96,6 +96,17 @@ class Settings(BaseSettings):
     # Unset (the default) leaves this an API-only server, which is what the
     # dev setup and the whole test suite expect.
     static_root: str | None = None
+
+    @field_validator("database_url")
+    @classmethod
+    def _use_psycopg_driver(cls, url: str) -> str:
+        # Hosted Postgres providers (Neon, Render, Heroku) hand out plain
+        # postgresql:// or postgres:// URLs, which SQLAlchemy maps to psycopg2;
+        # this app ships psycopg (v3) only.
+        for scheme in ("postgresql://", "postgres://"):
+            if url.startswith(scheme):
+                return "postgresql+psycopg://" + url[len(scheme) :]
+        return url
 
     @model_validator(mode="after")
     def _fail_fast(self) -> Self:

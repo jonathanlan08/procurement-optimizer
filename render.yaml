@@ -36,8 +36,14 @@ services:
     # --no-dev --locked: `uv run` without them re-syncs the environment WITH
     # dev dependencies at boot (mypy, ruff, pytest...), which slowed the first
     # start past Render's port-scan patience.
+    # reset_demo.py wipes the demo once its data is a day old, so the seed that
+    # follows restores a clean copy; the free instance restarts after every
+    # idle spell, so the check runs often and the wipe at most daily. A failed
+    # reset is logged and the existing data is served rather than blocking boot.
     startCommand: |
       cd backend && uv run --no-dev --locked alembic upgrade head \
+        && { uv run --no-dev --locked python scripts/reset_demo.py \
+             || echo "demo reset failed; serving the existing data"; } \
         && uv run --no-dev --locked python scripts/seed_demo.py \
         && uv run --no-dev --locked uvicorn app.main:create_app --factory \
           --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips '*'
